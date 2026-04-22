@@ -1,103 +1,208 @@
-import uvicorn
-from fastapi import FastAPI
+import os
 import uuid
-from pydantic import BaseModel
+import tempfile
+import logging
+from collections import Counter
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Optional
+
+import uvicorn
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from pydantic import BaseModel
 from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from rag_workflow import builder, escalate_api_action, DB_CONNECTION_STRING
 
-# Globals for the compiled graph
+from config import DB_CONNECTION_STRING
+from document_ingester import DocumentIngester
+from rag_workflow import (
+    builder,
+    escalate_api_action,
+    init_postgres_db,
+    ingest_default_faq,
+    add_documents,
+    get_stats,
+)
+
+logger = logging.getLogger(__name__)
+
 compiled_rag_graph = None
+ingester = DocumentIngester()
+
+SUPPORTED_EXTENSIONS = {".xlsx", ".xls", ".pdf", ".docx", ".doc", ".txt", ".csv", ".json"}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global compiled_rag_graph
-    # Initialize the async connection pool and checkpointer
-    async with AsyncConnectionPool(DB_CONNECTION_STRING) as async_pool:
-        checkpointer = AsyncPostgresSaver(async_pool)
+
+    # One-time setup: DB tables + default FAQ data
+    init_postgres_db()
+    ingest_default_faq()
+
+    async with AsyncConnectionPool(DB_CONNECTION_STRING) as pool:
+        checkpointer = AsyncPostgresSaver(pool)
         await checkpointer.setup()
-    
-        # Compile the graph globally
         compiled_rag_graph = builder.compile(checkpointer=checkpointer)
-        img = compiled_rag_graph.get_graph().draw_mermaid_png()
-        with open("graph.png", "wb") as f:
-            f.write(img)
+
+        try:
+            img = compiled_rag_graph.get_graph().draw_mermaid_png()
+            with open("graph.png", "wb") as f:
+                f.write(img)
+        except Exception:
+            pass
+
         yield
-    
+
+
+# ------------------------------------------------------------------
+# Request / Response schemas
+# ------------------------------------------------------------------
+
 class ThreadResponse(BaseModel):
     thread_id: str
+
 
 class ChatRequest(BaseModel):
     thread_id: str
     query: str
 
+
 class ChatResponse(BaseModel):
     answer: str
     suggest_escalate: bool = False
 
-app = FastAPI(
-    title="Customer Service API",
-    description="RAG + LangGraph Escalation Flow",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-@app.post("/thread", response_model=ThreadResponse)
-async def create_thread_endpoint():
-    """Tạo mới một phiên hội thoại (Thread ID)"""
-    return ThreadResponse(thread_id=str(uuid.uuid4()))
-
-@app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
-    """
-    Endpoint to receive user query and route it through the RAG LangGraph.
-    
-    If the query involves high-risk situations (e.g. Hoàn tiền giá trị cao),
-    the LangGraph will asynchronously escalate to a human and return early.
-    Otherwise, it will generate an LLM response.
-    """
-    new_input = {
-        "question": request.query
-    }
-    
-    config = {"configurable": {"thread_id": request.thread_id}}
-    
-    # Run the compiled LangGraph async with checkpointer config
-    final_state = await compiled_rag_graph.ainvoke(new_input, config=config)
-    
-    # If the system detected max risk level >= 3 (or any desired threshold),
-    # explicitly signal the frontend to ask for user confirmation.
-    suggest_escalate = final_state.get("max_risk_level", 0) >= 3
-    
-    return ChatResponse(
-        answer=final_state["final_answer"], 
-        suggest_escalate=suggest_escalate
-    )
 
 class EscalateResponse(BaseModel):
     status: str
     message: str
 
+
+class IngestResponse(BaseModel):
+    status: str
+    documents_added: int
+    source: str
+
+
+# ------------------------------------------------------------------
+# App
+# ------------------------------------------------------------------
+
+app = FastAPI(
+    title="Customer Service RAG API",
+    description="LangGraph RAG with flexible document ingestion",
+    version="2.0.0",
+    lifespan=lifespan,
+)
+
+
+# ------------------------------------------------------------------
+# Chat endpoints
+# ------------------------------------------------------------------
+
+@app.post("/thread", response_model=ThreadResponse)
+async def create_thread():
+    """Create a new conversation thread."""
+    return ThreadResponse(thread_id=str(uuid.uuid4()))
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    """
+    Send a user query through the RAG + LangGraph pipeline.
+    Returns the answer and whether to suggest escalation.
+    """
+    config = {"configurable": {"thread_id": request.thread_id}}
+    final_state = await compiled_rag_graph.ainvoke(
+        {"question": request.query}, config=config
+    )
+    return ChatResponse(
+        answer=final_state["final_answer"],
+        suggest_escalate=final_state.get("max_risk_level", 0) >= 3,
+    )
+
+
 @app.post("/escalate", response_model=EscalateResponse)
-async def escalate_endpoint():
-    """
-    Endpoint for UI to trigger a human escalation when the user confirms 
-    the Suggest Escalation prompt.
-    """
+async def escalate():
+    """Trigger a human escalation after user confirms."""
     message = await escalate_api_action()
     return EscalateResponse(status="success", message=message)
 
+
+# ------------------------------------------------------------------
+# Document management endpoints
+# ------------------------------------------------------------------
+
+@app.post("/documents/file", response_model=IngestResponse)
+async def ingest_file(
+    file: UploadFile = File(...),
+    category: Optional[str] = Form(None),
+    risk: Optional[int] = Form(None),
+):
+    """
+    Upload a file and ingest it into the RAG system.
+
+    Supported formats: xlsx, xls, pdf, docx, doc, txt, csv, json.
+    Optional form fields:
+      - category: override/set the document category metadata
+      - risk: set risk level (1-3) for all ingested chunks
+    """
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{suffix}'. Supported: {sorted(SUPPORTED_EXTENSIONS)}",
+        )
+
+    content = await file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        extra: dict = {}
+        if category:
+            extra["category"] = category
+        if risk is not None:
+            extra["risk"] = risk
+
+        docs = ingester.load(tmp_path, **extra)
+        add_documents(docs)
+        return IngestResponse(status="ok", documents_added=len(docs), source=file.filename)
+    finally:
+        os.unlink(tmp_path)
+
+
+@app.post("/documents/url", response_model=IngestResponse)
+async def ingest_url(
+    url: str,
+    category: Optional[str] = None,
+    risk: Optional[int] = None,
+):
+    """
+    Fetch a URL and ingest its text content into the RAG system.
+
+    Query params:
+      - url: target URL (required)
+      - category: metadata category label
+      - risk: risk level 1-3
+    """
+    extra: dict = {}
+    if category:
+        extra["category"] = category
+    if risk is not None:
+        extra["risk"] = risk
+
+    docs = ingester.load(url, **extra)
+    add_documents(docs)
+    return IngestResponse(status="ok", documents_added=len(docs), source=url)
+
+
+@app.get("/documents/stats")
+async def document_stats():
+    """Return total document count and breakdown by category."""
+    return get_stats()
+
+
 if __name__ == "__main__":
-    # POSTMAN TEST INSTRUCTIONS
-    # Start server: python main.py
-    # Test curl:
-    # curl -X 'POST' \
-    #   'http://127.0.0.1:8000/chat' \
-    #   -H 'accept: application/json' \
-    #   -H 'Content-Type: application/json' \
-    #   -d '{
-    #   "query": "Tôi muốn trả lại vé"
-    # }'
-    
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
