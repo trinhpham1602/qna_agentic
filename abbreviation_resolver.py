@@ -109,9 +109,13 @@ entries = [
 
 resolver = AbbreviationResolver(entries)
 
-query = "e-com có hành lý xách tay 7kg"
+query = "e-com có hành lý xách tay 7kg dang ads không"
 query = " ".join([e.lower() for e in query.split()])
 expanded = resolver.expand_query(query)
 
 for q in expanded:
     print(q)
+
+# mapping tất cả các case có thể
+
+# cái mình muốn là lấy ra câu hợp lý nhất.

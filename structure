@@ -73,3 +73,13 @@ ex:
 Notes
 B1: chinh cau query cho dung => normalized query
 B2: chon decomposition query => chia thanh sub queries
+
+các bước để tạo một data set:
+
+Tôi có nhiều entity và tôi ví dụ ở đây là hành lý:
+Hành lý có các tình huống cho hành lý, tình huống sẽ cụ thể cho từng hạng vé, và có độ risk riêng cho tình huống, nếu risk cao thì sẽ gọi cho nhân viên (chẳn hạn)
+
+Giúp tôi tổ chức một data set trả lời cho câu hỏi dạng multi query 
+
+
+"canonical": ["baggage", "refund", "reissue", "policies", "sepecial_service_request"]
