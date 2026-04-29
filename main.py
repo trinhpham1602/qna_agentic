@@ -118,7 +118,7 @@ async def chat(request: ChatRequest):
     )
     return ChatResponse(
         answer=final_state["final_answer"],
-        suggest_escalate=final_state.get("max_risk_level", 0) >= 3,
+        suggest_escalate=final_state.get("max_risk_level", 0) >= 8,
     )
 
 

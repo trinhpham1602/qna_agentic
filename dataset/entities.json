@@ -1,0 +1,21 @@
+[
+  {"id": "vietjet",    "type": "airline",         "canonical": "vietjet",    "label": "VietJet Air",         "risk": 1, "anchors": ["vietjet","vj","viet jet","vietjet air"]},
+  {"id": "bamboo",     "type": "airline",         "canonical": "bamboo",     "label": "Bamboo Airways",      "risk": 1, "anchors": ["bamboo","bamboo airways","qh"]},
+  {"id": "vna",        "type": "airline",         "canonical": "vna",        "label": "Vietnam Airlines",    "risk": 1, "anchors": ["vietnam airlines","vna","hãng quốc gia"]},
+  {"id": "promo",      "type": "cabin_class",     "canonical": "promo",      "label": "Promo / Eco Basic",   "risk": 1, "anchors": ["promo","eco basic","vé giá rẻ","vé promo","hạng promo"]},
+  {"id": "eco",        "type": "cabin_class",     "canonical": "eco",        "label": "Eco Standard",        "risk": 1, "anchors": ["eco","eco standard","hạng phổ thông","vé eco"]},
+  {"id": "deluxe",     "type": "cabin_class",     "canonical": "deluxe",     "label": "Deluxe",              "risk": 1, "anchors": ["deluxe","hạng deluxe","vé deluxe"]},
+  {"id": "skyboss",    "type": "cabin_class",     "canonical": "skyboss",    "label": "SkyBoss",             "risk": 1, "anchors": ["skyboss","sky boss","hạng thương gia","vé skyboss"]},
+  {"id": "domestic",   "type": "route",           "canonical": "domestic",   "label": "Nội địa",             "risk": 1, "anchors": ["nội địa","trong nước","domestic","bay nội địa"]},
+  {"id": "international","type":"route",          "canonical": "international","label": "Quốc tế",           "risk": 1, "anchors": ["quốc tế","international","ngoài nước","bay quốc tế"]},
+  {"id": "australia",  "type": "route",           "canonical": "australia",  "label": "Úc",                  "risk": 1, "anchors": ["úc","australia","chặng úc","bay úc"]},
+  {"id": "carry_on",   "type": "service",         "canonical": "carry_on",   "label": "Hành lý xách tay",    "risk": 1, "anchors": ["xách tay","carry on","cabin","hành lý cabin","hành lý xách tay"]},
+  {"id": "checked_baggage","type":"service",      "canonical": "checked_baggage","label":"Hành lý ký gửi",   "risk": 1, "anchors": ["ký gửi","checked baggage","hành lý ký gửi","vali ký gửi","baggage","hành lý"]},
+  {"id": "seat_selection","type":"service",       "canonical": "seat_selection","label":"Chọn ghế",          "risk": 1, "anchors": ["chọn ghế","chỗ ngồi","seat","chọn chỗ","ghế ngồi"]},
+  {"id": "meal",       "type": "service",         "canonical": "meal",       "label": "Suất ăn",             "risk": 1, "anchors": ["suất ăn","đồ ăn","meal","ăn uống trên máy bay"]},
+  {"id": "special_service","type":"service",      "canonical": "special_service","label":"Dịch vụ đặc biệt","risk": 1, "anchors": ["dịch vụ đặc biệt","ssr","special service","yêu cầu đặc biệt"]},
+  {"id": "infant",     "type": "passenger_type",  "canonical": "infant",     "label": "Trẻ dưới 2 tuổi",    "risk": 1, "anchors": ["em bé","infant","trẻ sơ sinh","bé dưới 2 tuổi","em bé dưới 2 tuổi"]},
+  {"id": "child",      "type": "passenger_type",  "canonical": "child",      "label": "Trẻ 2-12 tuổi",      "risk": 1, "anchors": ["trẻ em","child","trẻ nhỏ","bé","trẻ 2-12 tuổi"]},
+  {"id": "pregnant",   "type": "passenger_type",  "canonical": "pregnant",   "label": "Phụ nữ mang thai",   "risk": 5, "anchors": ["mang thai","bầu","pregnant","phụ nữ mang thai","thai phụ"]},
+  {"id": "unaccompanied_minor","type":"passenger_type","canonical":"unaccompanied_minor","label":"Trẻ đi một mình","risk":5,"anchors":["trẻ đi một mình","unaccompanied minor","um","trẻ đơn thân"]}
+]

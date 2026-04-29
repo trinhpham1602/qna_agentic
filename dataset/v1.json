@@ -1,0 +1,371 @@
+{
+  "version": "1.0",
+  "domain": "flight_booking",
+  "intents": [
+    {
+      "name": "search_flight"
+    },
+    {
+      "name": "filter_results"
+    },
+    {
+      "name": "change_date"
+    },
+    {
+      "name": "change_route"
+    },
+    {
+      "name": "select_flight"
+    },
+    {
+      "name": "add_passenger"
+    },
+    {
+      "name": "create_booking"
+    },
+    {
+      "name": "select_payment_method"
+    },
+    {
+      "name": "confirm_payment"
+    },
+    {
+      "name": "view_booking"
+    },
+    {
+      "name": "cancel_booking"
+    },
+    {
+      "name": "refund_request"
+    }
+  ],
+  "entities": [
+    {
+      "name": "location",
+      "values": [
+        {
+          "value": "HAN",
+          "synonyms": [
+            "hà nội",
+            "hn",
+            "hanoi"
+          ]
+        },
+        {
+          "value": "SGN",
+          "synonyms": [
+            "hồ chí minh",
+            "sài gòn",
+            "hcm"
+          ]
+        },
+        {
+          "value": "DAD",
+          "synonyms": [
+            "đà nẵng",
+            "danang"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date",
+      "values": [
+        {
+          "value": "2026-05-01",
+          "synonyms": [
+            "mai",
+            "ngày mai"
+          ]
+        },
+        {
+          "value": "2026-05-02",
+          "synonyms": [
+            "mốt",
+            "ngày kia"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "passenger_count",
+      "pattern": "\\d+ (người|khách|adult|pax)"
+    },
+    {
+      "name": "cabin_class",
+      "values": [
+        {
+          "value": "economy",
+          "synonyms": [
+            "phổ thông",
+            "eco"
+          ]
+        },
+        {
+          "value": "business",
+          "synonyms": [
+            "thương gia",
+            "biz"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "airline",
+      "values": [
+        {
+          "value": "VJ",
+          "synonyms": [
+            "vietjet",
+            "vj"
+          ]
+        },
+        {
+          "value": "VN",
+          "synonyms": [
+            "vietnam airlines",
+            "vna"
+          ]
+        },
+        {
+          "value": "QH",
+          "synonyms": [
+            "bamboo"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "price_range",
+      "pattern": "(dưới|trên) \\d+ (triệu|k|nghìn)"
+    },
+    {
+      "name": "time_range",
+      "values": [
+        {
+          "value": "morning",
+          "synonyms": [
+            "sáng"
+          ]
+        },
+        {
+          "value": "afternoon",
+          "synonyms": [
+            "chiều"
+          ]
+        },
+        {
+          "value": "evening",
+          "synonyms": [
+            "tối"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "booking_code",
+      "pattern": "[A-Z0-9]{5,8}"
+    },
+    {
+      "name": "payment_method",
+      "values": [
+        {
+          "value": "momo",
+          "synonyms": [
+            "momo"
+          ]
+        },
+        {
+          "value": "vnpay",
+          "synonyms": [
+            "vnpay"
+          ]
+        },
+        {
+          "value": "card",
+          "synonyms": [
+            "visa",
+            "mastercard"
+          ]
+        }
+      ]
+    }
+  ],
+  "utterances": [
+    {
+      "intent": "search_flight",
+      "examples": [
+        "tôi muốn bay từ {location:origin} đến {location:destination}",
+        "đặt vé từ {location:origin} đi {location:destination} ngày {date}",
+        "bay {location:origin} {location:destination} {date} {passenger_count}",
+        "tìm chuyến bay sáng mai từ {location:origin} vào {location:destination}",
+        "có chuyến nào từ {location:origin} đi {location:destination} không",
+        "cho tôi vé {location:origin} {location:destination}",
+        "bay từ {location:origin} vào {location:destination} ngày {date}",
+        "tìm chuyến {location:origin} {location:destination} {date}",
+        "book vé từ {location:origin} đến {location:destination}",
+        "tôi cần bay {location:origin} đi {location:destination} {date}"
+      ]
+    },
+    {
+      "intent": "filter_results",
+      "examples": [
+        "cho tôi chuyến {airline}",
+        "lọc giá {price_range}",
+        "tôi muốn bay {time_range}",
+        "có vé của {airline} không",
+        "chỉ hiển thị vé dưới {price_range}",
+        "lọc theo hãng {airline}",
+        "có chuyến sáng không",
+        "tôi muốn chuyến rẻ",
+        "chỉ hiện chuyến tối",
+        "lọc chuyến của {airline} giá {price_range}"
+      ]
+    },
+    {
+      "intent": "change_date",
+      "examples": [
+        "đổi sang ngày {date}",
+        "bay ngày khác {date}",
+        "lùi sang {date}",
+        "đổi ngày bay thành {date}",
+        "cho tôi ngày {date}"
+      ]
+    },
+    {
+      "intent": "change_route",
+      "examples": [
+        "đổi sang bay từ {location:origin} đến {location:destination}",
+        "tôi muốn đi {location:destination} thay vì chỗ cũ",
+        "chuyển route sang {location:origin} {location:destination}",
+        "đổi điểm đi {location:origin}",
+        "đổi điểm đến {location:destination}"
+      ]
+    },
+    {
+      "intent": "select_flight",
+      "examples": [
+        "tôi chọn chuyến này",
+        "lấy vé thứ 2",
+        "chọn chuyến của {airline}",
+        "book chuyến rẻ nhất",
+        "tôi lấy chuyến đầu tiên",
+        "chọn chuyến số 3",
+        "ok chuyến này",
+        "lấy vé này"
+      ]
+    },
+    {
+      "intent": "add_passenger",
+      "examples": [
+        "2 người lớn",
+        "thêm 1 trẻ em",
+        "tổng cộng {passenger_count}",
+        "có {passenger_count}",
+        "1 người lớn 1 trẻ em",
+        "đi 3 người",
+        "2 pax"
+      ]
+    },
+    {
+      "intent": "create_booking",
+      "examples": [
+        "đặt vé",
+        "book luôn",
+        "giữ chỗ",
+        "tiến hành đặt",
+        "confirm booking",
+        "ok đặt luôn"
+      ]
+    },
+    {
+      "intent": "select_payment_method",
+      "examples": [
+        "thanh toán bằng {payment_method}",
+        "dùng {payment_method}",
+        "trả bằng {payment_method}",
+        "chọn {payment_method}"
+      ]
+    },
+    {
+      "intent": "confirm_payment",
+      "examples": [
+        "thanh toán",
+        "trả tiền",
+        "ok thanh toán",
+        "confirm payment",
+        "trả luôn"
+      ]
+    },
+    {
+      "intent": "view_booking",
+      "examples": [
+        "xem booking {booking_code}",
+        "kiểm tra mã {booking_code}",
+        "xem vé {booking_code}",
+        "check booking {booking_code}"
+      ]
+    },
+    {
+      "intent": "cancel_booking",
+      "examples": [
+        "hủy booking {booking_code}",
+        "cancel vé {booking_code}",
+        "hủy mã {booking_code}",
+        "không đi nữa hủy {booking_code}"
+      ]
+    },
+    {
+      "intent": "refund_request",
+      "examples": [
+        "refund vé {booking_code}",
+        "hoàn tiền booking {booking_code}",
+        "tôi muốn hoàn tiền {booking_code}",
+        "yêu cầu refund {booking_code}"
+      ]
+    }
+  ],
+  "slot_mapping": {
+    "origin": "location",
+    "destination": "location",
+    "departure_date": "date",
+    "return_date": "date",
+    "passengers": "passenger_count",
+    "cabin_class": "cabin_class",
+    "airline": "airline",
+    "price": "price_range",
+    "time": "time_range",
+    "booking_code": "booking_code",
+    "payment_method": "payment_method"
+  },
+  "context_rules": [
+    {
+      "intent": "search_flight",
+      "required_slots": [
+        "origin",
+        "destination",
+        "departure_date"
+      ]
+    },
+    {
+      "intent": "select_flight",
+      "required_slots": [
+        "selected_flight"
+      ]
+    },
+    {
+      "intent": "create_booking",
+      "required_slots": [
+        "selected_flight",
+        "passengers"
+      ]
+    },
+    {
+      "intent": "confirm_payment",
+      "required_slots": [
+        "booking_id",
+        "payment_method"
+      ]
+    }
+  ]
+}
