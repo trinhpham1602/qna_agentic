@@ -10,6 +10,7 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from pydantic import BaseModel
+from typing import List as _List
 from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
@@ -71,6 +72,14 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     suggest_escalate: bool = False
+    confidence: float = 1.0
+    suggested_questions: _List[str] = []
+    matched_entities: _List[str] = []
+    matched_intents: _List[str] = []
+    slot_question: str = ""
+    missing_slots: _List[str] = []
+    reconstructed_query: str = ""
+    is_off_topic: bool = False
 
 
 class EscalateResponse(BaseModel):
@@ -119,6 +128,20 @@ async def chat(request: ChatRequest):
     return ChatResponse(
         answer=final_state["final_answer"],
         suggest_escalate=final_state.get("max_risk_level", 0) >= 8,
+        confidence=round(final_state.get("confidence", 1.0), 3),
+        suggested_questions=final_state.get("suggested_questions", []),
+        matched_entities=[
+            e.get("label") or e["canonical"]
+            for e in final_state.get("entities", [])
+        ],
+        matched_intents=[
+            i.get("label") or i["canonical"]
+            for i in final_state.get("intents", [])
+        ],
+        slot_question=final_state.get("slot_question", ""),
+        missing_slots=final_state.get("missing_slots", []),
+        reconstructed_query=final_state.get("reconstructed_query", ""),
+        is_off_topic=final_state.get("is_off_topic", False),
     )
 
 
