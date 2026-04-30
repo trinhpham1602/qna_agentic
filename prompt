@@ -1,0 +1,7 @@
+Slot mapping đang thiếu nhập hãng máy bay.
+Đổi vé và hoàn vé hay bị nhầm lần với nhau.
+Cứ trả lời nội dung có trong documents, risk thì show risk.
+Phần thanh toán và giá vé cũng chưa được tối ưu
+Bạn hãy xây dựng một graph với entities và edges tốt hơn.
+
+Thêm lib vào file requirements.txt, tôi đã có .venv rồi, cần gì thì chạy trong này.

@@ -49,44 +49,56 @@ CONFIDENCE_THRESHOLD = 0.50  # below this → "chưa được cung cấp thông 
 CONTEXT_DOC_LIMIT    = 3     # max docs sent to LLM (speed)
 LLM_MAX_TOKENS       = 320   # num_predict cap for Ollama (speed)
 
+# Giá trị mặc định cho slot khi user không đề cập — không hỏi lại
+SLOT_DEFAULTS: dict[str, str] = {
+    "airline": "vietjet",
+}
+
 # Slot definitions per intent: required slots + câu hỏi hỏi user
 INTENT_SLOTS: dict[str, dict] = {
     "refund": {
-        "required": ["cabin_class", "route"],
+        "required": ["airline", "cabin_class", "route"],
         "questions": {
+            "airline":     "Bạn đang hỏi về hãng hàng không nào? (VietJet / Bamboo / Vietnam Airlines)",
             "cabin_class": "Bạn đang dùng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)",
             "route":       "Chặng bay của bạn là nội địa hay quốc tế?",
         },
     },
     "reissue": {
-        "required": ["cabin_class", "route"],
+        "required": ["airline", "reissue_type", "cabin_class", "route"],
         "questions": {
-            "cabin_class": "Bạn đang dùng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)",
-            "route":       "Chặng bay của bạn là nội địa hay quốc tế?",
+            "airline":      "Bạn đang hỏi về hãng hàng không nào? (VietJet / Bamboo / Vietnam Airlines)",
+            "reissue_type": "Bạn muốn thay đổi điều gì trên vé?\n• Đổi giờ/ngày bay\n• Đổi hành trình\n• Đổi tên hành khách",
+            "cabin_class":  "Bạn đang dùng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)",
+            "route":        "Chặng bay của bạn là nội địa hay quốc tế?",
         },
     },
     "check_baggage": {
-        "required": ["cabin_class"],
+        "required": ["airline", "cabin_class"],
         "questions": {
+            "airline":     "Bạn đang hỏi về hãng hàng không nào? (VietJet / Bamboo / Vietnam Airlines)",
             "cabin_class": "Bạn đang dùng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)",
         },
     },
     "add_baggage": {
-        "required": ["cabin_class", "route"],
+        "required": ["airline", "cabin_class", "route"],
         "questions": {
+            "airline":     "Bạn đang hỏi về hãng hàng không nào?",
             "cabin_class": "Bạn đang dùng hạng vé nào?",
             "route":       "Chặng bay của bạn là nội địa hay quốc tế?",
         },
     },
     "no_show": {
-        "required": ["cabin_class"],
+        "required": ["airline", "cabin_class"],
         "questions": {
+            "airline":     "Bạn đang hỏi về hãng hàng không nào?",
             "cabin_class": "Bạn đang dùng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)",
         },
     },
     "force_majeure": {
-        "required": ["cabin_class"],
+        "required": ["airline", "cabin_class"],
         "questions": {
+            "airline":     "Bạn đang hỏi về hãng hàng không nào?",
             "cabin_class": "Bạn đang dùng hạng vé nào?",
         },
     },
@@ -108,28 +120,40 @@ INTENT_SLOTS: dict[str, dict] = {
             "route": "Bạn đang hỏi giấy tờ cho chuyến bay nội địa hay quốc tế?",
         },
     },
+    "payment_issue": {
+        "required": ["payment_issue_type"],
+        "questions": {
+            "payment_issue_type": "Bạn gặp vấn đề gì với thanh toán?\n• Lỗi giao dịch / thanh toán thất bại\n• Đã trừ tiền nhưng chưa nhận vé\n• Bị trừ tiền 2 lần",
+        },
+    },
     # Không cần slot bổ sung
     "check_payment":  {"required": []},
-    "payment_issue":  {"required": []},
     "check_policy":   {"required": []},
     "search_flight":  {"required": []},
     "select_seat":    {"required": []},
+    "check_in":       {"required": []},
 }
 
 # entity.type → tên slot
 ENTITY_TYPE_TO_SLOT: dict[str, str] = {
-    "cabin_class":    "cabin_class",
-    "route":          "route",
-    "airline":        "airline",
-    "passenger_type": "passenger_type",
+    "cabin_class":        "cabin_class",
+    "route":              "route",
+    "airline":            "airline",
+    "passenger_type":     "passenger_type",
+    "reissue_type":       "reissue_type",
+    "payment_method":     "payment_method",
+    "payment_issue_type": "payment_issue_type",
 }
 
 # Nhãn tiếng Việt cho từng giá trị slot
 SLOT_LABELS: dict[str, dict[str, str]] = {
-    "cabin_class":    {"promo": "Promo", "eco": "Eco Standard", "deluxe": "Deluxe", "skyboss": "SkyBoss"},
-    "route":          {"domestic": "nội địa", "international": "quốc tế", "australia": "chặng Úc"},
-    "airline":        {"vietjet": "VietJet", "bamboo": "Bamboo Airways", "vna": "Vietnam Airlines"},
-    "passenger_type": {"infant": "trẻ sơ sinh", "child": "trẻ em", "pregnant": "phụ nữ mang thai", "unaccompanied_minor": "trẻ đi một mình"},
+    "cabin_class":        {"promo": "Promo", "eco": "Eco Standard", "deluxe": "Deluxe", "skyboss": "SkyBoss"},
+    "route":              {"domestic": "nội địa", "international": "quốc tế", "australia": "chặng Úc"},
+    "airline":            {"vietjet": "VietJet", "bamboo": "Bamboo Airways", "vna": "Vietnam Airlines"},
+    "passenger_type":     {"infant": "trẻ sơ sinh", "child": "trẻ em", "pregnant": "phụ nữ mang thai", "unaccompanied_minor": "trẻ đi một mình"},
+    "reissue_type":       {"change_time": "đổi giờ/ngày bay", "change_route": "đổi hành trình", "change_name": "đổi tên hành khách"},
+    "payment_method":     {"momo": "Ví MoMo", "bank_card": "Thẻ ngân hàng", "vnpay": "VNPay", "bank_transfer": "Chuyển khoản"},
+    "payment_issue_type": {"txn_failed": "Lỗi giao dịch", "ticket_not_received": "Chưa nhận vé", "double_charge": "Trừ tiền 2 lần"},
 }
 
 # Pre-computed related questions per intent — zero LLM cost
@@ -145,9 +169,9 @@ INTENT_SUGGESTIONS: dict[str, list[str]] = {
         "Có thể mua thêm hành lý sau khi đã đặt vé không?",
     ],
     "reissue": [
-        "Phí đổi vé VietJet nội địa là bao nhiêu?",
-        "Đổi tên trên vé có được không?",
-        "Phải đổi vé trước giờ bay bao lâu?",
+        "Phí đổi giờ bay VietJet nội địa là bao nhiêu?",
+        "Vé SkyBoss có được miễn phí đổi hành trình không?",
+        "VietJet có hỗ trợ đổi tên hành khách trên vé không?",
     ],
     "refund": [
         "Vé Promo có hoàn được không?",
@@ -207,6 +231,41 @@ INTENT_SUGGESTIONS: dict[str, list[str]] = {
 }
 
 # ------------------------------------------------------------------
+# Graph-path document splitting constants
+# ------------------------------------------------------------------
+
+# field trong data.py  →  (metadata key, label hiển thị)
+CABIN_MAP: dict[str, tuple[str, str]] = {
+    "promo":   ("promo_eco_basic", "Promo"),
+    "eco":     ("eco_standard",    "Eco Standard"),
+    "deluxe":  ("deluxe",          "Deluxe"),
+    "skyboss": ("skyboss",         "SkyBoss"),
+}
+
+# Những intent cần tách doc theo cabin_class
+CABIN_SPLIT_INTENTS = {
+    "check_baggage", "add_baggage", "reissue",
+    "refund", "no_show", "force_majeure",
+}
+
+# Tình huống → passenger_type (cho check_special_passenger)
+SITUATION_PASSENGER_TYPE: dict[str, str] = {
+    "Trẻ em dưới 2 tuổi (Infant)": "infant",
+    "Trẻ em 2–12 tuổi (Child)":    "child",
+    "Phụ nữ mang thai":             "pregnant",
+}
+
+# Tình huống → route (cho check_document)
+SITUATION_ROUTE: dict[str, str] = {
+    "Giấy tờ bay nội địa":  "domestic",
+    "Hộ chiếu bay quốc tế": "international",
+    "Visa quốc tế":          "international",
+}
+
+# Giá trị coi là "không có quy định" → bỏ qua khi tạo doc
+_EMPTY_RULE = {"—", "n/a", "n/a (đã có 30kg)", ""}
+
+# ------------------------------------------------------------------
 # Retrieval state (module-level, shared across requests)
 # ------------------------------------------------------------------
 _all_documents: List[Document] = []
@@ -226,20 +285,28 @@ vector_store = PGVector(
 # ------------------------------------------------------------------
 
 def init_postgres_db():
-    sql = """
-    CREATE EXTENSION IF NOT EXISTS vector;
-    CREATE TABLE IF NOT EXISTS faq_documents (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        content TEXT,
-        metadata JSONB,
-        embedding vector(384)
-    );
-    CREATE INDEX IF NOT EXISTS faq_documents_embedding_idx
-        ON faq_documents USING hnsw (embedding vector_cosine_ops);
-    """
-    with ConnectionPool(DB_CONNECTION_STRING) as pool:
-        with pool.connection() as conn:
-            conn.execute(sql)
+    import psycopg
+
+    # Bước 1: extension + table trong transaction bình thường
+    with psycopg.connect(DB_CONNECTION_STRING) as conn:
+        conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS faq_documents (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                content TEXT,
+                metadata JSONB,
+                embedding vector(384)
+            );
+        """)
+        conn.commit()
+
+    # Bước 2: HNSW index cần autocommit=True vì pgvector dùng CONCURRENTLY internally
+    with psycopg.connect(DB_CONNECTION_STRING, autocommit=True) as conn:
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS faq_documents_embedding_idx
+                ON faq_documents USING hnsw (embedding vector_cosine_ops);
+        """)
+
     logger.info("PostgreSQL initialized")
 
 
@@ -266,29 +333,109 @@ def get_stats() -> dict:
     return {"total": len(_all_documents), "by_category": dict(cats)}
 
 
+def _build_path_docs(item: dict) -> list[Document]:
+    """
+    Tạo documents theo graph path:
+    - Intents cần cabin_class  → 4 docs (1 per cabin)
+    - check_special_passenger  → 1 doc với passenger_type metadata
+    - check_document           → 1 doc với route metadata
+    - Còn lại                  → 1 doc tổng hợp
+    "Trả lời mẫu" bị loại khỏi nội dung — thuộc system prompt, không nên embed.
+    """
+    intent    = item.get("intent", "")
+    situation = item.get("situation", "")
+    notes     = item.get("important_notes", "")
+
+    base_meta = {
+        "category":     item.get("category", ""),
+        "intent":       intent,
+        "airline":      "vietjet",
+        "risk":         item.get("risk", 1),
+        "escalate_when": item.get("escalate_when", ""),
+    }
+
+    docs: list[Document] = []
+
+    if intent in CABIN_SPLIT_INTENTS:
+        # ── 4 docs, mỗi doc = 1 path (airline, intent, cabin_class) ──────
+        for cabin, (field, label) in CABIN_MAP.items():
+            rule = (item.get(field) or "").strip()
+            if rule.lower() in _EMPTY_RULE:
+                continue
+            content = (
+                f"Hãng: VietJet | Hạng vé: {label}\n"
+                f"Tình huống: {situation}\n"
+                f"Quy định: {rule}\n"
+                f"Ghi chú: {notes}"
+            )
+            docs.append(Document(
+                page_content=content,
+                metadata={**base_meta, "cabin_class": cabin},
+            ))
+
+    elif intent in ("check_special_passenger", "special_service_request"):
+        # ── 1 doc, thêm passenger_type nếu nhận dạng được ────────────────
+        rule = (item.get("promo_eco_basic") or "").strip()
+        content = (
+            f"Hãng: VietJet\n"
+            f"Tình huống: {situation}\n"
+            f"Quy định: {rule}\n"
+            f"Ghi chú: {notes}"
+        )
+        meta = {**base_meta}
+        pt = SITUATION_PASSENGER_TYPE.get(situation)
+        if pt:
+            meta["passenger_type"] = pt
+        docs.append(Document(page_content=content, metadata=meta))
+
+    elif intent == "check_document":
+        # ── 1 doc, thêm route ─────────────────────────────────────────────
+        rule = (item.get("promo_eco_basic") or "").strip()
+        content = (
+            f"Hãng: VietJet\n"
+            f"Tình huống: {situation}\n"
+            f"Quy định: {rule}\n"
+            f"Ghi chú: {notes}"
+        )
+        meta = {**base_meta}
+        rt = SITUATION_ROUTE.get(situation)
+        if rt:
+            meta["route"] = rt
+        docs.append(Document(page_content=content, metadata=meta))
+
+    else:
+        # ── 1 doc tổng hợp (check_payment, payment_issue, …) ─────────────
+        rules: dict[str, str] = {
+            "Promo":   item.get("promo_eco_basic", ""),
+            "Eco":     item.get("eco_standard", ""),
+            "Deluxe":  item.get("deluxe", ""),
+            "SkyBoss": item.get("skyboss", ""),
+        }
+        unique = list(dict.fromkeys(
+            v.strip() for v in rules.values()
+            if v and v.strip().lower() not in _EMPTY_RULE
+        ))
+        rule_text = unique[0] if len(unique) == 1 else " | ".join(
+            f"{k}: {v}" for k, v in rules.items()
+            if v and v.strip().lower() not in _EMPTY_RULE
+        )
+        content = (
+            f"Hãng: VietJet\n"
+            f"Tình huống: {situation}\n"
+            f"Quy định: {rule_text}\n"
+            f"Ghi chú: {notes}"
+        )
+        docs.append(Document(page_content=content, metadata=base_meta))
+
+    return docs
+
+
 def ingest_default_faq(force_reingest: bool = False):
     from data import faq_data
 
-    docs = []
+    docs: list[Document] = []
     for item in faq_data:
-        content = (
-            f"Tình huống: {item.get('situation')}\n"
-            f"Quy định Eco: {item.get('eco_standard')}\n"
-            f"Quy định Promo: {item.get('promo_eco_basic')}\n"
-            f"Quy định Deluxe: {item.get('deluxe')}\n"
-            f"Quy định SkyBoss: {item.get('skyboss')}\n"
-            f"Ghi chú: {item.get('important_notes')}\n"
-            f"Trả lời mẫu: {item.get('short_answer')}"
-        )
-        docs.append(Document(
-            page_content=content,
-            metadata={
-                "category":     item.get("category"),
-                "intent":       item.get("intent", ""),
-                "risk":         item.get("risk", 1),
-                "escalate_when": item.get("escalate_when", ""),
-            },
-        ))
+        docs.extend(_build_path_docs(item))
 
     _all_documents.extend(docs)
     _rebuild_bm25()
@@ -300,9 +447,9 @@ def ingest_default_faq(force_reingest: bool = False):
 
     if force_reingest or not already_populated:
         vector_store.add_documents(docs)
-        logger.info(f"Ingested {len(docs)} FAQ docs to vector store")
+        logger.info(f"Ingested {len(docs)} path-split docs to vector store")
     else:
-        logger.info(f"Vector store already populated — loaded {len(docs)} docs into memory only")
+        logger.info(f"Vector store already populated — loaded {len(docs)} path-split docs into memory only")
 
 
 # ------------------------------------------------------------------
@@ -321,10 +468,66 @@ class GraphState(TypedDict):
     graph_risk:           int          # max Fibonacci risk từ matched intents
     confidence:           float        # 0.0–1.0 từ fuzzy intent match score
     suggested_questions:  List[str]    # pre-computed từ INTENT_SUGGESTIONS
+    graph_queries:        List[str]    # queries sinh từ graph traversal
     documents:            List[Document]
     max_risk_level:       int
     final_answer:         str
-    conversation_summary: str
+
+
+# ------------------------------------------------------------------
+# Knowledge-graph loader (lazy, cached at module level)
+# ------------------------------------------------------------------
+
+_kg_cache: dict = {}
+
+
+def _load_kg() -> dict:
+    """Load knowledge_graph.json once and build adjacency + label maps."""
+    global _kg_cache
+    if _kg_cache:
+        return _kg_cache
+
+    with open("dataset/knowledge_graph.json") as f:
+        kg = json.load(f)
+
+    node_labels: dict[str, str] = {n["id"]: n.get("label", n["id"]) for n in kg["nodes"]}
+
+    adj: dict[str, list] = {}
+    for edge in kg["edges"]:
+        adj.setdefault(edge["from"], []).append({
+            "to":         edge["to"],
+            "type":       edge["type"],
+            "properties": edge.get("properties", {}),
+            "from_label": node_labels.get(edge["from"], edge["from"]),
+            "to_label":   node_labels.get(edge["to"],   edge["to"]),
+        })
+
+    _kg_cache = {"adj": adj, "node_labels": node_labels}
+    return _kg_cache
+
+
+def _edge_to_query(from_label: str, edge_type: str, to_label: str, props: dict) -> str:
+    """Convert a single graph edge to a Vietnamese natural-language query."""
+    if edge_type == "RESTRICTS":
+        reason = props.get("reason", "")
+        return f"chính sách {to_label} hạng {from_label} VietJet {reason}".strip()
+    if edge_type == "ALLOWS":
+        benefit = props.get("benefit", "")
+        return f"{from_label} VietJet {to_label} {benefit}".strip()
+    if edge_type == "AFFECTS":
+        fee = props.get("fee_label", "")
+        return f"phí {to_label} chặng {from_label} VietJet {fee}".strip()
+    if edge_type == "REQUIRES":
+        detail = props.get("reason", props.get("doc", props.get("condition", "")))
+        return f"{from_label} cần {to_label} VietJet {detail}".strip()
+    if edge_type == "LEADS_TO":
+        return f"quy trình đặt vé VietJet từ {from_label} đến {to_label}".strip()
+    if edge_type == "RESOLVES_VIA":
+        cond = props.get("condition", "")
+        return f"{from_label} VietJet xử lý qua {to_label} {cond}".strip()
+    if edge_type == "HAS_POLICY":
+        return f"chính sách {to_label} VietJet".strip()
+    return f"{from_label} {to_label} VietJet".strip()
 
 
 # ------------------------------------------------------------------
@@ -405,9 +608,8 @@ def _build_reconstructed_query(intents: list[dict], filled_slots: dict) -> str:
 
 async def slot_filling_node(state: GraphState) -> GraphState:
     logger.info("---SLOT FILLING NODE---")
-    intents    = state.get("intents", [])
-    entities   = state.get("entities", [])
-    confidence = state.get("confidence", 0.0)
+    intents  = state.get("intents", [])
+    entities = state.get("entities", [])
 
     # Off-topic: không match được intent nào
     if not intents:
@@ -420,15 +622,37 @@ async def slot_filling_node(state: GraphState) -> GraphState:
             "filled_slots":        state.get("filled_slots") or {},
         }
 
-    # Merge slot cũ (từ lượt trước) với entity mới nhận ra trong lượt này
+    # ── Phân biệt reissue vs refund khi cả hai cùng match ───────────
+    intent_map = {i["canonical"]: i for i in intents}
+    reissue_i  = intent_map.get("reissue")
+    refund_i   = intent_map.get("refund")
+    if reissue_i and refund_i:
+        diff = abs(reissue_i.get("best_score", 0) - refund_i.get("best_score", 0))
+        if diff < 12:
+            return {
+                "filled_slots":        state.get("filled_slots") or {},
+                "missing_slots":       ["__disambiguate__"],
+                "slot_question":       "Bạn muốn **đổi vé** (giữ lại vé, thay đổi thông tin) hay **hoàn vé** (hủy vé, lấy lại tiền)?",
+                "reconstructed_query": "",
+                "is_off_topic":        False,
+            }
+    # ─────────────────────────────────────────────────────────────────
+
+    # Merge slot cũ với entity mới
     filled: dict = dict(state.get("filled_slots") or {})
     for entity in entities:
         slot_name = ENTITY_TYPE_TO_SLOT.get(entity.get("type", ""))
         if slot_name:
             filled[slot_name] = entity["canonical"]
 
+    # Áp dụng SLOT_DEFAULTS cho slot chưa có giá trị (không hỏi user)
+    for slot, default_val in SLOT_DEFAULTS.items():
+        if slot not in filled:
+            filled[slot] = default_val
+            logger.info("Slot default: %s = %s", slot, default_val)
+
     # Primary intent = intent có score cao nhất
-    primary = max(intents, key=lambda i: i.get("best_score", 0))
+    primary  = max(intents, key=lambda i: i.get("best_score", 0))
     cfg      = INTENT_SLOTS.get(primary["canonical"], {"required": []})
     required = cfg.get("required", [])
     missing  = [s for s in required if s not in filled]
@@ -455,9 +679,68 @@ async def slot_filling_node(state: GraphState) -> GraphState:
 def _route_after_slots(state: GraphState) -> str:
     if state.get("is_off_topic"):
         return "off_topic"
-    if state.get("missing_slots"):
+    # Chỉ dừng lại hỏi khi cần phân biệt reissue vs refund (ambiguous)
+    if state.get("missing_slots") == ["__disambiguate__"]:
         return "ask_slot"
-    return "retrieve"
+    # Câu hỏi chung về quy định → trả lời ngay, slot_question gắn cuối answer
+    return "graph_traversal"
+
+
+# ------------------------------------------------------------------
+# Node: knowledge-graph traversal → generate multi-angle queries
+# ------------------------------------------------------------------
+
+async def graph_traversal_node(state: GraphState) -> GraphState:
+    logger.info("---GRAPH TRAVERSAL NODE---")
+    kg  = _load_kg()
+    adj = kg["adj"]
+
+    entities = state.get("entities", [])
+    intents  = state.get("intents",  [])
+    question = state["question"]
+
+    seed_ids = {e["canonical"] for e in entities} | {i["canonical"] for i in intents}
+
+    queries: list[str] = [question]
+    seen: set[tuple] = set()
+
+    # Edge types worth 2nd-hop expansion
+    _EXPAND_TYPES = {"REQUIRES", "AFFECTS", "RESTRICTS", "ALLOWS"}
+
+    for seed in seed_ids:
+        for edge in adj.get(seed, []):
+            key = (seed, edge["type"], edge["to"])
+            if key in seen:
+                continue
+            seen.add(key)
+
+            q = _edge_to_query(edge["from_label"], edge["type"], edge["to_label"], edge["properties"])
+            queries.append(q)
+
+            # 2nd hop only for structurally rich edge types
+            if edge["type"] in _EXPAND_TYPES:
+                for edge2 in adj.get(edge["to"], []):
+                    key2 = (edge["to"], edge2["type"], edge2["to"])
+                    if key2 in seen:
+                        continue
+                    seen.add(key2)
+                    q2 = _edge_to_query(edge2["from_label"], edge2["type"], edge2["to_label"], edge2["properties"])
+                    queries.append(q2)
+
+    # Deduplicate, preserve order, cap at 8 queries (speed)
+    seen_q: set[str] = set()
+    unique: list[str] = []
+    for q in queries:
+        if q and q not in seen_q:
+            seen_q.add(q)
+            unique.append(q)
+    unique = unique[:8]
+
+    logger.info("Graph queries (%d):", len(unique))
+    for q in unique:
+        logger.info("  → %s", q)
+
+    return {"graph_queries": unique}
 
 
 # ------------------------------------------------------------------
@@ -478,10 +761,9 @@ async def off_topic_node(state: GraphState) -> GraphState:
     logger.info("---OFF TOPIC NODE---")
     llm = ChatOllama(model=LLM_MODEL, temperature=0.3, num_predict=LLM_MAX_TOKENS)
     sys_prompt = (
-        "Bạn là trợ lý AI thông minh. "
-        "Hãy trả lời câu hỏi của người dùng hoàn toàn bằng tiếng Việt, "
-        "ngắn gọn và hữu ích. "
-        "Nếu không biết câu trả lời, hãy nói thật."
+        "Bạn là trợ lý AI thân thiện. Trả lời hoàn toàn bằng tiếng Việt, "
+        "giọng gần gũi, dùng 'bạn' và 'mình', thêm 'nhé' khi phù hợp. "
+        "Nếu không biết câu trả lời, thành thật nói và gợi ý hướng giải quyết."
     )
     try:
         response = await llm.ainvoke([
@@ -501,15 +783,51 @@ async def off_topic_node(state: GraphState) -> GraphState:
 
 async def retrieve_node(state: GraphState) -> GraphState:
     logger.info("---RETRIEVAL NODE---")
-    question = state["question"]
-    intents  = state.get("intents", [])
+    question      = state["question"]
+    intents       = state.get("intents", [])
+    filled_slots  = state.get("filled_slots") or {}
+    graph_queries = state.get("graph_queries") or [question]
 
-    # 1. Semantic search
-    try:
-        pg_docs = vector_store.similarity_search(question, k=VECTOR_K)
-    except Exception as e:
-        logger.error(f"Vector search failed: {e}")
-        pg_docs = []
+    # ── Metadata filter từ filled_slots ──────────────────────────────────
+    meta_filter: dict = {}
+    for slot in ("airline", "cabin_class", "passenger_type", "route"):
+        if filled_slots.get(slot):
+            meta_filter[slot] = filled_slots[slot]
+
+    logger.info("Slot filter: %s | Graph queries: %d", meta_filter, len(graph_queries))
+
+    # 1. Semantic search — chạy mỗi graph query, merge kết quả
+    all_pg_docs: list[Document] = []
+    for q in graph_queries:
+        try:
+            hits = vector_store.similarity_search(
+                q, k=VECTOR_K,
+                filter=meta_filter if meta_filter else None,
+            )
+            all_pg_docs.extend(hits)
+        except Exception as e:
+            logger.error("Vector search failed for query '%s': %s", q, e)
+
+    # Deduplicate by content while preserving retrieval order
+    seen_content: set[str] = set()
+    pg_docs: list[Document] = []
+    for doc in all_pg_docs:
+        if doc.page_content not in seen_content:
+            seen_content.add(doc.page_content)
+            pg_docs.append(doc)
+
+    # Fallback: bỏ filter nếu không tìm thấy gì
+    if not pg_docs and meta_filter:
+        logger.info("Filter returned 0 results — fallback to unfiltered search")
+        for q in graph_queries[:3]:
+            try:
+                hits = vector_store.similarity_search(q, k=VECTOR_K)
+                for doc in hits:
+                    if doc.page_content not in seen_content:
+                        seen_content.add(doc.page_content)
+                        pg_docs.append(doc)
+            except Exception as e:
+                logger.error("Unfiltered vector search failed: %s", e)
 
     # 2. BM25
     bm25_docs = _bm25_retriever.invoke(question) if _bm25_retriever else []
@@ -524,33 +842,31 @@ async def retrieve_node(state: GraphState) -> GraphState:
             doc_map[key] = doc
 
     reranked = [doc_map[k] for k, _ in sorted(scores.items(), key=lambda x: x[1], reverse=True)]
-    best = reranked[:2]
+    best     = reranked[:CONTEXT_DOC_LIMIT]
 
     if not best:
         logger.warning("No documents retrieved")
         return {"documents": []}
 
-    # 4. Category: prefer intent-derived, fallback to top-retrieved
+    # 4. Khi có slot filter chính xác → dùng trực tiếp top docs, không expand
+    #    Khi không có filter → expand theo category để LLM có thêm context
+    if meta_filter:
+        logger.info(f"Slot-filtered retrieval: {len(best)} docs")
+        return {"documents": best}
+
     intent_categories = [
         INTENT_CATEGORY_MAP[i["canonical"]]
         for i in intents
         if i["canonical"] in INTENT_CATEGORY_MAP
     ]
-
-    if intent_categories:
-        top_category = intent_categories[0]
-        logger.info(f"Category from intent graph: {top_category!r}")
-    else:
-        top_category = best[0].metadata.get("category")
-        logger.info(f"Category from retrieval fallback: {top_category!r}")
+    top_category = intent_categories[0] if intent_categories else best[0].metadata.get("category")
 
     if top_category and _all_documents:
         expanded = [d for d in _all_documents if d.metadata.get("category") == top_category]
-    else:
-        expanded = best
+        logger.info(f"Category expand: {len(expanded)} docs for '{top_category}'")
+        return {"documents": expanded[:CONTEXT_DOC_LIMIT]}
 
-    logger.info(f"Expanded to {len(expanded)} docs for category '{top_category}'")
-    return {"documents": expanded}
+    return {"documents": best}
 
 
 # ------------------------------------------------------------------
@@ -578,7 +894,6 @@ async def generate_node(state: GraphState) -> GraphState:
     question   = state["question"]
     docs       = state.get("documents", [])
     max_risk   = state.get("max_risk_level", 1)
-    summary    = state.get("conversation_summary", "")
     entities   = state.get("entities", [])
     intents    = state.get("intents", [])
     confidence = state.get("confidence", 0.0)
@@ -598,34 +913,23 @@ async def generate_node(state: GraphState) -> GraphState:
 
     llm = ChatOllama(model=LLM_MODEL, temperature=0, num_predict=LLM_MAX_TOKENS)
 
-    # Compact system prompt — luôn trả lời bằng tiếng Việt
-    risk_note = ""
-    if max_risk >= RISK_ESCALATE_HARD:
-        risk_note = " ⚠️ Rủi ro cao — BẮT BUỘC nhắc bấm 'Xác nhận Chuyển nhân viên CSKH'."
-    elif max_risk >= RISK_ESCALATE_SOFT:
-        risk_note = " Gợi ý nhẹ chuyển nhân viên nếu cần."
-
-    reconstructed = state.get("reconstructed_query", "")
-    filled_slots  = state.get("filled_slots", {})
+    filled_slots = state.get("filled_slots", {})
 
     slot_ctx = ""
     if filled_slots:
-        parts = []
-        for slot, labels in SLOT_LABELS.items():
-            val = filled_slots.get(slot)
-            if val:
-                parts.append(f"{slot}: {labels.get(val, val)}")
+        parts = [labels.get(v, v) for s, labels in SLOT_LABELS.items() if (v := filled_slots.get(s))]
         if parts:
-            slot_ctx = "Thông tin đã xác nhận — " + ", ".join(parts) + ".\n"
+            slot_ctx = "Thông tin đã xác nhận: " + ", ".join(parts) + ".\n"
 
     sys_prompt = (
-        "Bạn là trợ lý CSKH. Trả lời HOÀN TOÀN bằng tiếng Việt, ngắn gọn, rõ ràng.\n"
+        "Bạn là trợ lý CSKH thân thiện, nhiệt tình. Trả lời HOÀN TOÀN bằng tiếng Việt.\n"
+        "Giọng điệu ấm áp, gần gũi — dùng 'bạn', xưng 'mình', thêm 'nhé'/'ạ' khi phù hợp.\n"
+        "CHỈ dùng thông tin từ tài liệu bên dưới. Nếu không có, nói: 'Thông tin này mình chưa tìm thấy, bạn liên hệ hotline để được hỗ trợ thêm nhé.'\n"
+        "Dùng thẻ HTML <b>text</b> để in đậm từ quan trọng. KHÔNG dùng markdown **.\n"
         f"{slot_ctx}"
-        f"Quy định liên quan:\n{context}\n"
+        f"Tài liệu tham khảo:\n{context}\n"
+        "Trả lời ngắn gọn, dễ hiểu."
     )
-    if summary:
-        sys_prompt += f"Lịch sử hội thoại: {summary}\n"
-    sys_prompt += f"Trả lời trực tiếp.{risk_note}"
 
     try:
         response = await llm.ainvoke([
@@ -637,41 +941,16 @@ async def generate_node(state: GraphState) -> GraphState:
         logger.error(f"LLM error: {e}")
         answer = "Xin lỗi, hệ thống đang quá tải. Vui lòng thử lại sau."
 
-    # Prepend reconstructed query để user thấy hệ thống đã hiểu đúng câu hỏi
-    if reconstructed:
-        answer = f"📋 {reconstructed}\n\n{answer}"
+    # Nếu còn slot chưa có → gắn câu hỏi nhẹ cuối answer để làm rõ thêm
+    slot_question = state.get("slot_question", "")
+    missing       = [s for s in state.get("missing_slots", []) if s != "__disambiguate__"]
+    if slot_question and missing:
+        answer += f"\n\n💬 <i>Để mình tư vấn chính xác hơn: {slot_question}</i>"
 
     return {
         "final_answer":        answer,
         "suggested_questions": suggested,
     }
-
-
-# ------------------------------------------------------------------
-# Node: conversation memory summary
-# ------------------------------------------------------------------
-
-async def summarize_memory_node(state: GraphState) -> GraphState:
-    logger.info("---SUMMARIZE MEMORY NODE---")
-    old_summary = state.get("conversation_summary", "")
-    llm = ChatOllama(model=LLM_MODEL, temperature=0)
-
-    prompt = (
-        "Viết tóm tắt ngắn bằng tiếng Việt (dưới 50 từ) về bối cảnh đang thảo luận.\n"
-        f"Tóm tắt cũ: {old_summary}\n"
-        f"Người dùng hỏi: {state.get('question', '')}\n"
-        f"Bot đáp: {state.get('final_answer', '')}\n"
-        "Tóm tắt mới:"
-    )
-
-    try:
-        response = await llm.ainvoke([SystemMessage(content=prompt)])
-        new_summary = response.content
-    except Exception as e:
-        logger.error(f"Summarize error: {e}")
-        new_summary = old_summary
-
-    return {"conversation_summary": new_summary}
 
 
 async def escalate_api_action() -> str:
@@ -685,35 +964,34 @@ async def escalate_api_action() -> str:
 #
 # START
 #   → entity_extraction
-#   → slot_filling  ──┬── (off_topic)  → off_topic_node  ──┐
-#                     ├── (ask_slot)   → ask_slot_node   ──┤
-#                     └── (retrieve)   → retrieve         │
-#                                          → assess_risk   │
-#                                          → generate      │
-#                                               └──────────┤
-#                                             summarize_memory
-#                                                  → END
+#   → slot_filling  ──┬── (off_topic)       → off_topic  ──┐
+#                     ├── (ask_slot)        → ask_slot   ──┤
+#                     └── (graph_traversal) → graph_traversal
+#                                               → retrieve
+#                                                 → assess_risk
+#                                                   → generate ──┘
+#                                                        → END
 # ------------------------------------------------------------------
 builder = StateGraph(GraphState)
 builder.add_node("entity_extraction", entity_extraction_node)
 builder.add_node("slot_filling",      slot_filling_node)
 builder.add_node("ask_slot",          ask_slot_node)
 builder.add_node("off_topic",         off_topic_node)
+builder.add_node("graph_traversal",   graph_traversal_node)
 builder.add_node("retrieve",          retrieve_node)
 builder.add_node("assess_risk",       assess_risk_node)
 builder.add_node("generate",          generate_node)
-builder.add_node("summarize_memory",  summarize_memory_node)
 
 builder.add_edge(START,               "entity_extraction")
 builder.add_edge("entity_extraction", "slot_filling")
 builder.add_conditional_edges(
     "slot_filling",
     _route_after_slots,
-    {"off_topic": "off_topic", "ask_slot": "ask_slot", "retrieve": "retrieve"},
+    {"off_topic": "off_topic", "ask_slot": "ask_slot", "graph_traversal": "graph_traversal"},
 )
+builder.add_edge("graph_traversal",  "retrieve")
 builder.add_edge("retrieve",         "assess_risk")
 builder.add_edge("assess_risk",      "generate")
-builder.add_edge("generate",         "summarize_memory")
-builder.add_edge("ask_slot",         "summarize_memory")
-builder.add_edge("off_topic",        "summarize_memory")
-builder.add_edge("summarize_memory", END)
+builder.add_edge("generate",         END)
+builder.add_edge("ask_slot",         END)
+builder.add_edge("off_topic",        END)
