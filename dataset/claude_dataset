@@ -1,0 +1,133 @@
+# OTA Knowledge Graph — Triplet Format
+# Format: <entity_1_id> <relation_id> <entity_2_id>
+#
+# relation_id = intent verb (dat, huy, doi, hoan, mua_them, chon, dang_ky,
+#               thanh_toan, check_in, hoi, kiem_tra, tim_kiem, bao_cao, xac_nhan)
+#             OR semantic relation (thuoc, la, co, lien_quan, yeu_cau)
+#
+# Lines starting with # are comments and are ignored.
+# You can add new triplets at any time — they are loaded fresh on each startup.
+#
+# ============================================================
+# CORE BOOKING ACTIONS (hanh_khach → verb → object)
+# ============================================================
+hanh_khach dat ve
+hanh_khach huy ve
+hanh_khach doi ve
+hanh_khach hoan ve
+hanh_khach bao_luu ve
+hanh_khach xac_nhan ve
+hanh_khach tim_kiem chuyen_bay
+hanh_khach check_in chuyen_bay
+
+# ============================================================
+# ANCILLARY SERVICE ACTIONS
+# ============================================================
+hanh_khach mua_them hanh_ly
+hanh_khach chon ghe
+hanh_khach dang_ky bua_an
+hanh_khach dang_ky dich_vu
+hanh_khach thanh_toan phi
+hanh_khach bao_cao giao_dich
+
+# ============================================================
+# INFORMATION & INQUIRY ACTIONS
+# ============================================================
+hanh_khach kiem_tra hanh_ly
+hanh_khach kiem_tra ghe
+hanh_khach kiem_tra chinh_sach
+hanh_khach kiem_tra giay_to
+hanh_khach kiem_tra giao_dich
+hanh_khach kiem_tra bua_an
+hanh_khach hoi phi
+hanh_khach hoi chinh_sach
+hanh_khach hoi hanh_ly
+hanh_khach hoi giay_to
+
+# ============================================================
+# TICKET / FLIGHT RELATIONSHIPS (semantic)
+# ============================================================
+ve thuoc chuyen_bay
+chuyen_bay co ghe
+ve co hanh_ly
+hanh_ly co phi
+doi yeu_cau phi
+hoan yeu_cau phi
+huy yeu_cau phi
+
+# ============================================================
+# CABIN CLASS → POLICY / BAGGAGE / FEE
+# ============================================================
+promo lien_quan hanh_ly
+eco lien_quan hanh_ly
+deluxe lien_quan hanh_ly
+skyboss lien_quan hanh_ly
+promo lien_quan phi
+eco lien_quan phi
+deluxe lien_quan phi
+skyboss lien_quan phi
+promo lien_quan chinh_sach
+eco lien_quan chinh_sach
+deluxe lien_quan chinh_sach
+skyboss lien_quan chinh_sach
+
+# ============================================================
+# ROUTE RELATIONSHIPS
+# ============================================================
+domestic lien_quan chinh_sach
+international lien_quan chinh_sach
+international yeu_cau giay_to
+domestic lien_quan phi
+international lien_quan phi
+australia lien_quan phi
+australia yeu_cau giay_to
+
+# ============================================================
+# PASSENGER TYPE RELATIONSHIPS
+# ============================================================
+infant la hanh_khach
+child la hanh_khach
+pregnant la hanh_khach
+unaccompanied_minor la hanh_khach
+infant yeu_cau giay_to
+pregnant yeu_cau giay_to
+unaccompanied_minor yeu_cau dich_vu
+pregnant lien_quan chinh_sach
+infant lien_quan phi
+
+# ============================================================
+# REISSUE TYPE RELATIONSHIPS
+# ============================================================
+change_time la doi
+change_route la doi
+change_name la doi
+change_time yeu_cau phi
+change_route yeu_cau phi
+change_name yeu_cau phi
+change_name lien_quan giay_to
+
+# ============================================================
+# PAYMENT RELATIONSHIPS
+# ============================================================
+giao_dich lien_quan ve
+momo thuoc giao_dich
+bank_card thuoc giao_dich
+vnpay thuoc giao_dich
+bank_transfer thuoc giao_dich
+txn_failed lien_quan giao_dich
+ticket_not_received lien_quan ve
+double_charge lien_quan giao_dich
+txn_failed lien_quan phi
+hanh_khach thanh_toan giao_dich
+
+# ============================================================
+# AIRLINE RELATIONSHIPS
+# ============================================================
+vietjet co chinh_sach
+vietjet co ve
+bamboo co chinh_sach
+bamboo co ve
+vna co chinh_sach
+vna co ve
+vietjet lien_quan hanh_ly
+vietjet lien_quan phi

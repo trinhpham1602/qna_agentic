@@ -76,6 +76,7 @@ class ChatResponse(BaseModel):
     slot_question: str = ""
     missing_slots: _List[str] = []
     is_off_topic: bool = False
+    intent_mode: str = "qna"            # "booking" | "qna" | "ambiguous"
     # CTA button data — frontend dùng để render nút, không show trong answer
     cta_enabled: bool = False            # True khi cần escalate
     cta_label: str = ""                  # Nhãn nút, vd: "Chuyển nhân viên CSKH"
@@ -137,6 +138,7 @@ async def chat(request: ChatRequest):
         slot_question=final_state.get("slot_question", ""),
         missing_slots=final_state.get("missing_slots", []),
         is_off_topic=final_state.get("is_off_topic", False),
+        intent_mode=final_state.get("intent_mode", "qna"),
         cta_enabled=cta_enabled,
         cta_label="Chuyển nhân viên CSKH" if cta_enabled else "",
         risk_level=risk_level,
@@ -167,6 +169,7 @@ def _build_done_event(state: dict) -> str:
         "slot_question":      state.get("slot_question", ""),
         "missing_slots":      state.get("missing_slots", []),
         "is_off_topic":       state.get("is_off_topic", False),
+        "intent_mode":        state.get("intent_mode", "qna"),
         # Dùng cho ask_slot / off_topic — FE có thể render ngay thay vì đợi stream
         "answer":             state.get("final_answer", ""),
     }

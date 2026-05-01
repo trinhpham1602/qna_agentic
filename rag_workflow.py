@@ -25,7 +25,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------
-# Intent → document category mapping
+# Intent → document category mapping (used by retrieve_node)
+# Keyed by OLD concept canonicals; new verb canonicals map via VERB_CONCEPT_MAP.
 # ------------------------------------------------------------------
 INTENT_CATEGORY_MAP: dict[str, str] = {
     "check_baggage":           "Hành lý",
@@ -39,7 +40,83 @@ INTENT_CATEGORY_MAP: dict[str, str] = {
     "special_service_request": "Hành khách đặc biệt",
     "check_payment":           "Thanh toán & giá vé",
     "payment_issue":           "Thanh toán & giá vé",
+    "search_flight":           "Đặt vé",
+    "select_seat":             "Dịch vụ bổ sung",
+    "check_in":                "Thủ tục",
+    "check_policy":            "Chính sách",
 }
+
+# ------------------------------------------------------------------
+# Verb canonical → internal concept key (for INTENT_SLOTS / INTENT_SUGGESTIONS lookup)
+# Context-independent mappings (one-to-one)
+# ------------------------------------------------------------------
+VERB_CONCEPT_MAP: dict[str, str] = {
+    "dat":        "search_flight",
+    "huy":        "refund",
+    "doi":        "reissue",
+    "hoan":       "refund",
+    "bao_luu":    "refund",
+    "mua_them":   "add_baggage",
+    "chon":       "select_seat",
+    "dang_ky":    "special_service_request",
+    "thanh_toan": "check_payment",
+    "check_in":   "check_in",
+    "hoi":        "check_policy",      # default; overridden by entity context
+    "kiem_tra":   "check_baggage",     # default; overridden by entity context
+    "tim_kiem":   "search_flight",
+    "bao_cao":    "payment_issue",
+    "xac_nhan":   "check_payment",
+}
+
+# Context rules for verbs whose concept depends on entity type / id
+# Maps verb → {entity_type_or_id: concept}
+_VERB_CONTEXT_RULES: dict[str, dict[str, str]] = {
+    "kiem_tra": {
+        "payment_issue_type": "payment_issue",
+        "payment_method":     "check_payment",
+        "passenger_type":     "check_special_passenger",
+        "reissue_type":       "reissue",
+        "giay_to":            "check_document",
+        "giao_dich":          "payment_issue",
+        "hanh_ly":            "check_baggage",
+        "phi":                "check_payment",
+        "chinh_sach":         "check_policy",
+        "bua_an":             "check_policy",
+        "_default":           "check_policy",
+    },
+    "hoi": {
+        "payment_issue_type": "payment_issue",
+        "payment_method":     "check_payment",
+        "passenger_type":     "check_special_passenger",
+        "giay_to":            "check_document",
+        "giao_dich":          "check_payment",
+        "hanh_ly":            "check_baggage",
+        "phi":                "check_payment",
+        "chinh_sach":         "check_policy",
+        "bua_an":             "check_policy",
+        "_default":           "check_policy",
+    },
+}
+
+
+def _resolve_verb_to_concept(
+    verb: str,
+    entity_types: set[str],
+    entity_ids: set[str],
+) -> str:
+    """Map a verb canonical + entity context → internal concept key for slot/suggestion lookup."""
+    ctx_rules = _VERB_CONTEXT_RULES.get(verb)
+    if ctx_rules:
+        # Check entity types first
+        for etype in entity_types:
+            if etype in ctx_rules:
+                return ctx_rules[etype]
+        # Then check entity canonical ids
+        for eid in entity_ids:
+            if eid in ctx_rules:
+                return ctx_rules[eid]
+        return ctx_rules.get("_default", VERB_CONCEPT_MAP.get(verb, verb))
+    return VERB_CONCEPT_MAP.get(verb, verb)
 
 # Fibonacci escalation thresholds
 RISK_ESCALATE_HARD = 8   # escalate with strong prompt
@@ -458,8 +535,9 @@ def ingest_default_faq(force_reingest: bool = False):
 
 class GraphState(TypedDict):
     question:             str
-    entities:             List[dict]   # extracted airline / cabin / route / service / passenger
-    intents:              List[dict]   # extracted intents with Fibonacci risk
+    entities:             List[dict]   # extracted noun entities
+    intents:              List[dict]   # extracted verb intents (each has "concept" resolved)
+    intent_mode:          str          # "booking" | "qna" | "ambiguous"
     filled_slots:         dict         # tích luỹ qua nhiều lượt hội thoại
     missing_slots:        List[str]    # slot còn thiếu cho intent hiện tại
     slot_question:        str          # câu hỏi hỏi slot tiếp theo
@@ -476,58 +554,62 @@ class GraphState(TypedDict):
 
 # ------------------------------------------------------------------
 # Knowledge-graph loader (lazy, cached at module level)
+# Reads from dataset/claude_dataset (triplet format) via graph_db.
 # ------------------------------------------------------------------
 
 _kg_cache: dict = {}
 
 
 def _load_kg() -> dict:
-    """Load knowledge_graph.json once and build adjacency + label maps."""
+    """Load claude_dataset once; build KnowledgeGraph + label maps."""
     global _kg_cache
     if _kg_cache:
         return _kg_cache
 
-    with open("dataset/knowledge_graph.json") as f:
-        kg = json.load(f)
+    from graph_db import KnowledgeGraph
 
-    node_labels: dict[str, str] = {n["id"]: n.get("label", n["id"]) for n in kg["nodes"]}
+    kg = KnowledgeGraph.from_dataset("dataset/claude_dataset")
 
-    adj: dict[str, list] = {}
-    for edge in kg["edges"]:
-        adj.setdefault(edge["from"], []).append({
-            "to":         edge["to"],
-            "type":       edge["type"],
-            "properties": edge.get("properties", {}),
-            "from_label": node_labels.get(edge["from"], edge["from"]),
-            "to_label":   node_labels.get(edge["to"],   edge["to"]),
-        })
+    # Build label maps from entities.json and intents.json
+    entity_labels: dict[str, str] = {}
+    intent_labels: dict[str, str] = {}
+    try:
+        with open("dataset/entities.json") as f:
+            for e in json.load(f):
+                entity_labels[e["id"]] = e.get("label", e["id"])
+        with open("dataset/intents.json") as f:
+            for i in json.load(f):
+                intent_labels[i["id"]] = i.get("label", i["id"])
+    except Exception as exc:
+        logger.warning("Label maps incomplete: %s", exc)
 
-    _kg_cache = {"adj": adj, "node_labels": node_labels}
+    _kg_cache = {"kg": kg, "entity_labels": entity_labels, "intent_labels": intent_labels}
     return _kg_cache
 
 
-def _edge_to_query(from_label: str, edge_type: str, to_label: str, props: dict) -> str:
-    """Convert a single graph edge to a Vietnamese natural-language query."""
-    if edge_type == "RESTRICTS":
-        reason = props.get("reason", "")
-        return f"chính sách {to_label} hạng {from_label} VietJet {reason}".strip()
-    if edge_type == "ALLOWS":
-        benefit = props.get("benefit", "")
-        return f"{from_label} VietJet {to_label} {benefit}".strip()
-    if edge_type == "AFFECTS":
-        fee = props.get("fee_label", "")
-        return f"phí {to_label} chặng {from_label} VietJet {fee}".strip()
-    if edge_type == "REQUIRES":
-        detail = props.get("reason", props.get("doc", props.get("condition", "")))
-        return f"{from_label} cần {to_label} VietJet {detail}".strip()
-    if edge_type == "LEADS_TO":
-        return f"quy trình đặt vé VietJet từ {from_label} đến {to_label}".strip()
-    if edge_type == "RESOLVES_VIA":
-        cond = props.get("condition", "")
-        return f"{from_label} VietJet xử lý qua {to_label} {cond}".strip()
-    if edge_type == "HAS_POLICY":
-        return f"chính sách {to_label} VietJet".strip()
-    return f"{from_label} {to_label} VietJet".strip()
+# Semantic relations that don't correspond to an intent verb
+_SEMANTIC_RELATIONS = {"thuoc", "la", "co", "lien_quan", "yeu_cau", "anh_huong"}
+
+
+def _edge_to_query(from_id: str, relation: str, to_id: str, entity_labels: dict, intent_labels: dict) -> str:
+    """Convert a KG edge (triplet) to a Vietnamese retrieval query."""
+    from_label = entity_labels.get(from_id, from_id)
+    to_label   = entity_labels.get(to_id,   to_id)
+
+    if relation == "yeu_cau":
+        return f"VietJet {from_label} yêu cầu {to_label}"
+    if relation == "lien_quan":
+        return f"VietJet {from_label} liên quan đến {to_label}"
+    if relation in ("thuoc", "la"):
+        return f"{from_label} là loại {to_label} VietJet"
+    if relation == "co":
+        return f"VietJet {from_label} có {to_label}"
+    if relation in _SEMANTIC_RELATIONS:
+        return f"VietJet {from_label} {to_label}"
+
+    # Verb / intent edge
+    intent_label = intent_labels.get(relation, relation)
+    return f"{intent_label} {to_label} VietJet"
 
 
 # ------------------------------------------------------------------
@@ -536,7 +618,7 @@ def _edge_to_query(from_label: str, edge_type: str, to_label: str, props: dict) 
 
 async def entity_extraction_node(state: GraphState) -> GraphState:
     logger.info("---ENTITY EXTRACTION NODE---")
-    from utils import extract_entities, Entity as EntityModel
+    from utils import extract_entities, detect_intent_mode, Entity as EntityModel
 
     question = state["question"]
 
@@ -552,34 +634,42 @@ async def entity_extraction_node(state: GraphState) -> GraphState:
     matched_intents  = extract_entities(question, intent_models,  threshold=55)
 
     # ── Slot continuation ────────────────────────────────────────────
-    # Nếu user đang trả lời câu hỏi slot (prev missing_slots != [])
-    # mà không gõ lại intent → giữ nguyên intents từ lượt trước
-    # để slot_filling_node không nhầm thành off-topic.
     prev_missing = state.get("missing_slots", [])
     if not matched_intents and prev_missing:
         matched_intents = list(state.get("intents") or [])
         logger.info("Slot continuation — giữ intents: %s", [i["canonical"] for i in matched_intents])
     # ─────────────────────────────────────────────────────────────────
 
-    graph_risk = max((i.get("risk", 1) for i in matched_intents), default=1)
+    # ── Resolve verb → concept for slot/suggestion/category lookup ───
+    entity_types = {e["type"] for e in matched_entities}
+    entity_ids   = {e["canonical"] for e in matched_entities}
+    for intent in matched_intents:
+        intent["concept"] = _resolve_verb_to_concept(intent["canonical"], entity_types, entity_ids)
+    # ─────────────────────────────────────────────────────────────────
 
-    # Confidence = best fuzzy score across matched intents, normalised to 0–1
+    graph_risk = max((i.get("risk", 1) for i in matched_intents), default=1)
     confidence = max((i.get("best_score", 0) for i in matched_intents), default=0) / 100.0
 
-    # Pre-compute suggested questions (no LLM, zero latency)
+    # Detect booking vs Q&A mode
+    mode_result  = detect_intent_mode(question, matched_intents)
+    intent_mode  = mode_result["mode"]
+
+    # Pre-compute suggested questions keyed by concept
     seen: dict[str, None] = {}
     for intent in matched_intents:
-        for q in INTENT_SUGGESTIONS.get(intent["canonical"], []):
+        concept = intent.get("concept", intent["canonical"])
+        for q in INTENT_SUGGESTIONS.get(concept, []):
             seen[q] = None
     suggested_questions = list(seen)[:3]
 
     logger.info("Entities   : %s", [e["canonical"] for e in matched_entities])
-    logger.info("Intents    : %s", [(i["canonical"], i.get("risk")) for i in matched_intents])
-    logger.info("Confidence : %.2f  |  Graph risk: %d", confidence, graph_risk)
+    logger.info("Intents    : %s", [(i["canonical"], i.get("concept"), i.get("risk")) for i in matched_intents])
+    logger.info("Mode       : %s | Confidence: %.2f | Risk: %d", intent_mode, confidence, graph_risk)
 
     return {
         "entities":            matched_entities,
         "intents":             matched_intents,
+        "intent_mode":         intent_mode,
         "graph_risk":          graph_risk,
         "confidence":          confidence,
         "suggested_questions": suggested_questions,
@@ -622,10 +712,9 @@ async def slot_filling_node(state: GraphState) -> GraphState:
             "filled_slots":        state.get("filled_slots") or {},
         }
 
-    # ── Phân biệt reissue vs refund khi cả hai cùng match ───────────
-    intent_map = {i["canonical"]: i for i in intents}
-    reissue_i  = intent_map.get("reissue")
-    refund_i   = intent_map.get("refund")
+    # ── Phân biệt reissue vs refund (doi vs hoan/huy) khi cả hai match ─
+    reissue_i = next((i for i in intents if i.get("concept") == "reissue"), None)
+    refund_i  = next((i for i in intents if i.get("concept") == "refund"),  None)
     if reissue_i and refund_i:
         diff = abs(reissue_i.get("best_score", 0) - refund_i.get("best_score", 0))
         if diff < 12:
@@ -651,11 +740,12 @@ async def slot_filling_node(state: GraphState) -> GraphState:
             filled[slot] = default_val
             logger.info("Slot default: %s = %s", slot, default_val)
 
-    # Primary intent = intent có score cao nhất
-    primary  = max(intents, key=lambda i: i.get("best_score", 0))
-    cfg      = INTENT_SLOTS.get(primary["canonical"], {"required": []})
-    required = cfg.get("required", [])
-    missing  = [s for s in required if s not in filled]
+    # Primary intent = intent có score cao nhất; use concept for slot config lookup
+    primary         = max(intents, key=lambda i: i.get("best_score", 0))
+    primary_concept = primary.get("concept", primary["canonical"])
+    cfg             = INTENT_SLOTS.get(primary_concept, {"required": []})
+    required        = cfg.get("required", [])
+    missing         = [s for s in required if s not in filled]
 
     slot_question = ""
     if missing:
@@ -692,40 +782,47 @@ def _route_after_slots(state: GraphState) -> str:
 
 async def graph_traversal_node(state: GraphState) -> GraphState:
     logger.info("---GRAPH TRAVERSAL NODE---")
-    kg  = _load_kg()
-    adj = kg["adj"]
+    kg_data        = _load_kg()
+    kg             = kg_data["kg"]
+    entity_labels  = kg_data["entity_labels"]
+    intent_labels  = kg_data["intent_labels"]
 
     entities = state.get("entities", [])
     intents  = state.get("intents",  [])
     question = state["question"]
 
-    seed_ids = {e["canonical"] for e in entities} | {i["canonical"] for i in intents}
+    # Seed with entity canonicals, intent verb canonicals, and resolved concepts
+    seed_ids: set[str] = set()
+    for e in entities:
+        seed_ids.add(e["canonical"])
+    for i in intents:
+        seed_ids.add(i["canonical"])
+        if i.get("concept"):
+            seed_ids.add(i["concept"])
 
     queries: list[str] = [question]
     seen: set[tuple] = set()
 
-    # Edge types worth 2nd-hop expansion
-    _EXPAND_TYPES = {"REQUIRES", "AFFECTS", "RESTRICTS", "ALLOWS"}
-
     for seed in seed_ids:
-        for edge in adj.get(seed, []):
-            key = (seed, edge["type"], edge["to"])
+        for edge in kg.neighbors(seed):
+            key = (seed, edge["relation"], edge["to"])
             if key in seen:
                 continue
             seen.add(key)
+            q = _edge_to_query(seed, edge["relation"], edge["to"], entity_labels, intent_labels)
+            if q:
+                queries.append(q)
 
-            q = _edge_to_query(edge["from_label"], edge["type"], edge["to_label"], edge["properties"])
-            queries.append(q)
-
-            # 2nd hop only for structurally rich edge types
-            if edge["type"] in _EXPAND_TYPES:
-                for edge2 in adj.get(edge["to"], []):
-                    key2 = (edge["to"], edge2["type"], edge2["to"])
+            # 2nd hop for semantic-rich relations
+            if edge["relation"] in ("yeu_cau", "lien_quan", "co"):
+                for edge2 in kg.neighbors(edge["to"]):
+                    key2 = (edge["to"], edge2["relation"], edge2["to"])
                     if key2 in seen:
                         continue
                     seen.add(key2)
-                    q2 = _edge_to_query(edge2["from_label"], edge2["type"], edge2["to_label"], edge2["properties"])
-                    queries.append(q2)
+                    q2 = _edge_to_query(edge["to"], edge2["relation"], edge2["to"], entity_labels, intent_labels)
+                    if q2:
+                        queries.append(q2)
 
     # Deduplicate, preserve order, cap at 8 queries (speed)
     seen_q: set[str] = set()
@@ -855,9 +952,9 @@ async def retrieve_node(state: GraphState) -> GraphState:
         return {"documents": best}
 
     intent_categories = [
-        INTENT_CATEGORY_MAP[i["canonical"]]
+        INTENT_CATEGORY_MAP[concept]
         for i in intents
-        if i["canonical"] in INTENT_CATEGORY_MAP
+        if (concept := i.get("concept", i["canonical"])) in INTENT_CATEGORY_MAP
     ]
     top_category = intent_categories[0] if intent_categories else best[0].metadata.get("category")
 
