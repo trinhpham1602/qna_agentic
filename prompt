@@ -1,12 +1,12 @@
-Tôi muốn entities chỉ chứa các danh từ, và intent là động từ.
-I. Trong folder dataset, tôi muốn:
-    1. Bạn tổ chức lại sao cho entities chỉ chứa các danh từ, intents là động từ.
-        Bạn hãy nghĩ ra các trường hợp phổ biến để tạo entity và intent cho tôi.
-        Viết lại chúng trong trong file json tương ứng
-    2. Xây lại một knowledge graph sao cho entities là node, cạnh là các intents. Và tổ chức mối quan hệ dựa trên entities và intents ở mục 1
-        Bạn tạo file claude_dataset và mô tả mối quan hệ như sau: <entity_1_id> <relation_id> <entity_2_id>.
-        KHÔNG update code trong file visualize_kg.py và knowledge_graph.json vì tôi sẽ xoá nó.
-    3. Tôi có thể thêm một dòng mới trong file claude_dataset. Khi đó mỗi lần start project thì tôi đọc file này để tạo mọt knowledge graph.
-II. Hệ thống OTA support
-    1. Bạn xây cho tôi một thuật toán hiểu được senmatic của user là muốn booking hay chỉ đơn thuần là Q&A.
-    2. Câu hỏi của user có thể là single hoặc multi intent liên quan đến nhiều entity. Vì vậy, bạn PHẢI trích xuất được entities và intent hợp lý nhất, tiềm năng nhất.
+Trong dataset tôi chưa thấy được những cái như sau:
+    1. claude_dataset chưa chứa đầy đủ cái intent trong file intents.json
+    2. entities.json chưa phân được thành atomic, ví dụ: hành lý thì nên chia thành 2 entity riêng biệt là xách tay và ký gửi. fee cho nội địa và quốc tế
+    3. Bạn nên tham khảo trong xem trong file data.py có faq_data. Bạn tách ra nhiều atomic càng tối
+trong file utils.py tôi muốn dùng:
+    1. loại bỏ hết các hàm đang sử dụng regex cho mục đích trích xuất intent và entity.
+    2. Sử dụng một mô hình mechine learning để trích xuất được đa entities và đa intents từ câu input của user. data set của model này là entities.json và intents.json.
+        Vì số lượng anchors của entities và intents là ít, nên bạn hãy generate ra các từ phổ biến để làm giàu data.
+        Bạn tách cho tôi tập training và tập testing để tôi kiểm tra mô hình.
+        Viết cho tôi hàm tính độ chính xác của mô hình.
+    3. lưu vector trọng số trong một file, để tôi load lên khi training xong.
+Nếu dùng lib thì thêm vào file requirements.txt để cài mới và tôi cũng có .venv cho project này.

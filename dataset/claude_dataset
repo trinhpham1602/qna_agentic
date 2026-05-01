@@ -1,15 +1,14 @@
 # OTA Knowledge Graph — Triplet Format
 # Format: <entity_1_id> <relation_id> <entity_2_id>
 #
-# relation_id = intent verb (dat, huy, doi, hoan, mua_them, chon, dang_ky,
+# relation_id = intent verb (dat, huy, doi, hoan, bao_luu, mua_them, chon, dang_ky,
 #               thanh_toan, check_in, hoi, kiem_tra, tim_kiem, bao_cao, xac_nhan)
-#             OR semantic relation (thuoc, la, co, lien_quan, yeu_cau)
+#             OR semantic relation: thuoc, la, co, lien_quan, yeu_cau
 #
-# Lines starting with # are comments and are ignored.
-# You can add new triplets at any time — they are loaded fresh on each startup.
+# Add new triplets freely — the graph is reloaded fresh on each startup.
 #
 # ============================================================
-# CORE BOOKING ACTIONS (hanh_khach → verb → object)
+# ALL 15 INTENTS — CORE ACTIONS ON TICKET
 # ============================================================
 hanh_khach dat ve
 hanh_khach huy ve
@@ -18,54 +17,83 @@ hanh_khach hoan ve
 hanh_khach bao_luu ve
 hanh_khach xac_nhan ve
 hanh_khach tim_kiem chuyen_bay
-hanh_khach check_in chuyen_bay
 
 # ============================================================
-# ANCILLARY SERVICE ACTIONS
+# ALL 15 INTENTS — ANCILLARY SERVICES
 # ============================================================
-hanh_khach mua_them hanh_ly
+hanh_khach mua_them ky_gui
+hanh_khach mua_them xach_tay
 hanh_khach chon ghe
+hanh_khach chon ghe_cua_so
+hanh_khach chon ghe_loi_di
 hanh_khach dang_ky bua_an
 hanh_khach dang_ky dich_vu
 hanh_khach thanh_toan phi
-hanh_khach bao_cao giao_dich
+hanh_khach check_in chuyen_bay
 
 # ============================================================
-# INFORMATION & INQUIRY ACTIONS
+# ALL 15 INTENTS — INFORMATION & INQUIRY
 # ============================================================
 hanh_khach kiem_tra hanh_ly
+hanh_khach kiem_tra xach_tay
+hanh_khach kiem_tra ky_gui
 hanh_khach kiem_tra ghe
 hanh_khach kiem_tra chinh_sach
 hanh_khach kiem_tra giay_to
 hanh_khach kiem_tra giao_dich
 hanh_khach kiem_tra bua_an
+hanh_khach kiem_tra phi_doi_ve
+hanh_khach kiem_tra phi_hoan_ve
+hanh_khach kiem_tra phi_qua_can
 hanh_khach hoi phi
 hanh_khach hoi chinh_sach
 hanh_khach hoi hanh_ly
 hanh_khach hoi giay_to
+hanh_khach hoi phi_doi_ve
+hanh_khach hoi phi_hoan_ve
+hanh_khach bao_cao giao_dich
 
 # ============================================================
 # TICKET / FLIGHT RELATIONSHIPS (semantic)
 # ============================================================
 ve thuoc chuyen_bay
 chuyen_bay co ghe
-ve co hanh_ly
-hanh_ly co phi
-doi yeu_cau phi
-hoan yeu_cau phi
-huy yeu_cau phi
+ve co ky_gui
+xach_tay thuoc hanh_ly
+ky_gui thuoc hanh_ly
+doi yeu_cau phi_doi_ve
+hoan yeu_cau phi_hoan_ve
+huy yeu_cau phi_hoan_ve
+bao_luu yeu_cau phi_hoan_ve
 
 # ============================================================
-# CABIN CLASS → POLICY / BAGGAGE / FEE
+# BAGGAGE — ATOMIC RELATIONSHIPS
 # ============================================================
-promo lien_quan hanh_ly
-eco lien_quan hanh_ly
-deluxe lien_quan hanh_ly
-skyboss lien_quan hanh_ly
-promo lien_quan phi
-eco lien_quan phi
-deluxe lien_quan phi
-skyboss lien_quan phi
+xach_tay co phi
+ky_gui co phi_qua_can
+pin_du_phong lien_quan xach_tay
+chat_long lien_quan xach_tay
+laptop lien_quan xach_tay
+hanh_khach kiem_tra pin_du_phong
+hanh_khach kiem_tra chat_long
+hanh_khach kiem_tra laptop
+
+# ============================================================
+# CABIN CLASS → BAGGAGE / FEE / POLICY
+# ============================================================
+promo lien_quan xach_tay
+eco lien_quan xach_tay
+deluxe lien_quan xach_tay
+skyboss lien_quan xach_tay
+skyboss co ky_gui
+promo lien_quan phi_doi_ve
+eco lien_quan phi_doi_ve
+deluxe lien_quan phi_doi_ve
+skyboss lien_quan phi_doi_ve
+promo lien_quan phi_hoan_ve
+eco lien_quan phi_hoan_ve
+deluxe lien_quan phi_hoan_ve
+skyboss lien_quan phi_hoan_ve
 promo lien_quan chinh_sach
 eco lien_quan chinh_sach
 deluxe lien_quan chinh_sach
@@ -76,11 +104,29 @@ skyboss lien_quan chinh_sach
 # ============================================================
 domestic lien_quan chinh_sach
 international lien_quan chinh_sach
-international yeu_cau giay_to
-domestic lien_quan phi
-international lien_quan phi
-australia lien_quan phi
-australia yeu_cau giay_to
+domestic lien_quan phi_doi_ve
+international lien_quan phi_doi_ve
+domestic lien_quan phi_hoan_ve
+international lien_quan phi_hoan_ve
+australia lien_quan phi_hoan_ve
+domestic yeu_cau cmnd_cccd
+international yeu_cau ho_chieu
+international yeu_cau visa
+australia yeu_cau ho_chieu
+
+# ============================================================
+# DOCUMENT — ATOMIC RELATIONSHIPS
+# ============================================================
+ho_chieu thuoc giay_to
+cmnd_cccd thuoc giay_to
+visa thuoc giay_to
+giay_khai_sinh thuoc giay_to
+giay_bac_si thuoc giay_to
+hanh_khach kiem_tra cmnd_cccd
+hanh_khach kiem_tra ho_chieu
+hanh_khach kiem_tra visa
+hanh_khach kiem_tra giay_khai_sinh
+hanh_khach kiem_tra giay_bac_si
 
 # ============================================================
 # PASSENGER TYPE RELATIONSHIPS
@@ -89,8 +135,9 @@ infant la hanh_khach
 child la hanh_khach
 pregnant la hanh_khach
 unaccompanied_minor la hanh_khach
-infant yeu_cau giay_to
-pregnant yeu_cau giay_to
+infant yeu_cau giay_khai_sinh
+child yeu_cau giay_khai_sinh
+pregnant yeu_cau giay_bac_si
 unaccompanied_minor yeu_cau dich_vu
 pregnant lien_quan chinh_sach
 infant lien_quan phi
@@ -101,10 +148,28 @@ infant lien_quan phi
 change_time la doi
 change_route la doi
 change_name la doi
-change_time yeu_cau phi
-change_route yeu_cau phi
-change_name yeu_cau phi
-change_name lien_quan giay_to
+change_time yeu_cau phi_doi_ve
+change_route yeu_cau phi_doi_ve
+change_name yeu_cau phi_doi_ve
+change_name yeu_cau giay_to
+
+# ============================================================
+# REFUND / CREDIT RELATIONSHIPS
+# ============================================================
+bao_luu_dinh_danh la hoan
+bao_luu_dinh_danh lien_quan ve
+bao_luu_dinh_danh yeu_cau phi_hoan_ve
+hanh_khach bao_luu bao_luu_dinh_danh
+
+# ============================================================
+# FEE ATOMIC RELATIONSHIPS
+# ============================================================
+phi_doi_ve thuoc phi
+phi_hoan_ve thuoc phi
+phi_no_show thuoc phi
+phi_qua_can thuoc phi
+phi_no_show lien_quan hoan
+hanh_khach kiem_tra phi_no_show
 
 # ============================================================
 # PAYMENT RELATIONSHIPS
@@ -117,8 +182,10 @@ bank_transfer thuoc giao_dich
 txn_failed lien_quan giao_dich
 ticket_not_received lien_quan ve
 double_charge lien_quan giao_dich
-txn_failed lien_quan phi
 hanh_khach thanh_toan giao_dich
+hanh_khach bao_cao txn_failed
+hanh_khach bao_cao ticket_not_received
+hanh_khach bao_cao double_charge
 
 # ============================================================
 # AIRLINE RELATIONSHIPS

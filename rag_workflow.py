@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from typing import List, TypedDict
 import logging
 
@@ -613,25 +614,58 @@ def _edge_to_query(from_id: str, relation: str, to_id: str, entity_labels: dict,
 
 
 # ------------------------------------------------------------------
+# ML extractor cache — loaded once, reused across requests
+# ------------------------------------------------------------------
+
+_entity_extractor = None
+_intent_extractor = None
+
+_ENTITY_MODEL_PATH = "models/entity_extractor.pkl"
+_INTENT_MODEL_PATH = "models/intent_extractor.pkl"
+
+
+def _get_extractors():
+    """Load (or auto-train) the ML extractors, cached at module level."""
+    global _entity_extractor, _intent_extractor
+    if _entity_extractor is not None and _intent_extractor is not None:
+        return _entity_extractor, _intent_extractor
+
+    from utils import MultiLabelExtractor
+
+    if os.path.exists(_ENTITY_MODEL_PATH) and os.path.exists(_INTENT_MODEL_PATH):
+        logger.info("Loading ML extractors from disk...")
+        _entity_extractor = MultiLabelExtractor.load(_ENTITY_MODEL_PATH)
+        _intent_extractor = MultiLabelExtractor.load(_INTENT_MODEL_PATH)
+    else:
+        logger.warning("Model files not found — auto-training from dataset...")
+        with open("dataset/entities.json") as f:
+            entities = json.load(f)
+        with open("dataset/intents.json") as f:
+            intents = json.load(f)
+        os.makedirs("models", exist_ok=True)
+        _entity_extractor = MultiLabelExtractor()
+        _entity_extractor.fit(entities, is_intent=False)
+        _entity_extractor.save(_ENTITY_MODEL_PATH)
+        _intent_extractor = MultiLabelExtractor()
+        _intent_extractor.fit(intents, is_intent=True)
+        _intent_extractor.save(_INTENT_MODEL_PATH)
+
+    return _entity_extractor, _intent_extractor
+
+
+# ------------------------------------------------------------------
 # Node: entity & intent extraction
 # ------------------------------------------------------------------
 
 async def entity_extraction_node(state: GraphState) -> GraphState:
     logger.info("---ENTITY EXTRACTION NODE---")
-    from utils import extract_entities, detect_intent_mode, Entity as EntityModel
+    from utils import detect_intent_mode
 
     question = state["question"]
+    entity_ext, intent_ext = _get_extractors()
 
-    with open("dataset/entities.json") as f:
-        raw_entities = json.load(f)
-    with open("dataset/intents.json") as f:
-        raw_intents = json.load(f)
-
-    entity_models = [EntityModel(**e) for e in raw_entities]
-    intent_models = [EntityModel(**i) for i in raw_intents]
-
-    matched_entities = extract_entities(question, entity_models, threshold=55)
-    matched_intents  = extract_entities(question, intent_models,  threshold=55)
+    matched_entities = entity_ext.predict_single(question, threshold=0.3)
+    matched_intents  = intent_ext.predict_single(question, threshold=0.3)
 
     # ── Slot continuation ────────────────────────────────────────────
     prev_missing = state.get("missing_slots", [])

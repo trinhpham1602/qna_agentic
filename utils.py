@@ -1,35 +1,66 @@
+from __future__ import annotations
+
+import logging
+import random
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Union
 import re
-from dataclasses import dataclass, field
-from rapidfuzz import fuzz
-import json
-import logging
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Verbs that signal the user wants to perform an action (booking mode)
 BOOKING_VERBS: set[str] = {
     "dat", "huy", "doi", "hoan", "bao_luu", "mua_them",
     "chon", "dang_ky", "thanh_toan", "check_in", "bao_cao",
 }
-# Verbs that signal the user wants information (Q&A mode)
 QNA_VERBS: set[str] = {"hoi", "kiem_tra", "tim_kiem", "xac_nhan"}
 
-# Regex patterns for booking-mode detection (fallback when no intents matched)
-_BOOKING_RE = re.compile(
-    r"\b(đặt|book|mua vé|mua thêm|thêm hành lý|hủy|cancel|đổi vé|đổi ngày|"
-    r"hoàn vé|hoàn tiền|refund|bảo lưu|chọn ghế|seat selection|thanh toán|"
-    r"check.in|đăng ký dịch vụ|báo cáo|khiếu nại)\b",
-    re.IGNORECASE,
-)
-_QNA_RE = re.compile(
-    r"\b(hỏi|cho hỏi|muốn biết|thắc mắc|chính sách|quy định|điều khoản|"
-    r"phí là bao nhiêu|giá vé|hành lý được|được không|có được không|"
-    r"giấy tờ|cần gì|như thế nào|tìm hiểu|tra cứu)\b",
-    re.IGNORECASE,
-)
+_ENTITY_TEMPLATES: list[str] = [
+    "{anchor}",
+    "hỏi về {anchor}",
+    "thông tin về {anchor}",
+    "quy định {anchor}",
+    "chính sách {anchor}",
+    "tôi muốn biết về {anchor}",
+    "{anchor} như thế nào",
+    "cho hỏi {anchor}",
+    "{anchor} là gì",
+    "{anchor} được không",
+    "tôi có {anchor} không",
+    "kiểm tra {anchor}",
+    "{anchor} của VietJet",
+    "VietJet {anchor}",
+    "liên quan đến {anchor}",
+    "{anchor} bao nhiêu",
+    "phí {anchor}",
+    "{anchor} tính thế nào",
+    "{anchor} có phí không",
+    "cần biết {anchor}",
+]
+
+_INTENT_TEMPLATES: list[str] = [
+    "{anchor}",
+    "tôi muốn {anchor}",
+    "làm sao để {anchor}",
+    "cần {anchor}",
+    "mình muốn {anchor}",
+    "{anchor} được không",
+    "có thể {anchor} không",
+    "tôi cần {anchor}",
+    "muốn {anchor}",
+    "mình cần {anchor}",
+    "tôi {anchor}",
+    "hướng dẫn {anchor}",
+    "{anchor} như thế nào",
+    "cách {anchor}",
+    "thủ tục {anchor}",
+    "{anchor} ở đâu",
+    "{anchor} khi nào",
+    "{anchor} bao nhiêu",
+    "cho tôi {anchor}",
+    "mình {anchor} được không",
+]
 
 
 @dataclass
@@ -49,94 +80,228 @@ def normalize(text: str) -> str:
     return text.strip()
 
 
-def extract_entities(text: str, anchor_dataset: List[Entity], threshold: int = 60) -> List[dict]:
-    """
-    Anchor-first sliding window matching.
+class MultiLabelExtractor:
+    def __init__(self) -> None:
+        self.vectorizer = None
+        self.classifier = None
+        self.binarizer = None
+        self.label_meta: dict[str, dict] = {}
+        self._fitted: bool = False
 
-    For each anchor, slides a window of the same token length across the
-    normalized text. Returns the best match per canonical with its metadata
-    (type, risk, label) included so callers don't need a second lookup.
+    def _build_samples(
+        self,
+        dataset: list[dict],
+        is_intent: bool,
+    ) -> tuple[list[str], list[list[str]]]:
+        templates = _INTENT_TEMPLATES if is_intent else _ENTITY_TEMPLATES
+        texts: list[str] = []
+        label_sets: list[list[str]] = []
 
-    Complexity: O(entities × anchors × n)
-    """
-    norm_text = normalize(text)
-    tokens = norm_text.split()
-    n = len(tokens)
+        per_item_samples: dict[str, list[str]] = {}
 
-    best: dict[str, dict] = {}
+        for item in dataset:
+            item_id = str(item["id"])
+            self.label_meta[item_id] = {
+                "type": item.get("type", "entity"),
+                "risk": item.get("risk", 1),
+                "label": item.get("label", item.get("canonical", "")),
+            }
+            anchors = item.get("anchors", [item.get("canonical", "")])
+            item_samples: list[str] = []
+            for anchor in anchors:
+                for tmpl in templates:
+                    sample = tmpl.format(anchor=anchor)
+                    texts.append(sample)
+                    label_sets.append([item_id])
+                    item_samples.append(sample)
+            per_item_samples[item_id] = item_samples
 
-    for entity in anchor_dataset:
-        for anchor in entity.anchors:
-            norm_anchor = normalize(anchor)
-            anchor_tokens = norm_anchor.split()
-            window = len(anchor_tokens)
-            if window == 0 or window > n:
-                continue
+        all_ids = list(per_item_samples.keys())
+        if len(all_ids) >= 2:
+            for _ in range(300):
+                id_a, id_b = random.sample(all_ids, 2)
+                sample_a = random.choice(per_item_samples[id_a])
+                sample_b = random.choice(per_item_samples[id_b])
+                combined = sample_a + " và " + sample_b
+                texts.append(combined)
+                label_sets.append([id_a, id_b])
 
-            for i in range(n - window + 1):
-                phrase = " ".join(tokens[i : i + window])
-                score = fuzz.token_sort_ratio(phrase, norm_anchor)
+        return texts, label_sets
 
-                prev = best.get(entity.canonical)
-                if prev is None or score > prev["best_score"]:
-                    best[entity.canonical] = {
-                        "canonical": entity.canonical,
-                        "best_score": score,
-                        "matched_anchor": anchor,
-                        "matched_span": phrase,
-                        "type": entity.type,
-                        "risk": entity.risk,
-                        "label": entity.label,
+    def fit(self, dataset: list[dict], is_intent: bool = False) -> "MultiLabelExtractor":
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.multiclass import OneVsRestClassifier
+        from sklearn.preprocessing import MultiLabelBinarizer
+
+        texts, label_sets = self._build_samples(dataset, is_intent)
+
+        self.vectorizer = TfidfVectorizer(
+            analyzer="char_wb", ngram_range=(2, 5), max_features=50000
+        )
+        self.binarizer = MultiLabelBinarizer()
+        self.classifier = OneVsRestClassifier(
+            LogisticRegression(max_iter=1000, C=1.0, solver="lbfgs")
+        )
+
+        X = self.vectorizer.fit_transform(texts)
+        Y = self.binarizer.fit_transform(label_sets)
+        self.classifier.fit(X, Y)
+        self._fitted = True
+
+        logger.info(
+            "MultiLabelExtractor fitted: %d samples, %d classes",
+            len(texts),
+            len(self.binarizer.classes_),
+        )
+        return self
+
+    def train_evaluate(
+        self,
+        dataset: list[dict],
+        is_intent: bool = False,
+        test_size: float = 0.2,
+        seed: int = 42,
+    ) -> dict:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.model_selection import train_test_split
+        from sklearn.multiclass import OneVsRestClassifier
+        from sklearn.preprocessing import MultiLabelBinarizer
+
+        texts, label_sets = self._build_samples(dataset, is_intent)
+
+        train_texts, test_texts, train_labels, test_labels = train_test_split(
+            texts, label_sets, test_size=test_size, random_state=seed
+        )
+
+        self.vectorizer = TfidfVectorizer(
+            analyzer="char_wb", ngram_range=(2, 5), max_features=50000
+        )
+        self.binarizer = MultiLabelBinarizer()
+        self.classifier = OneVsRestClassifier(
+            LogisticRegression(max_iter=1000, C=1.0, solver="lbfgs")
+        )
+
+        X_train = self.vectorizer.fit_transform(train_texts)
+        Y_train = self.binarizer.fit_transform(train_labels)
+        self.classifier.fit(X_train, Y_train)
+        self._fitted = True
+
+        metrics = self.evaluate(test_texts, test_labels)
+        metrics["train_size"] = len(train_texts)
+        metrics["test_size"] = len(test_texts)
+        return metrics
+
+    def predict_single(self, text: str, threshold: float = 0.3) -> list[dict]:
+        if not self._fitted:
+            raise RuntimeError("MultiLabelExtractor is not fitted yet.")
+
+        X = self.vectorizer.transform([text])
+        proba = self.classifier.predict_proba(X)[0]
+        classes = self.binarizer.classes_
+
+        results = []
+        for cls, prob in zip(classes, proba):
+            if prob >= threshold:
+                meta = self.label_meta.get(cls, {})
+                results.append(
+                    {
+                        "canonical": cls,
+                        "confidence": float(prob),
+                        "type": meta.get("type", "entity"),
+                        "risk": meta.get("risk", 1),
+                        "label": meta.get("label", cls),
+                        "best_score": float(prob),
+                        "matched_span": text,
                     }
+                )
 
-    return [v for v in best.values() if v["best_score"] >= threshold]
+        if not results:
+            best_idx = int(proba.argmax())
+            cls = classes[best_idx]
+            prob = float(proba[best_idx])
+            meta = self.label_meta.get(cls, {})
+            results.append(
+                {
+                    "canonical": cls,
+                    "confidence": prob,
+                    "type": meta.get("type", "entity"),
+                    "risk": meta.get("risk", 1),
+                    "label": meta.get("label", cls),
+                    "best_score": prob,
+                    "matched_span": text,
+                }
+            )
 
+        results.sort(key=lambda x: x["confidence"], reverse=True)
+        return results
 
-def detect_intent_mode(
-    text: str,
-    matched_intents: list[dict] | None = None,
-) -> dict:
-    """
-    Detect whether the user wants to perform a booking action or just get information.
+    def evaluate(
+        self,
+        test_texts: list[str],
+        test_labels: list[list[str]],
+        threshold: float = 0.3,
+    ) -> dict:
+        from sklearn.metrics import (
+            accuracy_score,
+            classification_report,
+            hamming_loss,
+        )
 
-    Primary signal: verb canonical of matched intents (most reliable).
-    Fallback: regex pattern scoring on raw text.
+        X_test = self.vectorizer.transform(test_texts)
+        proba = self.classifier.predict_proba(X_test)
+        Y_pred = (proba >= threshold).astype(int)
+        Y_true = self.binarizer.transform(test_labels)
 
-    Returns:
-        {
-            "mode": "booking" | "qna" | "ambiguous",
-            "confidence": float (0.0–1.0),
-            "booking_score": int,
-            "qna_score": int,
+        report = classification_report(
+            Y_true, Y_pred, output_dict=True, zero_division=0
+        )
+        exact = float(accuracy_score(Y_true, Y_pred))
+        hl = float(hamming_loss(Y_true, Y_pred))
+        micro_f1 = report.get("micro avg", {}).get("f1-score", 0.0)
+        macro_f1 = report.get("macro avg", {}).get("f1-score", 0.0)
+
+        per_class = {}
+        for cls_idx, cls_name in enumerate(self.binarizer.classes_):
+            cls_str = str(cls_idx)
+            if cls_str in report:
+                per_class[cls_name] = report[cls_str]
+
+        return {
+            "exact_match": exact,
+            "hamming_loss": hl,
+            "micro_f1": float(micro_f1),
+            "macro_f1": float(macro_f1),
+            "per_class": per_class,
         }
-    """
-    booking_score = 0
-    qna_score = 0
 
-    # Primary: count booking vs qna verbs in matched intents
-    if matched_intents:
-        for intent in matched_intents:
-            canon = intent.get("canonical", "")
-            if canon in BOOKING_VERBS:
-                booking_score += 2
-            elif canon in QNA_VERBS:
-                qna_score += 2
+    def save(self, path: str) -> None:
+        import joblib
 
-    # Fallback: regex scoring on raw text
-    if booking_score == 0 and qna_score == 0:
-        booking_score = len(_BOOKING_RE.findall(text))
-        qna_score = len(_QNA_RE.findall(text))
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(
+            {
+                "vectorizer": self.vectorizer,
+                "classifier": self.classifier,
+                "binarizer": self.binarizer,
+                "label_meta": self.label_meta,
+            },
+            path,
+        )
 
-    total = booking_score + qna_score
-    if total == 0:
-        return {"mode": "ambiguous", "confidence": 0.5, "booking_score": 0, "qna_score": 0}
+    @classmethod
+    def load(cls, path: str) -> "MultiLabelExtractor":
+        import joblib
 
-    booking_ratio = booking_score / total
-    if booking_ratio >= 0.65:
-        return {"mode": "booking", "confidence": round(booking_ratio, 3), "booking_score": booking_score, "qna_score": qna_score}
-    if booking_ratio <= 0.35:
-        return {"mode": "qna", "confidence": round(1 - booking_ratio, 3), "booking_score": booking_score, "qna_score": qna_score}
-    return {"mode": "ambiguous", "confidence": round(max(booking_ratio, 1 - booking_ratio), 3), "booking_score": booking_score, "qna_score": qna_score}
+        data = joblib.load(path)
+        obj = cls()
+        obj.vectorizer = data["vectorizer"]
+        obj.classifier = data["classifier"]
+        obj.binarizer = data["binarizer"]
+        obj.label_meta = data["label_meta"]
+        obj._fitted = True
+        return obj
 
 
 _CLAUSE_SPLIT_RE = re.compile(
@@ -148,12 +313,6 @@ _CLAUSE_SPLIT_RE = re.compile(
 
 
 def split_into_clauses(text: str) -> list[str]:
-    """
-    Split a Vietnamese compound query into individual intent clauses.
-
-    Splits on: rồi, sau đó, xong, vs, đồng thời, và <verb>, cũng <verb>, thêm <verb>
-    Short fragments (< 2 tokens) are merged back to avoid noise.
-    """
     raw = _CLAUSE_SPLIT_RE.split(text)
     clauses: list[str] = []
     pending = ""
@@ -175,54 +334,71 @@ def split_into_clauses(text: str) -> list[str]:
     return clauses if clauses else [text]
 
 
+def detect_intent_mode(text: str, matched_intents: list[dict] | None = None) -> dict:
+    booking_score = 0.0
+    qna_score = 0.0
+    if matched_intents:
+        for i in matched_intents:
+            w = i.get("confidence", i.get("best_score", 50) / 100)
+            if i.get("canonical", "") in BOOKING_VERBS:
+                booking_score += w
+            elif i.get("canonical", "") in QNA_VERBS:
+                qna_score += w
+    total = booking_score + qna_score
+    if total == 0:
+        return {"mode": "ambiguous", "confidence": 0.5, "booking_score": 0.0, "qna_score": 0.0}
+    ratio = booking_score / total
+    if ratio >= 0.6:
+        return {"mode": "booking", "confidence": round(ratio, 3), "booking_score": booking_score, "qna_score": qna_score}
+    if ratio <= 0.4:
+        return {"mode": "qna", "confidence": round(1 - ratio, 3), "booking_score": booking_score, "qna_score": qna_score}
+    return {"mode": "ambiguous", "confidence": round(max(ratio, 1 - ratio), 3), "booking_score": booking_score, "qna_score": qna_score}
+
+
 def extract_multi_intent(
     text: str,
-    intent_dataset: List["Entity"],
-    entity_dataset: List["Entity"],
-    threshold: int = 50,
+    entity_extractor: "MultiLabelExtractor",
+    intent_extractor: "MultiLabelExtractor",
+    threshold: float = 0.3,
 ) -> list[dict]:
-    """
-    Extract multiple (clause, intents, entities) tuples for compound queries.
-
-    For single-clause queries returns a list with one element.
-    Each element:
-        {
-            "clause":   str,          # the clause text
-            "intents":  list[dict],   # matched verb intents for this clause
-            "entities": list[dict],   # matched noun entities for this clause
-        }
-    """
     clauses = split_into_clauses(text)
-
-    results: list[dict] = []
+    results = []
     for clause in clauses:
-        intents  = extract_entities(clause, intent_dataset,  threshold)
-        entities = extract_entities(clause, entity_dataset,  threshold)
+        intents = intent_extractor.predict_single(clause, threshold)
+        entities = entity_extractor.predict_single(clause, threshold)
         if intents or entities:
             results.append({"clause": clause, "intents": intents, "entities": entities})
-
-    # Fallback: whole text if no clause produced results
     if not results:
         results.append({
-            "clause":   text,
-            "intents":  extract_entities(text, intent_dataset,  threshold),
-            "entities": extract_entities(text, entity_dataset, threshold),
+            "clause": text,
+            "intents": intent_extractor.predict_single(text, threshold),
+            "entities": entity_extractor.predict_single(text, threshold),
         })
-
     return results
 
 
 if __name__ == "__main__":
+    import json
+    from pathlib import Path
+
     with open("dataset/entities.json") as f:
-        raw = json.load(f)
-    dataset = [Entity(**item) for item in raw]
-
+        entity_data = json.load(f)
     with open("dataset/intents.json") as f:
-        raw_intents = json.load(f)
-    intent_dataset = [Entity(**item) for item in raw_intents]
+        intent_data = json.load(f)
 
-    q = "vj co hoan ve được khong?"
-    entities = extract_entities(q, dataset, threshold=55)
-    intents = extract_entities(q, intent_dataset, threshold=55)
-    logger.info("Entities: %s", entities)
-    logger.info("Intents:  %s", intents)
+    print("=== Training Entity Extractor ===")
+    entity_ext = MultiLabelExtractor()
+    entity_ext.fit(entity_data, is_intent=False)
+    intent_ext = MultiLabelExtractor()
+    intent_ext.fit(intent_data, is_intent=True)
+    tests = [
+        "qui định phụ nữ mang thai và hanh lý"
+    ]
+    for q in tests:
+        ents = entity_ext.predict_single(q, threshold=0.3)
+        ints = intent_ext.predict_single(q, threshold=0.3)
+        mode = detect_intent_mode(q, ints)
+        print(f"\nQ: {q}")
+        print("  Intents : " + str([(i["canonical"], f"{i['confidence']:.2f}") for i in ints[:3]]))
+        print("  Entities: " + str([(e["canonical"], f"{e['confidence']:.2f}") for e in ents[:3]]))
+        print(f"  Mode    : {mode['mode']} ({mode['confidence']:.2f})")
