@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import List, Union
 import re
 
+from graph_db import KnowledgeGraph
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -377,28 +379,115 @@ def extract_multi_intent(
     return results
 
 
+def find_paths(
+    seed_text: str,
+    entity_extractor: "MultiLabelExtractor",
+    intent_extractor: "MultiLabelExtractor",
+    kg: "KnowledgeGraph",
+    entity_labels: dict[str, str] | None = None,
+    intent_labels: dict[str, str] | None = None,
+    depth: int = 2,
+    threshold: float = 0.3,
+    relation_filter: set[str] | None = None,
+) -> dict:
+    """
+    Extract entities/intents from text, then traverse the KG from each matched
+    entity/intent node.  Returns a summary dict with matched labels and found paths.
+    """
+    entity_labels = entity_labels or {}
+    intent_labels = intent_labels or {}
+
+    matched_entities = entity_extractor.predict_single(seed_text, threshold)
+    matched_intents  = intent_extractor.predict_single(seed_text, threshold)
+
+    seed_nodes: set[str] = set()
+    for e in matched_entities:
+        seed_nodes.add(e["canonical"])
+    for i in matched_intents:
+        seed_nodes.add(i["canonical"])
+
+    triplets = kg.traverse(seed_nodes, depth=depth, relation_filter=relation_filter)
+
+    def _label(node_id: str) -> str:
+        return entity_labels.get(node_id) or intent_labels.get(node_id) or node_id
+
+    paths = [
+        {
+            "from": t[0], "from_label": _label(t[0]),
+            "relation": t[1], "relation_label": intent_labels.get(t[1], t[1]),
+            "to": t[2], "to_label": _label(t[2]),
+        }
+        for t in triplets
+    ]
+
+    return {
+        "seed_text": seed_text,
+        "entities": [(e["canonical"], round(e["confidence"], 2)) for e in matched_entities],
+        "intents":  [(i["canonical"], round(i["confidence"], 2)) for i in matched_intents],
+        "seed_nodes": sorted(seed_nodes),
+        "paths": paths,
+    }
+
+
 if __name__ == "__main__":
     import json
-    from pathlib import Path
 
     with open("dataset/entities.json") as f:
         entity_data = json.load(f)
     with open("dataset/intents.json") as f:
         intent_data = json.load(f)
 
-    print("=== Training Entity Extractor ===")
+    print("=== Training Extractors ===")
     entity_ext = MultiLabelExtractor()
     entity_ext.fit(entity_data, is_intent=False)
     intent_ext = MultiLabelExtractor()
     intent_ext.fit(intent_data, is_intent=True)
+
+    kg = KnowledgeGraph.from_dataset("dataset/claude_dataset")
+
+    entity_labels = {e["id"]: e.get("label", e["id"]) for e in entity_data}
+    intent_labels = {i["id"]: i.get("label", i["id"]) for i in intent_data}
+
     tests = [
-        "qui định phụ nữ mang thai và hanh lý"
+        "quy định phụ nữ mang thai và hành lý xách tay",
+        "phí đổi vé skyboss nội địa",
+        "trẻ đi một mình cần giấy tờ gì",
+        "mua thêm ký gửi 20kg vietjet",
+        "nâng hạng lên deluxe mất bao nhiêu",
+        "mã khuyến mãi nhập ở đâu",
     ]
+
+    print("\n" + "=" * 60)
+    print("=== Multi-Intent / Multi-Entity Extraction ===")
+    print("=" * 60)
     for q in tests:
         ents = entity_ext.predict_single(q, threshold=0.3)
         ints = intent_ext.predict_single(q, threshold=0.3)
         mode = detect_intent_mode(q, ints)
         print(f"\nQ: {q}")
-        print("  Intents : " + str([(i["canonical"], f"{i['confidence']:.2f}") for i in ints[:3]]))
-        print("  Entities: " + str([(e["canonical"], f"{e['confidence']:.2f}") for e in ents[:3]]))
+        print("  Intents : " + ", ".join(f"{i['canonical']}({i['confidence']:.2f})" for i in ints[:3]))
+        print("  Entities: " + ", ".join(f"{e['canonical']}({e['confidence']:.2f})" for e in ents[:3]))
         print(f"  Mode    : {mode['mode']} ({mode['confidence']:.2f})")
+
+    print("\n" + "=" * 60)
+    print("=== KG Path Traversal ===")
+    print("=" * 60)
+    path_tests = [
+        ("phụ nữ mang thai", None),
+        ("đổi vé nội địa eco", None),
+        ("pin dự phòng xách tay", None),
+        ("nâng hạng skyboss", None),
+    ]
+    for text, rel_filter in path_tests:
+        result = find_paths(
+            text, entity_ext, intent_ext, kg,
+            entity_labels=entity_labels, intent_labels=intent_labels,
+            depth=2, relation_filter=rel_filter,
+        )
+        print(f"\nSeed: \"{result['seed_text']}\"")
+        print(f"  Nodes : {result['seed_nodes']}")
+        if result["paths"]:
+            for p in result["paths"]:
+                print(f"  {p['from_label']} --[{p['relation']}]--> {p['to_label']}")
+        else:
+            print("  (no paths found)")

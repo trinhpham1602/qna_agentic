@@ -45,6 +45,11 @@ INTENT_CATEGORY_MAP: dict[str, str] = {
     "select_seat":             "Dịch vụ bổ sung",
     "check_in":                "Thủ tục",
     "check_policy":            "Chính sách",
+    "upgrade_class":           "Dịch vụ bổ sung",
+    "check_booking":           "Đặt vé",
+    "print_ticket":            "Thủ tục",
+    "apply_promo":             "Thanh toán & giá vé",
+    "buy_insurance":           "Dịch vụ bổ sung",
 }
 
 # ------------------------------------------------------------------
@@ -52,21 +57,26 @@ INTENT_CATEGORY_MAP: dict[str, str] = {
 # Context-independent mappings (one-to-one)
 # ------------------------------------------------------------------
 VERB_CONCEPT_MAP: dict[str, str] = {
-    "dat":        "search_flight",
-    "huy":        "refund",
-    "doi":        "reissue",
-    "hoan":       "refund",
-    "bao_luu":    "refund",
-    "mua_them":   "add_baggage",
-    "chon":       "select_seat",
-    "dang_ky":    "special_service_request",
-    "thanh_toan": "check_payment",
-    "check_in":   "check_in",
-    "hoi":        "check_policy",      # default; overridden by entity context
-    "kiem_tra":   "check_baggage",     # default; overridden by entity context
-    "tim_kiem":   "search_flight",
-    "bao_cao":    "payment_issue",
-    "xac_nhan":   "check_payment",
+    "dat":           "search_flight",
+    "huy":           "refund",
+    "doi":           "reissue",
+    "hoan":          "refund",
+    "bao_luu":       "refund",
+    "mua_them":      "add_baggage",
+    "chon":          "select_seat",
+    "dang_ky":       "special_service_request",
+    "thanh_toan":    "check_payment",
+    "check_in":      "check_in",
+    "hoi":           "check_policy",      # default; overridden by entity context
+    "kiem_tra":      "check_baggage",     # default; overridden by entity context
+    "tim_kiem":      "search_flight",
+    "bao_cao":       "payment_issue",
+    "xac_nhan":      "check_payment",
+    "nang_hang":     "upgrade_class",
+    "xem_lich":      "check_booking",
+    "in_ve":         "print_ticket",
+    "ap_ma":         "apply_promo",
+    "mua_bao_hiem":  "buy_insurance",
 }
 
 # Context rules for verbs whose concept depends on entity type / id
@@ -77,11 +87,13 @@ _VERB_CONTEXT_RULES: dict[str, dict[str, str]] = {
         "payment_method":     "check_payment",
         "passenger_type":     "check_special_passenger",
         "reissue_type":       "reissue",
-        "giay_to":            "check_document",
-        "giao_dich":          "payment_issue",
-        "hanh_ly":            "check_baggage",
-        "phi":                "check_payment",
-        "chinh_sach":         "check_policy",
+        "document_type":      "check_document",
+        "baggage_type":       "check_baggage",
+        "restricted_item":    "check_baggage",
+        "fee_type":           "check_payment",
+        "seat_type":          "select_seat",
+        "service_type":       "special_service_request",
+        "insurance_type":     "buy_insurance",
         "bua_an":             "check_policy",
         "_default":           "check_policy",
     },
@@ -89,13 +101,24 @@ _VERB_CONTEXT_RULES: dict[str, dict[str, str]] = {
         "payment_issue_type": "payment_issue",
         "payment_method":     "check_payment",
         "passenger_type":     "check_special_passenger",
-        "giay_to":            "check_document",
-        "giao_dich":          "check_payment",
-        "hanh_ly":            "check_baggage",
-        "phi":                "check_payment",
-        "chinh_sach":         "check_policy",
+        "document_type":      "check_document",
+        "baggage_type":       "check_baggage",
+        "restricted_item":    "check_baggage",
+        "fee_type":           "check_payment",
+        "seat_type":          "select_seat",
+        "service_type":       "special_service_request",
+        "insurance_type":     "buy_insurance",
         "bua_an":             "check_policy",
         "_default":           "check_policy",
+    },
+    "mua_them": {
+        "baggage_type":   "add_baggage",
+        "insurance_type": "buy_insurance",
+        "_default":       "add_baggage",
+    },
+    "chon": {
+        "seat_type": "select_seat",
+        "_default":  "select_seat",
     },
 }
 
@@ -159,11 +182,12 @@ INTENT_SLOTS: dict[str, dict] = {
         },
     },
     "add_baggage": {
-        "required": ["airline", "cabin_class", "route"],
+        "required": ["airline", "baggage_type", "cabin_class", "route"],
         "questions": {
-            "airline":     "Bạn đang hỏi về hãng hàng không nào?",
-            "cabin_class": "Bạn đang dùng hạng vé nào?",
-            "route":       "Chặng bay của bạn là nội địa hay quốc tế?",
+            "airline":      "Bạn đang hỏi về hãng hàng không nào?",
+            "baggage_type": "Bạn muốn mua thêm hành lý xách tay hay ký gửi?",
+            "cabin_class":  "Bạn đang dùng hạng vé nào?",
+            "route":        "Chặng bay của bạn là nội địa hay quốc tế?",
         },
     },
     "no_show": {
@@ -204,12 +228,28 @@ INTENT_SLOTS: dict[str, dict] = {
             "payment_issue_type": "Bạn gặp vấn đề gì với thanh toán?\n• Lỗi giao dịch / thanh toán thất bại\n• Đã trừ tiền nhưng chưa nhận vé\n• Bị trừ tiền 2 lần",
         },
     },
+    "select_seat": {
+        "required": ["seat_type"],
+        "questions": {
+            "seat_type": "Bạn muốn chọn loại ghế nào?\n• Ghế cửa sổ\n• Ghế lối đi\n• Ghế hàng đầu\n• Ghế thoát hiểm",
+        },
+    },
+    "upgrade_class": {
+        "required": ["airline", "cabin_class"],
+        "questions": {
+            "airline":     "Bạn muốn nâng hạng vé của hãng nào?",
+            "cabin_class": "Bạn muốn nâng lên hạng nào? (Eco / Deluxe / SkyBoss)",
+        },
+    },
     # Không cần slot bổ sung
     "check_payment":  {"required": []},
     "check_policy":   {"required": []},
     "search_flight":  {"required": []},
-    "select_seat":    {"required": []},
     "check_in":       {"required": []},
+    "check_booking":  {"required": []},
+    "print_ticket":   {"required": []},
+    "apply_promo":    {"required": []},
+    "buy_insurance":  {"required": []},
 }
 
 # entity.type → tên slot
@@ -221,6 +261,13 @@ ENTITY_TYPE_TO_SLOT: dict[str, str] = {
     "reissue_type":       "reissue_type",
     "payment_method":     "payment_method",
     "payment_issue_type": "payment_issue_type",
+    "baggage_type":       "baggage_type",
+    "seat_type":          "seat_type",
+    "document_type":      "document_type",
+    "fee_type":           "fee_type",
+    "service_type":       "service_type",
+    "insurance_type":     "insurance_type",
+    "promo_type":         "promo_type",
 }
 
 # Nhãn tiếng Việt cho từng giá trị slot
@@ -232,6 +279,13 @@ SLOT_LABELS: dict[str, dict[str, str]] = {
     "reissue_type":       {"change_time": "đổi giờ/ngày bay", "change_route": "đổi hành trình", "change_name": "đổi tên hành khách"},
     "payment_method":     {"momo": "Ví MoMo", "bank_card": "Thẻ ngân hàng", "vnpay": "VNPay", "bank_transfer": "Chuyển khoản"},
     "payment_issue_type": {"txn_failed": "Lỗi giao dịch", "ticket_not_received": "Chưa nhận vé", "double_charge": "Trừ tiền 2 lần"},
+    "baggage_type":       {"xach_tay": "Hành lý xách tay", "ky_gui": "Hành lý ký gửi"},
+    "seat_type":          {"ghe_cua_so": "Ghế cửa sổ", "ghe_loi_di": "Ghế lối đi", "ghe_hang_dau": "Ghế hàng đầu", "ghe_thoat_hiem": "Ghế thoát hiểm"},
+    "document_type":      {"cmnd_cccd": "CMND/CCCD", "ho_chieu": "Hộ chiếu", "visa": "Visa", "giay_khai_sinh": "Giấy khai sinh", "giay_bac_si": "Giấy bác sĩ"},
+    "fee_type":           {"phi_doi_ve": "Phí đổi vé", "phi_hoan_ve": "Phí hoàn vé", "phi_no_show": "Phí bỏ chỗ", "phi_qua_can": "Phí quá cân", "phi_nang_hang": "Phí nâng hạng"},
+    "service_type":       {"dich_vu_xe_lan": "Dịch vụ xe lăn", "dich_vu_um": "Dịch vụ trẻ đơn thân"},
+    "insurance_type":     {"bao_hiem_du_lich": "Bảo hiểm du lịch"},
+    "promo_type":         {"ma_khuyen_mai": "Mã khuyến mãi"},
 }
 
 # Pre-computed related questions per intent — zero LLM cost
@@ -306,42 +360,36 @@ INTENT_SUGGESTIONS: dict[str, list[str]] = {
         "SkyBoss có được ưu tiên chọn ghế không?",
         "Ghế cạnh cửa sổ có thể chọn trước không?",
     ],
+    "upgrade_class": [
+        "Nâng hạng vé VietJet lên SkyBoss mất bao nhiêu?",
+        "Có thể nâng hạng sau khi đã đặt vé không?",
+        "Vé Promo có nâng hạng lên Deluxe được không?",
+    ],
+    "check_booking": [
+        "Xem lịch đặt vé trên app VietJet ở đâu?",
+        "Mã đặt chỗ (booking code) là gì?",
+        "Đặt vé nhưng không nhận được email xác nhận thì làm sao?",
+    ],
+    "print_ticket": [
+        "Tải vé điện tử VietJet ở đâu?",
+        "Vé PDF có dùng được để check-in không?",
+        "Gửi lại vé qua email thì làm thế nào?",
+    ],
+    "apply_promo": [
+        "Mã khuyến mãi VietJet nhập ở bước nào?",
+        "Mã giảm giá có áp dụng cho tất cả hạng vé không?",
+        "Mã voucher có hết hạn không?",
+    ],
+    "buy_insurance": [
+        "Bảo hiểm du lịch VietJet bao gồm những gì?",
+        "Mua bảo hiểm chuyến bay thêm bao nhiêu tiền?",
+        "Bảo hiểm có bồi thường khi hủy chuyến không?",
+    ],
 }
 
 # ------------------------------------------------------------------
 # Graph-path document splitting constants
 # ------------------------------------------------------------------
-
-# field trong data.py  →  (metadata key, label hiển thị)
-CABIN_MAP: dict[str, tuple[str, str]] = {
-    "promo":   ("promo_eco_basic", "Promo"),
-    "eco":     ("eco_standard",    "Eco Standard"),
-    "deluxe":  ("deluxe",          "Deluxe"),
-    "skyboss": ("skyboss",         "SkyBoss"),
-}
-
-# Những intent cần tách doc theo cabin_class
-CABIN_SPLIT_INTENTS = {
-    "check_baggage", "add_baggage", "reissue",
-    "refund", "no_show", "force_majeure",
-}
-
-# Tình huống → passenger_type (cho check_special_passenger)
-SITUATION_PASSENGER_TYPE: dict[str, str] = {
-    "Trẻ em dưới 2 tuổi (Infant)": "infant",
-    "Trẻ em 2–12 tuổi (Child)":    "child",
-    "Phụ nữ mang thai":             "pregnant",
-}
-
-# Tình huống → route (cho check_document)
-SITUATION_ROUTE: dict[str, str] = {
-    "Giấy tờ bay nội địa":  "domestic",
-    "Hộ chiếu bay quốc tế": "international",
-    "Visa quốc tế":          "international",
-}
-
-# Giá trị coi là "không có quy định" → bỏ qua khi tạo doc
-_EMPTY_RULE = {"—", "n/a", "n/a (đã có 30kg)", ""}
 
 # ------------------------------------------------------------------
 # Retrieval state (module-level, shared across requests)
@@ -412,122 +460,35 @@ def get_stats() -> dict:
 
 
 def _build_path_docs(item: dict) -> list[Document]:
-    """
-    Tạo documents theo graph path:
-    - Intents cần cabin_class  → 4 docs (1 per cabin)
-    - check_special_passenger  → 1 doc với passenger_type metadata
-    - check_document           → 1 doc với route metadata
-    - Còn lại                  → 1 doc tổng hợp
-    "Trả lời mẫu" bị loại khỏi nội dung — thuộc system prompt, không nên embed.
-    """
-    intent    = item.get("intent", "")
-    situation = item.get("situation", "")
-    notes     = item.get("important_notes", "")
-
+    cabin_classes = item.get("cabin_classes", [])
+    docs: list[Document] = []
     base_meta = {
-        "category":     item.get("category", ""),
-        "intent":       intent,
         "airline":      "vietjet",
         "risk":         item.get("risk", 1),
         "escalate_when": item.get("escalate_when", ""),
     }
-
-    docs: list[Document] = []
-
-    if intent in CABIN_SPLIT_INTENTS:
-        # ── 4 docs, mỗi doc = 1 path (airline, intent, cabin_class) ──────
-        for cabin, (field, label) in CABIN_MAP.items():
-            rule = (item.get(field) or "").strip()
-            if rule.lower() in _EMPTY_RULE:
-                continue
-            content = (
-                f"Hãng: VietJet | Hạng vé: {label}\n"
-                f"Tình huống: {situation}\n"
-                f"Quy định: {rule}\n"
-                f"Ghi chú: {notes}"
-            )
-            docs.append(Document(
-                page_content=content,
-                metadata={**base_meta, "cabin_class": cabin},
-            ))
-
-    elif intent in ("check_special_passenger", "special_service_request"):
-        # ── 1 doc, thêm passenger_type nếu nhận dạng được ────────────────
-        rule = (item.get("promo_eco_basic") or "").strip()
-        content = (
-            f"Hãng: VietJet\n"
-            f"Tình huống: {situation}\n"
-            f"Quy định: {rule}\n"
-            f"Ghi chú: {notes}"
-        )
-        meta = {**base_meta}
-        pt = SITUATION_PASSENGER_TYPE.get(situation)
-        if pt:
-            meta["passenger_type"] = pt
-        docs.append(Document(page_content=content, metadata=meta))
-
-    elif intent == "check_document":
-        # ── 1 doc, thêm route ─────────────────────────────────────────────
-        rule = (item.get("promo_eco_basic") or "").strip()
-        content = (
-            f"Hãng: VietJet\n"
-            f"Tình huống: {situation}\n"
-            f"Quy định: {rule}\n"
-            f"Ghi chú: {notes}"
-        )
-        meta = {**base_meta}
-        rt = SITUATION_ROUTE.get(situation)
-        if rt:
-            meta["route"] = rt
-        docs.append(Document(page_content=content, metadata=meta))
-
-    else:
-        # ── 1 doc tổng hợp (check_payment, payment_issue, …) ─────────────
-        rules: dict[str, str] = {
-            "Promo":   item.get("promo_eco_basic", ""),
-            "Eco":     item.get("eco_standard", ""),
-            "Deluxe":  item.get("deluxe", ""),
-            "SkyBoss": item.get("skyboss", ""),
-        }
-        unique = list(dict.fromkeys(
-            v.strip() for v in rules.values()
-            if v and v.strip().lower() not in _EMPTY_RULE
-        ))
-        rule_text = unique[0] if len(unique) == 1 else " | ".join(
-            f"{k}: {v}" for k, v in rules.items()
-            if v and v.strip().lower() not in _EMPTY_RULE
-        )
-        content = (
-            f"Hãng: VietJet\n"
-            f"Tình huống: {situation}\n"
-            f"Quy định: {rule_text}\n"
-            f"Ghi chú: {notes}"
-        )
+    for e in cabin_classes:
+        content = f"""Câu hỏi tình huống: {item.get("question", "")} {e.get("name", "")}.
+        \nTrả lời: {e.get("content", "")}"""
         docs.append(Document(page_content=content, metadata=base_meta))
-
+  
     return docs
 
-
 def ingest_default_faq(force_reingest: bool = False):
-    from data import faq_data
-
     docs: list[Document] = []
-    for item in faq_data:
-        docs.extend(_build_path_docs(item))
+    with open("faq_data.json", "r") as f:
+        faq_data = json.load(f)
+        for item in faq_data:
+            docs.extend(_build_path_docs(item))
 
-    _all_documents.extend(docs)
-    _rebuild_bm25()
+        _all_documents.extend(docs)
+        _rebuild_bm25()
 
-    try:
-        already_populated = bool(vector_store.similarity_search("test", k=1))
-    except Exception:
-        already_populated = False
-
-    if force_reingest or not already_populated:
-        vector_store.add_documents(docs)
-        logger.info(f"Ingested {len(docs)} path-split docs to vector store")
-    else:
-        logger.info(f"Vector store already populated — loaded {len(docs)} path-split docs into memory only")
+        if force_reingest:
+            vector_store.add_documents(docs)
+            logger.info(f"Ingested {len(docs)} path-split docs to vector store")
+        else:
+            logger.info(f"Vector store already populated — loaded {len(docs)} path-split docs into memory only")
 
 
 # ------------------------------------------------------------------
@@ -974,7 +935,6 @@ async def retrieve_node(state: GraphState) -> GraphState:
 
     reranked = [doc_map[k] for k, _ in sorted(scores.items(), key=lambda x: x[1], reverse=True)]
     best     = reranked[:CONTEXT_DOC_LIMIT]
-
     if not best:
         logger.warning("No documents retrieved")
         return {"documents": []}

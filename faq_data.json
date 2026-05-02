@@ -1,0 +1,758 @@
+[
+  {
+    "question": "Hành lý xách tay",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "7kg · 1 kiện 56x36x23cm. Thêm 1 phụ kiện nhỏ (túi xách, balo nhỏ) được mang kèm"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "7kg · 1 kiện 56x36x23cm. Thêm 1 phụ kiện nhỏ (túi xách, balo nhỏ) được mang kèm"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "7kg · 1 kiện 56x36x23cm. Thêm 1 phụ kiện nhỏ (túi xách, balo nhỏ) được mang kèm"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "10kg · 1 kiện 56x36x23cm. Thêm 1 phụ kiện nhỏ (túi xách, balo nhỏ) được mang kèm"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Hành lý ký gửi",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không có. Promo & Eco cần mua thêm nếu có nhu cầu ký gửi"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không có. Promo & Eco cần mua thêm nếu có nhu cầu ký gửi"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Có (theo gói mua). Promo & Eco cần mua thêm nếu có nhu cầu ký gửi"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "30kg. Promo & Eco cần mua thêm nếu có nhu cầu ký gửi"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Mua thêm ký gửi — giá",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Tùy tuyến tùy thời điểm. Mua lúc đặt vé thường rẻ hơn tại sân bay"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Tùy tuyến tùy thời điểm. Mua lúc đặt vé thường rẻ hơn tại sân bay"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Tùy tuyến tùy thời điểm. Mua lúc đặt vé thường rẻ hơn tại sân bay"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Không cần mua thêm vì đã có 30kg. Mua lúc đặt vé thường rẻ hơn tại sân bay"
+      }
+    ],
+    "risk": 2,
+    "escalate_when": "Hỏi giá cụ thể theo tuyến → cần API real-time"
+  },
+  {
+    "question": "Laptop + balo tính mấy kiện?",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "1 kiện nếu gộp vừa 7kg & kích thước. Tính tổng cộng không vượt quy định"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "1 kiện nếu gộp vừa 7kg & kích thước. Tính tổng cộng không vượt quy định"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "1 kiện nếu gộp vừa 7kg & kích thước. Tính tổng cộng không vượt quy định"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "1 kiện nếu gộp vừa 10kg & kích thước. Tính tổng cộng không vượt quy định"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Pin dự phòng",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "≤20.000mAh · max 2 cái · chỉ xách tay. Không được ký gửi, phải xách tay"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "≤20.000mAh · max 2 cái · chỉ xách tay. Không được ký gửi, phải xách tay"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "≤20.000mAh · max 2 cái · chỉ xách tay. Không được ký gửi, phải xách tay"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "≤20.000mAh · max 2 cái · chỉ xách tay. Không được ký gửi, phải xách tay"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": "Pin >20.000mAh → không được mang"
+  },
+  {
+    "question": "Chất lỏng lên cabin",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "≤100ml/chai · tổng ≤1L · túi zip trong suốt. Quy định CAAV — áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "≤100ml/chai · tổng ≤1L · túi zip trong suốt. Quy định CAAV — áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "≤100ml/chai · tổng ≤1L · túi zip trong suốt. Quy định CAAV — áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "≤100ml/chai · tổng ≤1L · túi zip trong suốt. Quy định CAAV — áp dụng tất cả hạng vé"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Quá cân hành lý và tính phí",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Tính tại sân bay · tùy tuyến. Giá tại sân bay cao hơn đặt trước"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Tính tại sân bay · tùy tuyến. Giá tại sân bay cao hơn đặt trước"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Tính tại sân bay · tùy tuyến. Giá tại sân bay cao hơn đặt trước"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Tính tại sân bay · tùy tuyến. Giá tại sân bay cao hơn đặt trước"
+      }
+    ],
+    "risk": 2,
+    "escalate_when": "Hỏi giá cụ thể → escalate hoặc link website VJ"
+  },
+  {
+    "question": "Đổi ngày/giờ và hành trình",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Được · phí 378k nội địa 800k quốc tế/chặng/người. Phải đổi trước 3 giờ khởi hành · Giá vé mới ≥ giá cũ"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Được · phí 378k nội địa 800k quốc tế/chặng/người. Phải đổi trước 3 giờ khởi hành · Giá vé mới ≥ giá cũ"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Được · phí 378k nội địa 800k quốc tế/chặng/người. Phải đổi trước 3 giờ khởi hành · Giá vé mới ≥ giá cũ"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Miễn phí đổi nội địa & quốc tế. Phải đổi trước 3 giờ khởi hành · Giá vé mới ≥ giá cũ"
+      }
+    ],
+    "risk": 3,
+    "escalate_when": "User có booking → chuyển post-booking để thực hiện"
+  },
+  {
+    "question": "Đổi tên hành khách",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không được. SkyBoss không đổi tên nếu vé nâng hạng hoặc thanh toán bằng bảo lưu"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không được. SkyBoss không đổi tên nếu vé nâng hạng hoặc thanh toán bằng bảo lưu"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Không được. SkyBoss không đổi tên nếu vé nâng hạng hoặc thanh toán bằng bảo lưu"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Được · có phí (chỉ vé mua gốc SkyBoss). SkyBoss không đổi tên nếu vé nâng hạng hoặc thanh toán bằng bảo lưu"
+      }
+    ],
+    "risk": 5,
+    "escalate_when": "User muốn đổi tên thực tế → escalate"
+  },
+  {
+    "question": "Thời hạn đổi",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Trước 3h khởi hành. Áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Trước 3h khởi hành. Áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Trước 3h khởi hành. Áp dụng tất cả hạng vé"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Trước 3h khởi hành. Áp dụng tất cả hạng vé"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Giá vé mới khi đổi",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "≥ giá vé ban đầu · chênh lệch thu ngay. Nếu vé mới rẻ hơn → không được hoàn phần chênh lệch"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "≥ giá vé ban đầu · chênh lệch thu ngay. Nếu vé mới rẻ hơn → không được hoàn phần chênh lệch"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "≥ giá vé ban đầu · chênh lệch thu ngay. Nếu vé mới rẻ hơn → không được hoàn phần chênh lệch"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "≥ giá vé ban đầu · chênh lệch thu ngay. Nếu vé mới rẻ hơn → không được hoàn phần chênh lệch"
+      }
+    ],
+    "risk": 2,
+    "escalate_when": null
+  },
+  {
+    "question": "Hoàn tự nguyện",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không hoàn Không bảo lưu. Yêu cầu hoàn trước 24h khởi hành · Promo = Eco không hoàn"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không hoàn Không bảo lưu. Yêu cầu hoàn trước 24h khởi hành · Promo = Eco không hoàn"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Bảo lưu định danh Phí 550k nội địa Bảo lưu 1 năm. Yêu cầu hoàn trước 24h khởi hành · Promo = Eco không hoàn"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Bảo lưu định danh Phí 550k nội địa Bảo lưu 2 năm. Yêu cầu hoàn trước 24h khởi hành · Promo = Eco không hoàn"
+      }
+    ],
+    "risk": 8,
+    "escalate_when": "User có booking muốn hoàn → escalate ngay"
+  },
+  {
+    "question": "Phí hoàn",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không hoàn vé. Chặng Úc: 2.400.000đ/người/chặng"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không hoàn vé. Chặng Úc: 2.400.000đ/người/chặng"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "1.200.000đ/người/chặng (trừ chặng Úc). Chặng Úc: 2.400.000đ/người/chặng"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "1.200.000đ/người/chặng (trừ chặng Úc). Chặng Úc: 2.400.000đ/người/chặng"
+      }
+    ],
+    "risk": 5,
+    "escalate_when": "User muốn hoàn thực tế → escalate"
+  },
+  {
+    "question": "Bảo lưu",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không hoàn vé. Tiền bảo lưu chỉ dùng cho người có tên trên vé gốc · Không hoàn tiền mặt"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không hoàn vé. Tiền bảo lưu chỉ dùng cho người có tên trên vé gốc · Không hoàn tiền mặt"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "1 năm kể từ ngày khởi hành. Tiền bảo lưu chỉ dùng cho người có tên trên vé gốc · Không hoàn tiền mặt"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "2 năm kể từ ngày khởi hành. Tiền bảo lưu chỉ dùng cho người có tên trên vé gốc · Không hoàn tiền mặt"
+      }
+    ],
+    "risk": 3,
+    "escalate_when": null
+  },
+  {
+    "question": "Hoàn vé khi hãng hủy chuyến",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Bảo lưu định danh 1 năm. Hãng chậm/sớm > 4h → bảo lưu · Chậm >5h → hoàn toàn bộ tiền vé"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Bảo lưu định danh 1 năm. Hãng chậm/sớm > 4h → bảo lưu · Chậm >5h → hoàn toàn bộ tiền vé"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Bảo lưu định danh 1 năm. Hãng chậm/sớm > 4h → bảo lưu · Chậm >5h → hoàn toàn bộ tiền vé"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Bảo lưu định danh 1 năm. Hãng chậm/sớm > 4h → bảo lưu · Chậm >5h → hoàn toàn bộ tiền vé"
+      }
+    ],
+    "risk": 8,
+    "escalate_when": "User đang trong tình huống này → escalate ngay · priority cao"
+  },
+  {
+    "question": "Lỡ chuyến",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không hoàn Mất vé. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không hoàn Mất vé. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Phí bỏ chỗ 250k nội địa 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Phí bỏ chỗ 250k nội địa 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+      }
+    ],
+    "risk": 8,
+    "escalate_when": "User vừa lỡ chuyến → escalate ngay · priority cao"
+  },
+  {
+    "question": "Hoàn bất khả kháng",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Bảo lưu định danh miễn phí (cần giấy tờ chứng minh). Cần giấy bệnh viện / tai nạn hợp lệ · Liên hệ VJ trực tiếp"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Bảo lưu định danh miễn phí (cần giấy tờ chứng minh). Cần giấy bệnh viện / tai nạn hợp lệ · Liên hệ VJ trực tiếp"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Bảo lưu định danh miễn phí (cần giấy tờ chứng minh). Cần giấy bệnh viện / tai nạn hợp lệ · Liên hệ VJ trực tiếp"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Bảo lưu định danh miễn phí (cần giấy tờ chứng minh). Cần giấy bệnh viện / tai nạn hợp lệ · Liên hệ VJ trực tiếp"
+      }
+    ],
+    "risk": 8,
+    "escalate_when": "Escalate ngay — cần xét duyệt riêng từng case"
+  },
+  {
+    "question": "Trẻ em dưới 2 tuổi",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Cần mua vé · ngồi lòng người lớn · không có ghế riêng. Giá vé Infant theo quy định VJ · cần khai báo khi đặt"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Cần mua vé · ngồi lòng người lớn · không có ghế riêng. Giá vé Infant theo quy định VJ · cần khai báo khi đặt"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Cần mua vé · ngồi lòng người lớn · không có ghế riêng. Giá vé Infant theo quy định VJ · cần khai báo khi đặt"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Cần mua vé · ngồi lòng người lớn · không có ghế riêng. Giá vé Infant theo quy định VJ · cần khai báo khi đặt"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Trẻ em 2–12 tuổi",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Mua vé như người lớn · cần giấy khai sinh hoặc hộ chiếu. Trẻ dưới 12 tuổi không được đi một mình"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Mua vé như người lớn · cần giấy khai sinh hoặc hộ chiếu. Trẻ dưới 12 tuổi không được đi một mình"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Mua vé như người lớn · cần giấy khai sinh hoặc hộ chiếu. Trẻ dưới 12 tuổi không được đi một mình"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Mua vé như người lớn · cần giấy khai sinh hoặc hộ chiếu. Trẻ dưới 12 tuổi không được đi một mình"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": "Trẻ đi một mình → escalate xác nhận riêng"
+  },
+  {
+    "question": "Phụ nữ mang thai",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "≤32 tuần: được bay có giấy bác sĩ >32 tuần: không bay. Đa thai: giới hạn thấp hơn · Cần xác nhận trực tiếp với VJ"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "≤32 tuần: được bay có giấy bác sĩ >32 tuần: không bay. Đa thai: giới hạn thấp hơn · Cần xác nhận trực tiếp với VJ"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "≤32 tuần: được bay có giấy bác sĩ >32 tuần: không bay. Đa thai: giới hạn thấp hơn · Cần xác nhận trực tiếp với VJ"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "≤32 tuần: được bay có giấy bác sĩ >32 tuần: không bay. Đa thai: giới hạn thấp hơn · Cần xác nhận trực tiếp với VJ"
+      }
+    ],
+    "risk": 5,
+    "escalate_when": "Thai gần hạn / đa thai → escalate để xác nhận với VJ"
+  },
+  {
+    "question": "Giấy tờ bay nội địa",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "CMND / CCCD / Hộ chiếu còn hạn. Áp dụng cho người Việt Nam · Người nước ngoài cần hộ chiếu"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "CMND / CCCD / Hộ chiếu còn hạn. Áp dụng cho người Việt Nam · Người nước ngoài cần hộ chiếu"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "CMND / CCCD / Hộ chiếu còn hạn. Áp dụng cho người Việt Nam · Người nước ngoài cần hộ chiếu"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "CMND / CCCD / Hộ chiếu còn hạn. Áp dụng cho người Việt Nam · Người nước ngoài cần hộ chiếu"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Hộ chiếu bay quốc tế",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Thường cần còn ≥6 tháng · tùy điểm đến. Tùy điểm đến — phải check từng quốc gia"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Thường cần còn ≥6 tháng · tùy điểm đến. Tùy điểm đến — phải check từng quốc gia"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Thường cần còn ≥6 tháng · tùy điểm đến. Tùy điểm đến — phải check từng quốc gia"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Thường cần còn ≥6 tháng · tùy điểm đến. Tùy điểm đến — phải check từng quốc gia"
+      }
+    ],
+    "risk": 2,
+    "escalate_when": "Hỏi cụ thể từng quốc gia → link iatatravelcentre.com"
+  },
+  {
+    "question": "Visa quốc tế",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Tùy quốc tịch · tùy điểm đến. VN thường miễn visa Thái/Sing ≤30 ngày · cần xác nhận lại"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Tùy quốc tịch · tùy điểm đến. VN thường miễn visa Thái/Sing ≤30 ngày · cần xác nhận lại"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Tùy quốc tịch · tùy điểm đến. VN thường miễn visa Thái/Sing ≤30 ngày · cần xác nhận lại"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Tùy quốc tịch · tùy điểm đến. VN thường miễn visa Thái/Sing ≤30 ngày · cần xác nhận lại"
+      }
+    ],
+    "risk": 3,
+    "escalate_when": "Quốc tịch khác / transit phức tạp → link IATA Travel Centre"
+  },
+  {
+    "question": "Phương thức thanh toán trên MoMo",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Ví MoMo · thẻ nội địa · thẻ quốc tế · tài khoản liên kết. ← CS Manager xác nhận danh sách đầy đủ với MoMo team"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Ví MoMo · thẻ nội địa · thẻ quốc tế · tài khoản liên kết. ← CS Manager xác nhận danh sách đầy đủ với MoMo team"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Ví MoMo · thẻ nội địa · thẻ quốc tế · tài khoản liên kết. ← CS Manager xác nhận danh sách đầy đủ với MoMo team"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Ví MoMo · thẻ nội địa · thẻ quốc tế · tài khoản liên kết. ← CS Manager xác nhận danh sách đầy đủ với MoMo team"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Đã trừ tiền chưa có vé",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Lỗi giao dịch · cần xác minh ngay. Priority cao — không để user chờ"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Lỗi giao dịch · cần xác minh ngay. Priority cao — không để user chờ"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Lỗi giao dịch · cần xác minh ngay. Priority cao — không để user chờ"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Lỗi giao dịch · cần xác minh ngay. Priority cao — không để user chờ"
+      }
+    ],
+    "risk": 13,
+    "escalate_when": "Escalate NGAY · priority cao · thu mã giao dịch + kênh thanh toán"
+  },
+  {
+    "question": "Mua vé sớm có rẻ hơn?",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Thường có · không đảm bảo. VJ hay có sale bất ngờ · không có quy tắc cố định"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Thường có · không đảm bảo. VJ hay có sale bất ngờ · không có quy tắc cố định"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Thường có · không đảm bảo. VJ hay có sale bất ngờ · không có quy tắc cố định"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Thường có · không đảm bảo. VJ hay có sale bất ngờ · không có quy tắc cố định"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Khứ hồi rẻ hơn một chiều?",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Không nhất thiết · tùy tuyến & thời điểm. Có thể mua 2 chiều riêng rẻ hơn"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Không nhất thiết · tùy tuyến & thời điểm. Có thể mua 2 chiều riêng rẻ hơn"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Không nhất thiết · tùy tuyến & thời điểm. Có thể mua 2 chiều riêng rẻ hơn"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Không nhất thiết · tùy tuyến & thời điểm. Có thể mua 2 chiều riêng rẻ hơn"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  },
+  {
+    "question": "Mua vé cho người khác",
+    "cabin_classes": [
+      {
+        "name": "Promo (Eco Basic)",
+        "key": "promo_eco_basic",
+        "content": "Được · điền đúng tên người đi. Tên phải khớp chính xác với giấy tờ tùy thân"
+      },
+      {
+        "name": "Eco (Standard)",
+        "key": "eco_standard",
+        "content": "Được · điền đúng tên người đi. Tên phải khớp chính xác với giấy tờ tùy thân"
+      },
+      {
+        "name": "Deluxe",
+        "key": "deluxe",
+        "content": "Được · điền đúng tên người đi. Tên phải khớp chính xác với giấy tờ tùy thân"
+      },
+      {
+        "name": "SkyBoss",
+        "key": "skyboss",
+        "content": "Được · điền đúng tên người đi. Tên phải khớp chính xác với giấy tờ tùy thân"
+      }
+    ],
+    "risk": 1,
+    "escalate_when": null
+  }
+]

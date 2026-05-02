@@ -1,77 +1,382 @@
 [
   {
-    "id": "dat", "type": "intent", "canonical": "dat",
-    "label": "Đặt / Book", "risk": 2,
-    "anchors": ["đặt", "book", "mua vé", "đặt vé", "book vé", "đặt chỗ", "mua", "đặt lịch", "order"]
+    "id": "dat",
+    "type": "intent",
+    "canonical": "dat",
+    "label": "Đặt / Book",
+    "risk": 2,
+    "anchors": [
+      "đặt",
+      "book",
+      "mua vé",
+      "đặt vé",
+      "book vé",
+      "đặt chỗ",
+      "mua",
+      "đặt lịch",
+      "order"
+    ]
   },
   {
-    "id": "huy", "type": "intent", "canonical": "huy",
-    "label": "Hủy", "risk": 8,
-    "anchors": ["hủy", "hủy vé", "cancel", "không đi nữa", "muốn hủy", "hủy chuyến", "cancel vé", "hủy đặt vé"]
+    "id": "huy",
+    "type": "intent",
+    "canonical": "huy",
+    "label": "Hủy",
+    "risk": 8,
+    "anchors": [
+      "hủy",
+      "hủy vé",
+      "cancel",
+      "không đi nữa",
+      "muốn hủy",
+      "hủy chuyến",
+      "cancel vé",
+      "hủy đặt vé"
+    ]
   },
   {
-    "id": "doi", "type": "intent", "canonical": "doi",
-    "label": "Đổi", "risk": 3,
-    "anchors": ["đổi", "đổi vé", "thay đổi vé", "đổi chuyến bay", "đổi ngày bay", "đổi giờ bay", "đổi hành trình", "sửa vé", "reissue", "đổi lịch bay", "đổi chặng", "change ticket", "đổi chuyến"]
+    "id": "doi",
+    "type": "intent",
+    "canonical": "doi",
+    "label": "Đổi",
+    "risk": 3,
+    "anchors": [
+      "đổi",
+      "đổi vé",
+      "thay đổi vé",
+      "đổi chuyến bay",
+      "đổi ngày bay",
+      "đổi giờ bay",
+      "đổi hành trình",
+      "sửa vé",
+      "reissue",
+      "đổi lịch bay",
+      "đổi chặng",
+      "change ticket",
+      "đổi chuyến"
+    ]
   },
   {
-    "id": "hoan", "type": "intent", "canonical": "hoan",
-    "label": "Hoàn / Refund", "risk": 8,
-    "anchors": ["hoàn", "hoàn vé", "hoàn tiền", "trả vé", "lấy lại tiền", "refund", "hoan ve", "ốm không đi được", "lỡ chuyến", "no show", "force majeure", "bất khả kháng", "cấp cứu", "nhập viện", "missed flight"]
+    "id": "hoan",
+    "type": "intent",
+    "canonical": "hoan",
+    "label": "Hoàn / Refund",
+    "risk": 8,
+    "anchors": [
+      "hoàn",
+      "hoàn vé",
+      "hoàn tiền",
+      "trả vé",
+      "lấy lại tiền",
+      "refund",
+      "hoan ve",
+      "ốm không đi được",
+      "lỡ chuyến",
+      "no show",
+      "force majeure",
+      "bất khả kháng",
+      "cấp cứu",
+      "nhập viện",
+      "missed flight"
+    ]
   },
   {
-    "id": "bao_luu", "type": "intent", "canonical": "bao_luu",
-    "label": "Bảo lưu", "risk": 5,
-    "anchors": ["bảo lưu", "giữ vé", "dời chuyến", "reserve", "bảo lưu vé", "lưu vé"]
+    "id": "bao_luu",
+    "type": "intent",
+    "canonical": "bao_luu",
+    "label": "Bảo lưu",
+    "risk": 5,
+    "anchors": [
+      "bảo lưu",
+      "giữ vé",
+      "dời chuyến",
+      "reserve",
+      "bảo lưu vé",
+      "lưu vé"
+    ]
   },
   {
-    "id": "mua_them", "type": "intent", "canonical": "mua_them",
-    "label": "Mua thêm", "risk": 2,
-    "anchors": ["mua thêm", "thêm", "add", "mua thêm hành lý", "thêm hành lý", "extra baggage", "mua thêm kg", "add baggage", "thêm ký gửi", "mua hành lý thêm", "thêm kg"]
+    "id": "mua_them",
+    "type": "intent",
+    "canonical": "mua_them",
+    "label": "Mua thêm",
+    "risk": 2,
+    "anchors": [
+      "mua thêm",
+      "thêm",
+      "add",
+      "mua thêm hành lý",
+      "thêm hành lý",
+      "extra baggage",
+      "mua thêm kg",
+      "add baggage",
+      "thêm ký gửi",
+      "mua hành lý thêm",
+      "thêm kg"
+    ]
   },
   {
-    "id": "chon", "type": "intent", "canonical": "chon",
-    "label": "Chọn", "risk": 1,
-    "anchors": ["chọn", "chọn ghế", "select", "chọn chỗ", "pick", "seat selection", "chọn vị trí"]
+    "id": "chon",
+    "type": "intent",
+    "canonical": "chon",
+    "label": "Chọn",
+    "risk": 1,
+    "anchors": [
+      "chọn",
+      "chọn ghế",
+      "select",
+      "chọn chỗ",
+      "pick",
+      "seat selection",
+      "chọn vị trí"
+    ]
   },
   {
-    "id": "dang_ky", "type": "intent", "canonical": "dang_ky",
-    "label": "Đăng ký", "risk": 3,
-    "anchors": ["đăng ký", "đăng ký dịch vụ", "register", "yêu cầu dịch vụ", "ssr", "đặt suất ăn", "đặt ăn", "đăng ký hỗ trợ"]
+    "id": "dang_ky",
+    "type": "intent",
+    "canonical": "dang_ky",
+    "label": "Đăng ký",
+    "risk": 3,
+    "anchors": [
+      "đăng ký",
+      "đăng ký dịch vụ",
+      "register",
+      "yêu cầu dịch vụ",
+      "ssr",
+      "đặt suất ăn",
+      "đặt ăn",
+      "đăng ký hỗ trợ"
+    ]
   },
   {
-    "id": "thanh_toan", "type": "intent", "canonical": "thanh_toan",
-    "label": "Thanh toán", "risk": 2,
-    "anchors": ["thanh toán", "trả tiền", "pay", "payment", "phương thức thanh toán", "hỗ trợ thanh toán", "mua vé bằng"]
+    "id": "thanh_toan",
+    "type": "intent",
+    "canonical": "thanh_toan",
+    "label": "Thanh toán",
+    "risk": 2,
+    "anchors": [
+      "thanh toán",
+      "trả tiền",
+      "pay",
+      "payment",
+      "phương thức thanh toán",
+      "hỗ trợ thanh toán",
+      "mua vé bằng"
+    ]
   },
   {
-    "id": "check_in", "type": "intent", "canonical": "check_in",
-    "label": "Check-in", "risk": 1,
-    "anchors": ["check in", "check-in", "làm thủ tục", "online check in", "check in online", "thủ tục lên máy bay", "web check in"]
+    "id": "check_in",
+    "type": "intent",
+    "canonical": "check_in",
+    "label": "Check-in",
+    "risk": 1,
+    "anchors": [
+      "check in",
+      "check-in",
+      "làm thủ tục",
+      "online check in",
+      "check in online",
+      "thủ tục lên máy bay",
+      "web check in"
+    ]
   },
   {
-    "id": "hoi", "type": "intent", "canonical": "hoi",
-    "label": "Hỏi", "risk": 1,
-    "anchors": ["hỏi", "hỏi về", "muốn biết", "cho hỏi", "thắc mắc", "tôi hỏi", "cho mình hỏi", "hỏi thăm"]
+    "id": "hoi",
+    "type": "intent",
+    "canonical": "hoi",
+    "label": "Hỏi",
+    "risk": 1,
+    "anchors": [
+      "hỏi",
+      "hỏi về",
+      "muốn biết",
+      "cho hỏi",
+      "thắc mắc",
+      "tôi hỏi",
+      "cho mình hỏi",
+      "hỏi thăm"
+    ]
   },
   {
-    "id": "kiem_tra", "type": "intent", "canonical": "kiem_tra",
-    "label": "Kiểm tra", "risk": 1,
-    "anchors": ["kiểm tra", "check", "xem", "tra cứu", "tìm hiểu", "hành lý", "baggage", "quy định", "chính sách", "xem thông tin"]
+    "id": "kiem_tra",
+    "type": "intent",
+    "canonical": "kiem_tra",
+    "label": "Kiểm tra",
+    "risk": 1,
+    "anchors": [
+      "kiểm tra",
+      "check",
+      "xem",
+      "tra cứu",
+      "tìm hiểu",
+      "hành lý",
+      "baggage",
+      "quy định",
+      "chính sách",
+      "xem thông tin"
+    ]
   },
   {
-    "id": "tim_kiem", "type": "intent", "canonical": "tim_kiem",
-    "label": "Tìm kiếm", "risk": 1,
-    "anchors": ["tìm", "tìm kiếm", "search", "tìm vé", "tìm chuyến", "tìm chuyến bay"]
+    "id": "tim_kiem",
+    "type": "intent",
+    "canonical": "tim_kiem",
+    "label": "Tìm kiếm",
+    "risk": 1,
+    "anchors": [
+      "tìm",
+      "tìm kiếm",
+      "search",
+      "tìm vé",
+      "tìm chuyến",
+      "tìm chuyến bay"
+    ]
   },
   {
-    "id": "bao_cao", "type": "intent", "canonical": "bao_cao",
-    "label": "Báo cáo sự cố", "risk": 13,
-    "anchors": ["báo cáo", "khiếu nại", "report", "lỗi", "sự cố", "trừ tiền rồi", "chưa có vé", "giao dịch lỗi", "bị lỗi", "gặp vấn đề", "thất bại"]
+    "id": "bao_cao",
+    "type": "intent",
+    "canonical": "bao_cao",
+    "label": "Báo cáo sự cố",
+    "risk": 13,
+    "anchors": [
+      "báo cáo",
+      "khiếu nại",
+      "report",
+      "lỗi",
+      "sự cố",
+      "trừ tiền rồi",
+      "chưa có vé",
+      "giao dịch lỗi",
+      "bị lỗi",
+      "gặp vấn đề",
+      "thất bại"
+    ]
   },
   {
-    "id": "xac_nhan", "type": "intent", "canonical": "xac_nhan",
-    "label": "Xác nhận", "risk": 2,
-    "anchors": ["xác nhận", "confirm", "kiểm tra vé", "xem lịch bay", "xem đặt chỗ", "tình trạng vé"]
+    "id": "xac_nhan",
+    "type": "intent",
+    "canonical": "xac_nhan",
+    "label": "Xác nhận",
+    "risk": 2,
+    "anchors": [
+      "xác nhận",
+      "confirm",
+      "kiểm tra vé",
+      "xem lịch bay",
+      "xem đặt chỗ",
+      "tình trạng vé"
+    ]
+  },
+  {
+    "id": "nang_hang",
+    "type": "intent",
+    "canonical": "nang_hang",
+    "label": "Nâng hạng vé",
+    "risk": 3,
+    "anchors": [
+      "nâng hạng",
+      "upgrade",
+      "nâng cấp vé",
+      "đổi lên hạng cao hơn",
+      "nâng hạng ghế",
+      "nâng vé",
+      "upgrade vé",
+      "lên hạng thương gia",
+      "lên skyboss",
+      "nâng lên deluxe"
+    ]
+  },
+  {
+    "id": "xem_lich",
+    "type": "intent",
+    "canonical": "xem_lich",
+    "label": "Xem lịch / Itinerary",
+    "risk": 1,
+    "anchors": [
+      "xem lịch",
+      "xem đặt vé",
+      "itinerary",
+      "xem hành trình",
+      "xem booking",
+      "tra lịch bay",
+      "xem lịch trình",
+      "thông tin đặt vé",
+      "booking của tôi"
+    ]
+  },
+  {
+    "id": "in_ve",
+    "type": "intent",
+    "canonical": "in_ve",
+    "label": "In / Tải vé",
+    "risk": 1,
+    "anchors": [
+      "in vé",
+      "tải vé",
+      "download vé",
+      "xuất vé",
+      "gửi vé qua email",
+      "vé điện tử",
+      "e-ticket",
+      "print ticket",
+      "lấy vé",
+      "gửi vé",
+      "vé pdf"
+    ]
+  },
+  {
+    "id": "ap_ma",
+    "type": "intent",
+    "canonical": "ap_ma",
+    "label": "Áp mã khuyến mãi",
+    "risk": 1,
+    "anchors": [
+      "áp mã",
+      "nhập mã",
+      "mã giảm giá",
+      "voucher",
+      "coupon",
+      "promo code",
+      "mã khuyến mãi",
+      "dùng mã",
+      "nhập coupon",
+      "mã ưu đãi",
+      "áp dụng mã"
+    ]
+  },
+  {
+    "id": "mua_bao_hiem",
+    "type": "intent",
+    "canonical": "mua_bao_hiem",
+    "label": "Mua bảo hiểm du lịch",
+    "risk": 2,
+    "anchors": [
+      "bảo hiểm",
+      "mua bảo hiểm",
+      "insurance",
+      "bảo hiểm du lịch",
+      "bảo hiểm chuyến bay",
+      "travel insurance",
+      "mua thêm bảo hiểm",
+      "đăng ký bảo hiểm"
+    ]
+  },
+  {
+    "id": "mua_ve_ho",
+    "type": "intent",
+    "canonical": "mua_ve_ho",
+    "label": "mua vé cho người khác",
+    "risk": 1,
+    "anchors": [
+      "mua vé cho người khác",
+      "đặt vé hộ",
+      "book vé giúp",
+      "mua vé dùm",
+      "đặt vé cho bạn",
+      "đặt vé cho người thân",
+      "mua vé cho người khác đi",
+      "đặt hộ vé máy bay",
+      "book hộ chuyến bay",
+      "mua hộ cho"
+    ]
   }
 ]

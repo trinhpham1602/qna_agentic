@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
 
     # One-time setup: DB tables + default FAQ data
     init_postgres_db()
-    ingest_default_faq(force_reingest=True)
+    ingest_default_faq(force_reingest=False)
 
     async with AsyncConnectionPool(DB_CONNECTION_STRING) as pool:
         compiled_rag_graph = builder.compile()

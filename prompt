@@ -1,12 +1,14 @@
-Trong dataset tôi chưa thấy được những cái như sau:
-    1. claude_dataset chưa chứa đầy đủ cái intent trong file intents.json
-    2. entities.json chưa phân được thành atomic, ví dụ: hành lý thì nên chia thành 2 entity riêng biệt là xách tay và ký gửi. fee cho nội địa và quốc tế
-    3. Bạn nên tham khảo trong xem trong file data.py có faq_data. Bạn tách ra nhiều atomic càng tối
-trong file utils.py tôi muốn dùng:
-    1. loại bỏ hết các hàm đang sử dụng regex cho mục đích trích xuất intent và entity.
-    2. Sử dụng một mô hình mechine learning để trích xuất được đa entities và đa intents từ câu input của user. data set của model này là entities.json và intents.json.
-        Vì số lượng anchors của entities và intents là ít, nên bạn hãy generate ra các từ phổ biến để làm giàu data.
-        Bạn tách cho tôi tập training và tập testing để tôi kiểm tra mô hình.
-        Viết cho tôi hàm tính độ chính xác của mô hình.
-    3. lưu vector trọng số trong một file, để tôi load lên khi training xong.
+Todo:
+I. dataset
+    1. Thêm mới một số intent thuộc về nghiệp vụ đặt vé máy bay. Cập nhật vào file intents.json
+    2. entities.json chỉ chứa các đối tượng cụ thể. không được chứa các đối tượng chung chung. ví dụ như id=hanh_khach.
+        Các đối tượng cụ thể được gom nhóm, bởi field type như hiện tại.
+        THÊM các entity đầy đủ cho nghiệp vụ máy bay. 
+    3. claude_dataset chỉ chứa atomic entity, KHÔNG ĐƯỢC chứa các type chung chung.
+II. Phần slot mapping:
+    1. Nếu atomic thuộc type required của slotmapping thì yêu cầu user nhập thêm vào
+III. uitls.py
+    1. tôi muốn output của model ML trích xuất được multi intents và multi
+    2. thêm knowledge gragh traverse vào để tôi có thể test path
+
 Nếu dùng lib thì thêm vào file requirements.txt để cài mới và tôi cũng có .venv cho project này.

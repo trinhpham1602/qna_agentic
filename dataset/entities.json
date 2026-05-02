@@ -1,67 +1,737 @@
 [
-  {"id": "ve",         "type": "core_object", "canonical": "ve",         "label": "Vé máy bay",       "risk": 2, "anchors": ["vé", "vé máy bay", "ticket", "vé bay", "vé khứ hồi", "vé một chiều", "vé VietJet"]},
-  {"id": "ghe",        "type": "core_object", "canonical": "ghe",        "label": "Ghế ngồi",         "risk": 1, "anchors": ["ghế", "ghế ngồi", "chỗ ngồi", "seat", "vị trí ngồi", "hàng ghế"]},
-  {"id": "phi",        "type": "core_object", "canonical": "phi",        "label": "Phí / Giá",        "risk": 1, "anchors": ["phí", "giá", "chi phí", "fee", "charge", "mức phí", "giá vé"]},
-  {"id": "chinh_sach", "type": "core_object", "canonical": "chinh_sach", "label": "Chính sách",       "risk": 1, "anchors": ["chính sách", "quy định", "điều khoản", "policy", "nội quy", "được không", "có được không"]},
-  {"id": "giao_dich",  "type": "core_object", "canonical": "giao_dich",  "label": "Giao dịch",        "risk": 8, "anchors": ["giao dịch", "transaction", "lỗi thanh toán", "trừ tiền", "mất tiền", "thanh toán thất bại", "giao dịch lỗi"]},
-  {"id": "hanh_khach", "type": "core_object", "canonical": "hanh_khach", "label": "Hành khách",       "risk": 1, "anchors": ["hành khách", "passenger", "người đi", "khách hàng", "hành khách đặc biệt"]},
-  {"id": "chuyen_bay", "type": "core_object", "canonical": "chuyen_bay", "label": "Chuyến bay",       "risk": 1, "anchors": ["chuyến bay", "flight", "chuyến", "chặng bay", "lịch bay"]},
-  {"id": "dich_vu",    "type": "core_object", "canonical": "dich_vu",    "label": "Dịch vụ đặc biệt", "risk": 3, "anchors": ["dịch vụ đặc biệt", "ssr", "special service", "yêu cầu đặc biệt", "xe lăn", "dịch vụ bổ sung"]},
-  {"id": "bua_an",     "type": "core_object", "canonical": "bua_an",     "label": "Bữa ăn",           "risk": 1, "anchors": ["bữa ăn", "suất ăn", "meal", "đặt ăn", "đặt suất ăn", "đồ ăn"]},
-
-  {"id": "hanh_ly",  "type": "baggage_type", "canonical": "hanh_ly",  "label": "Hành lý",          "risk": 1, "anchors": ["hành lý", "baggage", "luggage", "vali", "hành trang"]},
-  {"id": "xach_tay", "type": "baggage_type", "canonical": "xach_tay", "label": "Hành lý xách tay", "risk": 1, "anchors": ["xách tay", "carry on", "cabin", "hành lý cabin", "hành lý xách tay", "carry-on", "7kg xách tay", "10kg xách tay"]},
-  {"id": "ky_gui",   "type": "baggage_type", "canonical": "ky_gui",   "label": "Hành lý ký gửi",   "risk": 1, "anchors": ["ký gửi", "checked baggage", "hành lý ký gửi", "vali ký gửi", "hành lý gửi", "20kg ký gửi", "25kg", "30kg", "thêm kg ký gửi"]},
-
-  {"id": "pin_du_phong", "type": "restricted_item", "canonical": "pin_du_phong", "label": "Pin dự phòng",            "risk": 1, "anchors": ["pin dự phòng", "power bank", "sạc dự phòng", "pin sạc", "powerbank", "pin lithium"]},
-  {"id": "chat_long",    "type": "restricted_item", "canonical": "chat_long",    "label": "Chất lỏng",               "risk": 1, "anchors": ["chất lỏng", "nước hoa", "liquid", "dung dịch", "100ml", "túi zip", "chai nước"]},
-  {"id": "laptop",       "type": "restricted_item", "canonical": "laptop",       "label": "Laptop / Thiết bị điện tử","risk": 1, "anchors": ["laptop", "máy tính xách tay", "ipad", "tablet", "thiết bị điện tử", "balo laptop"]},
-
-  {"id": "giay_to",        "type": "document_type", "canonical": "giay_to",        "label": "Giấy tờ",              "risk": 1, "anchors": ["giấy tờ", "giấy tờ tùy thân", "document", "cần giấy gì"]},
-  {"id": "cmnd_cccd",      "type": "document_type", "canonical": "cmnd_cccd",      "label": "CMND / CCCD",          "risk": 1, "anchors": ["cmnd", "cccd", "chứng minh thư", "căn cước", "chứng minh nhân dân", "căn cước công dân", "id card"]},
-  {"id": "ho_chieu",       "type": "document_type", "canonical": "ho_chieu",       "label": "Hộ chiếu",             "risk": 1, "anchors": ["hộ chiếu", "passport", "hộ chiếu còn hạn", "passport expiry"]},
-  {"id": "visa",           "type": "document_type", "canonical": "visa",           "label": "Visa",                 "risk": 2, "anchors": ["visa", "thị thực", "e-visa", "visa du lịch", "cần visa không"]},
-  {"id": "giay_khai_sinh", "type": "document_type", "canonical": "giay_khai_sinh", "label": "Giấy khai sinh",       "risk": 1, "anchors": ["giấy khai sinh", "khai sinh", "birth certificate", "giấy tờ trẻ em"]},
-  {"id": "giay_bac_si",    "type": "document_type", "canonical": "giay_bac_si",    "label": "Giấy chứng nhận y tế", "risk": 3, "anchors": ["giấy bác sĩ", "chứng nhận bệnh viện", "giấy y tế", "medical certificate", "xác nhận sức khoẻ"]},
-
-  {"id": "phi_doi_ve",  "type": "fee_type", "canonical": "phi_doi_ve",  "label": "Phí đổi vé",  "risk": 2, "anchors": ["phí đổi vé", "phí đổi", "phí reissue", "phí đổi ngày", "phí đổi hành trình", "378k", "800k đổi"]},
-  {"id": "phi_hoan_ve", "type": "fee_type", "canonical": "phi_hoan_ve", "label": "Phí hoàn vé", "risk": 3, "anchors": ["phí hoàn vé", "phí bảo lưu", "phí hủy vé", "550k bảo lưu", "1.2 triệu hoàn", "phí hoàn", "phí bảo lưu định danh"]},
-  {"id": "phi_no_show", "type": "fee_type", "canonical": "phi_no_show", "label": "Phí bỏ chỗ", "risk": 5, "anchors": ["phí bỏ chỗ", "phí lỡ chuyến", "phí no show", "no-show fee", "250k lỡ chuyến", "1 triệu lỡ chuyến"]},
-  {"id": "phi_qua_can", "type": "fee_type", "canonical": "phi_qua_can", "label": "Phí quá cân", "risk": 2, "anchors": ["phí quá cân", "phí hành lý thêm", "overweight fee", "phí vượt cân", "excess baggage"]},
-
-  {"id": "bao_luu_dinh_danh", "type": "refund_type", "canonical": "bao_luu_dinh_danh", "label": "Bảo lưu định danh", "risk": 3, "anchors": ["bảo lưu định danh", "bảo lưu", "tiền bảo lưu", "giữ tiền", "bảo lưu 1 năm", "bảo lưu 2 năm", "dùng tiền bảo lưu", "credit vé"]},
-
-  {"id": "ghe_cua_so", "type": "seat_type", "canonical": "ghe_cua_so", "label": "Ghế cửa sổ", "risk": 1, "anchors": ["ghế cửa sổ", "window seat", "cửa sổ", "chỗ cửa sổ", "window"]},
-  {"id": "ghe_loi_di", "type": "seat_type", "canonical": "ghe_loi_di", "label": "Ghế lối đi", "risk": 1, "anchors": ["ghế lối đi", "aisle seat", "aisle", "ghế aisle", "chỗ aisle", "lối đi"]},
-
-  {"id": "vietjet", "type": "airline", "canonical": "vietjet", "label": "VietJet Air",      "risk": 1, "anchors": ["vietjet", "vj", "viet jet", "vietjet air", "vj air"]},
-  {"id": "bamboo",  "type": "airline", "canonical": "bamboo",  "label": "Bamboo Airways",   "risk": 1, "anchors": ["bamboo", "bamboo airways", "qh", "bamboo air"]},
-  {"id": "vna",     "type": "airline", "canonical": "vna",     "label": "Vietnam Airlines", "risk": 1, "anchors": ["vietnam airlines", "vna", "hãng quốc gia", "hàng không quốc gia"]},
-
-  {"id": "promo",   "type": "cabin_class", "canonical": "promo",   "label": "Promo / Eco Basic", "risk": 1, "anchors": ["promo", "eco basic", "vé giá rẻ", "vé promo", "hạng promo"]},
-  {"id": "eco",     "type": "cabin_class", "canonical": "eco",     "label": "Eco Standard",      "risk": 1, "anchors": ["eco", "eco standard", "hạng phổ thông", "vé eco"]},
-  {"id": "deluxe",  "type": "cabin_class", "canonical": "deluxe",  "label": "Deluxe",            "risk": 1, "anchors": ["deluxe", "hạng deluxe", "vé deluxe"]},
-  {"id": "skyboss", "type": "cabin_class", "canonical": "skyboss", "label": "SkyBoss",           "risk": 1, "anchors": ["skyboss", "sky boss", "hạng thương gia", "vé skyboss"]},
-
-  {"id": "domestic",      "type": "route", "canonical": "domestic",      "label": "Nội địa",  "risk": 1, "anchors": ["nội địa", "trong nước", "domestic", "bay nội địa"]},
-  {"id": "international", "type": "route", "canonical": "international", "label": "Quốc tế",  "risk": 1, "anchors": ["quốc tế", "international", "ngoài nước", "bay quốc tế"]},
-  {"id": "australia",     "type": "route", "canonical": "australia",     "label": "Chặng Úc", "risk": 1, "anchors": ["úc", "australia", "chặng úc", "bay úc"]},
-
-  {"id": "infant",              "type": "passenger_type", "canonical": "infant",              "label": "Trẻ dưới 2 tuổi",  "risk": 1, "anchors": ["em bé", "infant", "trẻ sơ sinh", "bé dưới 2 tuổi", "em bé dưới 2 tuổi"]},
-  {"id": "child",               "type": "passenger_type", "canonical": "child",               "label": "Trẻ 2-12 tuổi",    "risk": 1, "anchors": ["trẻ em", "child", "trẻ nhỏ", "bé", "trẻ 2-12 tuổi"]},
-  {"id": "pregnant",            "type": "passenger_type", "canonical": "pregnant",            "label": "Phụ nữ mang thai", "risk": 5, "anchors": ["mang thai", "bầu", "pregnant", "phụ nữ mang thai", "thai phụ", "thai sản"]},
-  {"id": "unaccompanied_minor", "type": "passenger_type", "canonical": "unaccompanied_minor", "label": "Trẻ đi một mình",  "risk": 5, "anchors": ["trẻ đi một mình", "unaccompanied minor", "um", "trẻ đơn thân", "trẻ tự đi"]},
-
-  {"id": "change_time",  "type": "reissue_type", "canonical": "change_time",  "label": "Đổi giờ/ngày bay",   "risk": 3, "anchors": ["đổi giờ", "đổi ngày bay", "đổi lịch bay", "thay đổi giờ bay", "đổi chuyến", "change time", "đổi ngày"]},
-  {"id": "change_route", "type": "reissue_type", "canonical": "change_route", "label": "Đổi hành trình",     "risk": 3, "anchors": ["đổi hành trình", "đổi điểm đến", "thay đổi hành trình", "đổi chặng bay", "change route", "đổi tuyến"]},
-  {"id": "change_name",  "type": "reissue_type", "canonical": "change_name",  "label": "Đổi tên hành khách", "risk": 5, "anchors": ["đổi tên", "sửa tên", "thay đổi tên", "đổi tên hành khách", "change name", "sai tên", "tên sai"]},
-
-  {"id": "momo",          "type": "payment_method", "canonical": "momo",          "label": "Ví MoMo",       "risk": 1, "anchors": ["momo", "ví momo", "thanh toán momo", "momo wallet"]},
-  {"id": "bank_card",     "type": "payment_method", "canonical": "bank_card",     "label": "Thẻ ngân hàng", "risk": 1, "anchors": ["thẻ atm", "thẻ ngân hàng", "thẻ tín dụng", "thẻ visa", "thẻ mastercard", "credit card", "debit card"]},
-  {"id": "vnpay",         "type": "payment_method", "canonical": "vnpay",         "label": "VNPay",         "risk": 1, "anchors": ["vnpay", "vn pay", "thanh toán vnpay"]},
-  {"id": "bank_transfer", "type": "payment_method", "canonical": "bank_transfer", "label": "Chuyển khoản",  "risk": 1, "anchors": ["chuyển khoản", "internet banking", "chuyển tiền ngân hàng"]},
-
-  {"id": "txn_failed",          "type": "payment_issue_type", "canonical": "txn_failed",          "label": "Lỗi giao dịch",  "risk": 13, "anchors": ["lỗi thanh toán", "giao dịch thất bại", "thanh toán không thành", "lỗi giao dịch", "thanh toán lỗi"]},
-  {"id": "ticket_not_received", "type": "payment_issue_type", "canonical": "ticket_not_received", "label": "Chưa nhận vé",   "risk": 13, "anchors": ["chưa có vé", "không nhận được vé", "chưa nhận vé", "trừ tiền chưa có vé", "tiền trừ mà chưa có vé"]},
-  {"id": "double_charge",       "type": "payment_issue_type", "canonical": "double_charge",       "label": "Trừ tiền 2 lần", "risk": 13, "anchors": ["trừ tiền 2 lần", "bị trừ 2 lần", "trừ nhầm tiền", "trừ tiền hai lần", "bị trừ thêm"]}
+  {
+    "id": "ve",
+    "type": "core_object",
+    "canonical": "ve",
+    "label": "Vé máy bay",
+    "risk": 2,
+    "anchors": [
+      "vé",
+      "vé máy bay",
+      "ticket",
+      "vé bay",
+      "vé khứ hồi",
+      "vé một chiều",
+      "vé VietJet"
+    ]
+  },
+  {
+    "id": "chuyen_bay",
+    "type": "core_object",
+    "canonical": "chuyen_bay",
+    "label": "Chuyến bay",
+    "risk": 1,
+    "anchors": [
+      "chuyến bay",
+      "flight",
+      "chuyến",
+      "chặng bay",
+      "lịch bay"
+    ]
+  },
+  {
+    "id": "bua_an",
+    "type": "core_object",
+    "canonical": "bua_an",
+    "label": "Bữa ăn",
+    "risk": 1,
+    "anchors": [
+      "bữa ăn",
+      "suất ăn",
+      "meal",
+      "đặt ăn",
+      "đặt suất ăn",
+      "đồ ăn"
+    ]
+  },
+  {
+    "id": "xach_tay",
+    "type": "baggage_type",
+    "canonical": "xach_tay",
+    "label": "Hành lý xách tay",
+    "risk": 1,
+    "anchors": [
+      "xách tay",
+      "carry on",
+      "cabin",
+      "hành lý cabin",
+      "hành lý xách tay",
+      "carry-on",
+      "7kg xách tay",
+      "10kg xách tay"
+    ]
+  },
+  {
+    "id": "ky_gui",
+    "type": "baggage_type",
+    "canonical": "ky_gui",
+    "label": "Hành lý ký gửi",
+    "risk": 1,
+    "anchors": [
+      "ký gửi",
+      "checked baggage",
+      "hành lý ký gửi",
+      "vali ký gửi",
+      "hành lý gửi",
+      "20kg ký gửi",
+      "25kg",
+      "30kg",
+      "thêm kg ký gửi"
+    ]
+  },
+  {
+    "id": "pin_du_phong",
+    "type": "restricted_item",
+    "canonical": "pin_du_phong",
+    "label": "Pin dự phòng",
+    "risk": 1,
+    "anchors": [
+      "pin dự phòng",
+      "power bank",
+      "sạc dự phòng",
+      "pin sạc",
+      "powerbank",
+      "pin lithium"
+    ]
+  },
+  {
+    "id": "chat_long",
+    "type": "restricted_item",
+    "canonical": "chat_long",
+    "label": "Chất lỏng",
+    "risk": 1,
+    "anchors": [
+      "chất lỏng",
+      "nước hoa",
+      "liquid",
+      "dung dịch",
+      "100ml",
+      "túi zip",
+      "chai nước"
+    ]
+  },
+  {
+    "id": "laptop",
+    "type": "restricted_item",
+    "canonical": "laptop",
+    "label": "Laptop / Thiết bị điện tử",
+    "risk": 1,
+    "anchors": [
+      "laptop",
+      "máy tính xách tay",
+      "ipad",
+      "tablet",
+      "thiết bị điện tử",
+      "balo laptop"
+    ]
+  },
+  {
+    "id": "cmnd_cccd",
+    "type": "document_type",
+    "canonical": "cmnd_cccd",
+    "label": "CMND / CCCD",
+    "risk": 1,
+    "anchors": [
+      "cmnd",
+      "cccd",
+      "chứng minh thư",
+      "căn cước",
+      "chứng minh nhân dân",
+      "căn cước công dân",
+      "id card"
+    ]
+  },
+  {
+    "id": "ho_chieu",
+    "type": "document_type",
+    "canonical": "ho_chieu",
+    "label": "Hộ chiếu",
+    "risk": 1,
+    "anchors": [
+      "hộ chiếu",
+      "passport",
+      "hộ chiếu còn hạn",
+      "passport expiry"
+    ]
+  },
+  {
+    "id": "visa",
+    "type": "document_type",
+    "canonical": "visa",
+    "label": "Visa",
+    "risk": 2,
+    "anchors": [
+      "visa",
+      "thị thực",
+      "e-visa",
+      "visa du lịch",
+      "cần visa không"
+    ]
+  },
+  {
+    "id": "giay_khai_sinh",
+    "type": "document_type",
+    "canonical": "giay_khai_sinh",
+    "label": "Giấy khai sinh",
+    "risk": 1,
+    "anchors": [
+      "giấy khai sinh",
+      "khai sinh",
+      "birth certificate",
+      "giấy tờ trẻ em"
+    ]
+  },
+  {
+    "id": "giay_bac_si",
+    "type": "document_type",
+    "canonical": "giay_bac_si",
+    "label": "Giấy chứng nhận y tế",
+    "risk": 3,
+    "anchors": [
+      "giấy bác sĩ",
+      "chứng nhận bệnh viện",
+      "giấy y tế",
+      "medical certificate",
+      "xác nhận sức khoẻ"
+    ]
+  },
+  {
+    "id": "phi_doi_ve",
+    "type": "fee_type",
+    "canonical": "phi_doi_ve",
+    "label": "Phí đổi vé",
+    "risk": 2,
+    "anchors": [
+      "phí đổi vé",
+      "phí đổi",
+      "phí reissue",
+      "phí đổi ngày",
+      "phí đổi hành trình",
+      "378k",
+      "800k đổi"
+    ]
+  },
+  {
+    "id": "phi_hoan_ve",
+    "type": "fee_type",
+    "canonical": "phi_hoan_ve",
+    "label": "Phí hoàn vé",
+    "risk": 3,
+    "anchors": [
+      "phí hoàn vé",
+      "phí bảo lưu",
+      "phí hủy vé",
+      "550k bảo lưu",
+      "1.2 triệu hoàn",
+      "phí hoàn",
+      "phí bảo lưu định danh"
+    ]
+  },
+  {
+    "id": "phi_no_show",
+    "type": "fee_type",
+    "canonical": "phi_no_show",
+    "label": "Phí bỏ chỗ",
+    "risk": 5,
+    "anchors": [
+      "phí bỏ chỗ",
+      "phí lỡ chuyến",
+      "phí no show",
+      "no-show fee",
+      "250k lỡ chuyến",
+      "1 triệu lỡ chuyến"
+    ]
+  },
+  {
+    "id": "phi_qua_can",
+    "type": "fee_type",
+    "canonical": "phi_qua_can",
+    "label": "Phí quá cân",
+    "risk": 2,
+    "anchors": [
+      "phí quá cân",
+      "phí hành lý thêm",
+      "overweight fee",
+      "phí vượt cân",
+      "excess baggage"
+    ]
+  },
+  {
+    "id": "phi_nang_hang",
+    "type": "fee_type",
+    "canonical": "phi_nang_hang",
+    "label": "Phí nâng hạng",
+    "risk": 2,
+    "anchors": [
+      "phí nâng hạng",
+      "phí upgrade",
+      "phí đổi hạng",
+      "phí lên skyboss",
+      "phí lên deluxe"
+    ]
+  },
+  {
+    "id": "bao_luu_dinh_danh",
+    "type": "refund_type",
+    "canonical": "bao_luu_dinh_danh",
+    "label": "Bảo lưu định danh",
+    "risk": 3,
+    "anchors": [
+      "bảo lưu định danh",
+      "bảo lưu",
+      "tiền bảo lưu",
+      "giữ tiền",
+      "bảo lưu 1 năm",
+      "bảo lưu 2 năm",
+      "dùng tiền bảo lưu",
+      "credit vé"
+    ]
+  },
+  {
+    "id": "ghe_cua_so",
+    "type": "seat_type",
+    "canonical": "ghe_cua_so",
+    "label": "Ghế cửa sổ",
+    "risk": 1,
+    "anchors": [
+      "ghế cửa sổ",
+      "window seat",
+      "cửa sổ",
+      "chỗ cửa sổ",
+      "window"
+    ]
+  },
+  {
+    "id": "ghe_loi_di",
+    "type": "seat_type",
+    "canonical": "ghe_loi_di",
+    "label": "Ghế lối đi",
+    "risk": 1,
+    "anchors": [
+      "ghế lối đi",
+      "aisle seat",
+      "aisle",
+      "ghế aisle",
+      "chỗ aisle",
+      "lối đi"
+    ]
+  },
+  {
+    "id": "ghe_hang_dau",
+    "type": "seat_type",
+    "canonical": "ghe_hang_dau",
+    "label": "Ghế hàng đầu",
+    "risk": 1,
+    "anchors": [
+      "ghế hàng đầu",
+      "front row",
+      "hàng đầu",
+      "ghế đầu",
+      "row 1",
+      "ghế ưu tiên"
+    ]
+  },
+  {
+    "id": "ghe_thoat_hiem",
+    "type": "seat_type",
+    "canonical": "ghe_thoat_hiem",
+    "label": "Ghế thoát hiểm",
+    "risk": 1,
+    "anchors": [
+      "ghế thoát hiểm",
+      "exit row",
+      "ghế cạnh cửa thoát hiểm",
+      "emergency exit seat",
+      "ghế exit"
+    ]
+  },
+  {
+    "id": "vietjet",
+    "type": "airline",
+    "canonical": "vietjet",
+    "label": "VietJet Air",
+    "risk": 1,
+    "anchors": [
+      "vietjet",
+      "vj",
+      "viet jet",
+      "vietjet air",
+      "vj air"
+    ]
+  },
+  {
+    "id": "bamboo",
+    "type": "airline",
+    "canonical": "bamboo",
+    "label": "Bamboo Airways",
+    "risk": 1,
+    "anchors": [
+      "bamboo",
+      "bamboo airways",
+      "qh",
+      "bamboo air"
+    ]
+  },
+  {
+    "id": "vna",
+    "type": "airline",
+    "canonical": "vna",
+    "label": "Vietnam Airlines",
+    "risk": 1,
+    "anchors": [
+      "vietnam airlines",
+      "vna",
+      "hãng quốc gia",
+      "hàng không quốc gia"
+    ]
+  },
+  {
+    "id": "promo",
+    "type": "cabin_class",
+    "canonical": "promo",
+    "label": "Promo / Eco Basic",
+    "risk": 1,
+    "anchors": [
+      "promo",
+      "eco basic",
+      "vé giá rẻ",
+      "vé promo",
+      "hạng promo"
+    ]
+  },
+  {
+    "id": "eco",
+    "type": "cabin_class",
+    "canonical": "eco",
+    "label": "Eco Standard",
+    "risk": 1,
+    "anchors": [
+      "eco",
+      "eco standard",
+      "hạng phổ thông",
+      "vé eco"
+    ]
+  },
+  {
+    "id": "deluxe",
+    "type": "cabin_class",
+    "canonical": "deluxe",
+    "label": "Deluxe",
+    "risk": 1,
+    "anchors": [
+      "deluxe",
+      "hạng deluxe",
+      "vé deluxe"
+    ]
+  },
+  {
+    "id": "skyboss",
+    "type": "cabin_class",
+    "canonical": "skyboss",
+    "label": "SkyBoss",
+    "risk": 1,
+    "anchors": [
+      "skyboss",
+      "sky boss",
+      "hạng thương gia",
+      "vé skyboss"
+    ]
+  },
+  {
+    "id": "domestic",
+    "type": "route",
+    "canonical": "domestic",
+    "label": "Nội địa",
+    "risk": 1,
+    "anchors": [
+      "nội địa",
+      "trong nước",
+      "domestic",
+      "bay nội địa"
+    ]
+  },
+  {
+    "id": "international",
+    "type": "route",
+    "canonical": "international",
+    "label": "Quốc tế",
+    "risk": 1,
+    "anchors": [
+      "quốc tế",
+      "international",
+      "ngoài nước",
+      "bay quốc tế"
+    ]
+  },
+  {
+    "id": "australia",
+    "type": "route",
+    "canonical": "australia",
+    "label": "Chặng Úc",
+    "risk": 1,
+    "anchors": [
+      "úc",
+      "australia",
+      "chặng úc",
+      "bay úc"
+    ]
+  },
+  {
+    "id": "infant",
+    "type": "passenger_type",
+    "canonical": "infant",
+    "label": "Trẻ dưới 2 tuổi",
+    "risk": 1,
+    "anchors": [
+      "em bé",
+      "infant",
+      "trẻ sơ sinh",
+      "bé dưới 2 tuổi",
+      "em bé dưới 2 tuổi"
+    ]
+  },
+  {
+    "id": "child",
+    "type": "passenger_type",
+    "canonical": "child",
+    "label": "Trẻ 2-12 tuổi",
+    "risk": 1,
+    "anchors": [
+      "trẻ em",
+      "child",
+      "trẻ nhỏ",
+      "bé",
+      "trẻ 2-12 tuổi"
+    ]
+  },
+  {
+    "id": "pregnant",
+    "type": "passenger_type",
+    "canonical": "pregnant",
+    "label": "Phụ nữ mang thai",
+    "risk": 5,
+    "anchors": [
+      "mang thai",
+      "bầu",
+      "pregnant",
+      "phụ nữ mang thai",
+      "thai phụ",
+      "thai sản"
+    ]
+  },
+  {
+    "id": "unaccompanied_minor",
+    "type": "passenger_type",
+    "canonical": "unaccompanied_minor",
+    "label": "Trẻ đi một mình",
+    "risk": 5,
+    "anchors": [
+      "trẻ đi một mình",
+      "unaccompanied minor",
+      "um",
+      "trẻ đơn thân",
+      "trẻ tự đi"
+    ]
+  },
+  {
+    "id": "change_time",
+    "type": "reissue_type",
+    "canonical": "change_time",
+    "label": "Đổi giờ/ngày bay",
+    "risk": 3,
+    "anchors": [
+      "đổi giờ",
+      "đổi ngày bay",
+      "đổi lịch bay",
+      "thay đổi giờ bay",
+      "đổi chuyến",
+      "change time",
+      "đổi ngày"
+    ]
+  },
+  {
+    "id": "change_route",
+    "type": "reissue_type",
+    "canonical": "change_route",
+    "label": "Đổi hành trình",
+    "risk": 3,
+    "anchors": [
+      "đổi hành trình",
+      "đổi điểm đến",
+      "thay đổi hành trình",
+      "đổi chặng bay",
+      "change route",
+      "đổi tuyến"
+    ]
+  },
+  {
+    "id": "change_name",
+    "type": "reissue_type",
+    "canonical": "change_name",
+    "label": "Đổi tên hành khách",
+    "risk": 5,
+    "anchors": [
+      "đổi tên",
+      "sửa tên",
+      "thay đổi tên",
+      "đổi tên hành khách",
+      "change name",
+      "sai tên",
+      "tên sai"
+    ]
+  },
+  {
+    "id": "momo",
+    "type": "payment_method",
+    "canonical": "momo",
+    "label": "Ví MoMo",
+    "risk": 1,
+    "anchors": [
+      "momo",
+      "ví momo",
+      "thanh toán momo",
+      "momo wallet"
+    ]
+  },
+  {
+    "id": "bank_card",
+    "type": "payment_method",
+    "canonical": "bank_card",
+    "label": "Thẻ ngân hàng",
+    "risk": 1,
+    "anchors": [
+      "thẻ atm",
+      "thẻ ngân hàng",
+      "thẻ tín dụng",
+      "thẻ visa",
+      "thẻ mastercard",
+      "credit card",
+      "debit card"
+    ]
+  },
+  {
+    "id": "vnpay",
+    "type": "payment_method",
+    "canonical": "vnpay",
+    "label": "VNPay",
+    "risk": 1,
+    "anchors": [
+      "vnpay",
+      "vn pay",
+      "thanh toán vnpay"
+    ]
+  },
+  {
+    "id": "bank_transfer",
+    "type": "payment_method",
+    "canonical": "bank_transfer",
+    "label": "Chuyển khoản",
+    "risk": 1,
+    "anchors": [
+      "chuyển khoản",
+      "internet banking",
+      "chuyển tiền ngân hàng"
+    ]
+  },
+  {
+    "id": "txn_failed",
+    "type": "payment_issue_type",
+    "canonical": "txn_failed",
+    "label": "Lỗi giao dịch",
+    "risk": 13,
+    "anchors": [
+      "lỗi thanh toán",
+      "giao dịch thất bại",
+      "thanh toán không thành",
+      "lỗi giao dịch",
+      "thanh toán lỗi"
+    ]
+  },
+  {
+    "id": "ticket_not_received",
+    "type": "payment_issue_type",
+    "canonical": "ticket_not_received",
+    "label": "Chưa nhận vé",
+    "risk": 13,
+    "anchors": [
+      "chưa có vé",
+      "không nhận được vé",
+      "chưa nhận vé",
+      "trừ tiền chưa có vé",
+      "tiền trừ mà chưa có vé"
+    ]
+  },
+  {
+    "id": "double_charge",
+    "type": "payment_issue_type",
+    "canonical": "double_charge",
+    "label": "Trừ tiền 2 lần",
+    "risk": 13,
+    "anchors": [
+      "trừ tiền 2 lần",
+      "bị trừ 2 lần",
+      "trừ nhầm tiền",
+      "trừ tiền hai lần",
+      "bị trừ thêm"
+    ]
+  },
+  {
+    "id": "dich_vu_xe_lan",
+    "type": "service_type",
+    "canonical": "dich_vu_xe_lan",
+    "label": "Dịch vụ xe lăn",
+    "risk": 3,
+    "anchors": [
+      "xe lăn",
+      "wheelchair",
+      "dịch vụ xe lăn",
+      "hỗ trợ xe lăn",
+      "người khuyết tật",
+      "mobility assistance"
+    ]
+  },
+  {
+    "id": "dich_vu_um",
+    "type": "service_type",
+    "canonical": "dich_vu_um",
+    "label": "Dịch vụ trẻ đơn thân",
+    "risk": 5,
+    "anchors": [
+      "um service",
+      "dịch vụ um",
+      "unaccompanied minor service",
+      "trẻ đi một mình dịch vụ",
+      "đăng ký um"
+    ]
+  },
+  {
+    "id": "bao_hiem_du_lich",
+    "type": "insurance_type",
+    "canonical": "bao_hiem_du_lich",
+    "label": "Bảo hiểm du lịch",
+    "risk": 2,
+    "anchors": [
+      "bảo hiểm du lịch",
+      "travel insurance",
+      "bảo hiểm chuyến bay",
+      "mua bảo hiểm",
+      "gói bảo hiểm"
+    ]
+  },
+  {
+    "id": "ma_khuyen_mai",
+    "type": "promo_type",
+    "canonical": "ma_khuyen_mai",
+    "label": "Mã khuyến mãi",
+    "risk": 1,
+    "anchors": [
+      "mã khuyến mãi",
+      "promo code",
+      "voucher",
+      "coupon",
+      "mã giảm giá",
+      "mã ưu đãi",
+      "discount code"
+    ]
+  }
 ]
