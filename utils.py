@@ -157,7 +157,6 @@ class MultiLabelExtractor:
             len(self.binarizer.classes_),
         )
         return self
-
     def train_evaluate(
         self,
         dataset: list[dict],
@@ -304,6 +303,43 @@ class MultiLabelExtractor:
         obj.label_meta = data["label_meta"]
         obj._fitted = True
         return obj
+
+
+def predict_type_of_query(user_query: str) -> dict:
+    import json
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.preprocessing import MultiLabelBinarizer
+    from sklearn.pipeline import Pipeline
+
+
+    with open("dataset/question.json", "r") as f:
+        question_dataset = json.load(f)
+        X: list = question_dataset.get("data")
+        Y: list = [question_dataset.get("label") for _ in range(len(X))]
+    
+    with open("dataset/command.json", "r") as f:
+        command_dataset = json.load(f)
+        X.extend(command_dataset.get("data"))
+        Y.extend([command_dataset.get("label") for _ in range(len(command_dataset.get("data")))])
+
+    model = Pipeline([
+        ("tfidf", TfidfVectorizer(
+            analyzer="char_wb",
+            ngram_range=(2,5),
+            max_features=50000
+        )),
+        ("clf", LogisticRegression(max_iter=1000))
+    ])
+    model.fit(X, Y)
+    cls = model.classes_
+    proba = model.predict_proba([user_query])
+    result = {}
+    for i, c in enumerate(cls):
+        result[str(c)] = float(proba[0][i])
+
+    return result
 
 
 _CLAUSE_SPLIT_RE = re.compile(

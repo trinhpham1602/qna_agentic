@@ -33,7 +33,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "xach_tay"
   },
   {
     "questions": [
@@ -70,7 +71,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "ky_gui"
   },
   {
     "questions": [
@@ -106,7 +108,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "laptop"
   },
   {
     "questions": [
@@ -142,7 +145,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": "Pin >20.000mAh → không được mang"
+    "escalate_when": "Pin >20.000mAh → không được mang",
+    "canonical": "pin_du_phong"
   },
   {
     "questions": [
@@ -178,7 +182,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "chat_long"
   },
   {
     "questions": [
@@ -214,7 +219,8 @@
       }
     ],
     "risk": 2,
-    "escalate_when": "Hỏi giá cụ thể → escalate hoặc link website VJ"
+    "escalate_when": "Hỏi giá cụ thể → escalate hoặc link website VJ",
+    "canonical": "phi_qua_can"
   },
   {
     "questions": [
@@ -250,7 +256,8 @@
       }
     ],
     "risk": 3,
-    "escalate_when": "User có booking → chuyển post-booking để thực hiện"
+    "escalate_when": "User có booking → chuyển post-booking để thực hiện",
+    "canonical": "change_route"
   },
   {
     "questions": [
@@ -286,7 +293,8 @@
       }
     ],
     "risk": 5,
-    "escalate_when": "User muốn đổi tên thực tế → escalate"
+    "escalate_when": "User muốn đổi tên thực tế → escalate",
+    "canonical": "change_name"
   },
   {
     "questions": [
@@ -322,7 +330,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "change_time"
   },
   {
     "questions": [
@@ -357,7 +366,8 @@
       }
     ],
     "risk": 2,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "phi_doi_ve"
   },
   {
     "questions": [
@@ -397,7 +407,8 @@
       }
     ],
     "risk": 8,
-    "escalate_when": "User có booking muốn hoàn → escalate ngay"
+    "escalate_when": "User có booking muốn hoàn → escalate ngay",
+    "canonical": "phi_hoan_ve"
   },
   {
     "questions": [
@@ -426,7 +437,8 @@
       }
     ],
     "risk": 8,
-    "escalate_when": "User đang trong tình huống này → escalate ngay · priority cao"
+    "escalate_when": "User đang trong tình huống này → escalate ngay · priority cao",
+    "canonical": "phi_hoan_ve"
   },
   {
     "questions": [
@@ -452,16 +464,17 @@
       {
         "name": "Deluxe",
         "key": "deluxe",
-        "content": "Phí bỏ chỗ 250k nội địa 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+        "content": "Phí bỏ chỗ 250k nội địa, 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
       },
       {
         "name": "SkyBoss",
         "key": "skyboss",
-        "content": "Phí bỏ chỗ 250k nội địa 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
+        "content": "Phí bỏ chỗ 250k nội địa, 1 triệu quốc tế. Không đến làm thủ tục = mất vé với hạng Eco/Promo"
       }
     ],
     "risk": 8,
-    "escalate_when": "User vừa lỡ chuyến → escalate ngay · priority cao"
+    "escalate_when": "User vừa lỡ chuyến → escalate ngay · priority cao",
+    "canonical": "chuyen_bay"
   },
   {
     "questions": [
@@ -519,7 +532,8 @@
       }
     ],
     "risk": 8,
-    "escalate_when": "Escalate ngay — cần xét duyệt riêng từng case"
+    "escalate_when": "Escalate ngay — cần xét duyệt riêng từng case",
+    "canonical": "phi_hoan_ve"
   },
   {
     "questions": [
@@ -554,7 +568,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "infant"
   },
   {
     "questions": [
@@ -589,7 +604,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": "Trẻ đi một mình → escalate xác nhận riêng"
+    "escalate_when": "Trẻ đi một mình → escalate xác nhận riêng",
+    "canonical": "child"
   },
   {
     "questions": [
@@ -624,7 +640,8 @@
       }
     ],
     "risk": 5,
-    "escalate_when": "Thai gần hạn / đa thai → escalate để xác nhận với VJ"
+    "escalate_when": "Thai gần hạn / đa thai → escalate để xác nhận với VJ",
+    "canonical": "pregnant"
   },
   {
     "questions": [
@@ -659,7 +676,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "domestic"
   },
   {
     "questions": [
@@ -694,7 +712,8 @@
       }
     ],
     "risk": 2,
-    "escalate_when": "Hỏi cụ thể từng quốc gia → link iatatravelcentre.com"
+    "escalate_when": "Hỏi cụ thể từng quốc gia → link iatatravelcentre.com",
+    "canonical": "ho_chieu"
   },
   {
     "questions": [
@@ -729,7 +748,8 @@
       }
     ],
     "risk": 3,
-    "escalate_when": "Quốc tịch khác / transit phức tạp → link IATA Travel Centre"
+    "escalate_when": "Quốc tịch khác / transit phức tạp → link IATA Travel Centre",
+    "canonical": "international"
   },
   {
     "questions": [
@@ -764,7 +784,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "momo"
   },
   {
     "questions": [
@@ -799,7 +820,8 @@
       }
     ],
     "risk": 13,
-    "escalate_when": "Escalate NGAY · priority cao · thu mã giao dịch + kênh thanh toán"
+    "escalate_when": "Escalate NGAY · priority cao · thu mã giao dịch + kênh thanh toán",
+    "canonical": "ticket_not_received"
   },
   {
     "questions": [
@@ -834,7 +856,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "ve"
   },
   {
     "questions": [
@@ -863,7 +886,8 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "ve"
   },
   {
     "questions": [
@@ -898,6 +922,7 @@
       }
     ],
     "risk": 1,
-    "escalate_when": null
+    "escalate_when": null,
+    "canonical": "entity_mua_ho"
   }
 ]

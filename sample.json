@@ -1,0 +1,338 @@
+[
+    {
+        "canonical": "dat",
+        "type": "intent",
+        "requests": [
+            "Đặt vé cho tôi",
+            "Book vé giúp tôi",
+            "Mua vé ngay",
+            "Đặt chỗ chuyến bay này",
+            "Đặt vé máy bay",
+            "Book chuyến này",
+            "Mua vé cho tôi",
+            "Đặt lịch bay",
+            "Order vé giúp tôi",
+            "Đặt vé ngay bây giờ"
+        ]
+    },
+    {
+        "canonical": "huy",
+        "type": "intent",
+        "requests": [
+            "Hủy vé cho tôi",
+            "Cancel vé này",
+            "Tôi muốn hủy vé",
+            "Hủy chuyến bay",
+            "Hủy đặt vé",
+            "Không đi nữa, hủy giúp tôi",
+            "Cancel booking này",
+            "Hủy vé ngay",
+            "Hủy chuyến này giúp tôi",
+            "Hủy đơn đặt vé"
+        ]
+    },
+    {
+        "canonical": "doi",
+        "type": "intent",
+        "requests": [
+            "Đổi vé cho tôi",
+            "Thay đổi vé giúp tôi",
+            "Đổi chuyến bay",
+            "Đổi ngày bay",
+            "Đổi giờ bay",
+            "Sửa vé giúp tôi",
+            "Reissue vé này",
+            "Đổi lịch bay",
+            "Đổi hành trình giúp tôi",
+            "Đổi chặng bay"
+        ]
+    },
+    {
+        "canonical": "hoan",
+        "type": "intent",
+        "requests": [
+            "Hoàn vé cho tôi",
+            "Hoàn tiền vé này",
+            "Trả vé giúp tôi",
+            "Refund vé này",
+            "Lấy lại tiền vé",
+            "Tôi muốn hoàn vé",
+            "Hoàn tiền ngay",
+            "Xử lý hoàn vé",
+            "Hoàn vé giúp tôi",
+            "Refund booking này"
+        ]
+    },
+    {
+        "canonical": "bao_luu",
+        "type": "intent",
+        "requests": [
+            "Bảo lưu vé cho tôi",
+            "Giữ vé lại",
+            "Dời chuyến giúp tôi",
+            "Reserve vé này",
+            "Bảo lưu booking",
+            "Giữ chỗ giúp tôi",
+            "Lưu vé lại",
+            "Bảo lưu chuyến bay",
+            "Dời lịch bay",
+            "Giữ vé cho tôi"
+        ]
+    },
+    {
+        "canonical": "mua_them",
+        "type": "intent",
+        "requests": [
+            "Mua thêm hành lý",
+            "Thêm hành lý giúp tôi",
+            "Add baggage",
+            "Mua thêm kg hành lý",
+            "Thêm ký gửi",
+            "Mua hành lý thêm",
+            "Add thêm hành lý",
+            "Thêm kg hành lý",
+            "Mua thêm suất hành lý",
+            "Thêm baggage"
+        ]
+    },
+    {
+        "canonical": "chon",
+        "type": "intent",
+        "requests": [
+            "Chọn ghế cho tôi",
+            "Chọn chỗ ngồi",
+            "Select seat giúp tôi",
+            "Pick ghế này",
+            "Chọn vị trí ngồi",
+            "Chọn ghế gần cửa sổ",
+            "Chọn ghế giữa",
+            "Chọn chỗ này",
+            "Select vị trí",
+            "Pick seat"
+        ]
+    },
+    {
+        "canonical": "dang_ky",
+        "type": "intent",
+        "requests": [
+            "Đăng ký dịch vụ",
+            "Đăng ký suất ăn",
+            "Register dịch vụ",
+            "Yêu cầu dịch vụ này",
+            "Đặt suất ăn",
+            "Đăng ký hỗ trợ",
+            "Đặt ăn cho tôi",
+            "Đăng ký SSR",
+            "Yêu cầu hỗ trợ đặc biệt",
+            "Đăng ký dịch vụ thêm"
+        ]
+    },
+    {
+        "canonical": "thanh_toan",
+        "type": "intent",
+        "requests": [
+            "Thanh toán vé này",
+            "Trả tiền giúp tôi",
+            "Pay đơn này",
+            "Thực hiện thanh toán",
+            "Thanh toán booking",
+            "Trả tiền vé",
+            "Chọn phương thức thanh toán",
+            "Thanh toán ngay",
+            "Pay now",
+            "Tiến hành thanh toán"
+        ]
+    },
+    {
+        "canonical": "check_in",
+        "type": "intent",
+        "requests": [
+            "Check-in cho tôi",
+            "Làm thủ tục lên máy bay",
+            "Check in online",
+            "Web check-in giúp tôi",
+            "Làm thủ tục bay",
+            "Check-in chuyến này",
+            "Thực hiện check-in",
+            "Check-in ngay",
+            "Online check-in",
+            "Làm thủ tục chuyến bay"
+        ]
+    },
+    {
+        "canonical": "hoi",
+        "type": "intent",
+        "requests": [
+            "Cho tôi biết thông tin",
+            "Giải đáp giúp tôi",
+            "Tư vấn cho tôi",
+            "Giải thích giúp tôi",
+            "Cung cấp thông tin",
+            "Trả lời giúp tôi",
+            "Hỗ trợ thông tin",
+            "Cho tôi thông tin này",
+            "Tư vấn thêm",
+            "Giải thích chi tiết"
+        ]
+    },
+    {
+        "canonical": "kiem_tra",
+        "type": "intent",
+        "requests": [
+            "Kiểm tra giúp tôi",
+            "Check thông tin này",
+            "Xem hành lý giúp tôi",
+            "Tra cứu thông tin",
+            "Kiểm tra quy định",
+            "Xem chính sách",
+            "Check baggage",
+            "Kiểm tra booking",
+            "Xem thông tin vé",
+            "Tra cứu hành lý"
+        ]
+    },
+    {
+        "canonical": "tim_kiem",
+        "type": "intent",
+        "requests": [
+            "Tìm vé cho tôi",
+            "Search chuyến bay",
+            "Tìm chuyến này",
+            "Tìm vé máy bay",
+            "Tìm chuyến bay phù hợp",
+            "Search vé",
+            "Tìm chuyến sớm nhất",
+            "Tìm chuyến giá rẻ",
+            "Tìm chuyến bay hôm nay",
+            "Tìm vé ngay"
+        ]
+    },
+    {
+        "canonical": "bao_cao",
+        "type": "intent",
+        "requests": [
+            "Báo cáo sự cố này",
+            "Khiếu nại giao dịch",
+            "Report lỗi",
+            "Bị trừ tiền rồi",
+            "Chưa có vé",
+            "Giao dịch bị lỗi",
+            "Tôi gặp vấn đề",
+            "Bị lỗi hệ thống",
+            "Thanh toán thất bại",
+            "Báo lỗi giúp tôi"
+        ]
+    },
+    {
+        "canonical": "xac_nhan",
+        "type": "intent",
+        "requests": [
+            "Xác nhận vé giúp tôi",
+            "Confirm booking",
+            "Kiểm tra vé",
+            "Xem lịch bay",
+            "Xem đặt chỗ",
+            "Xác nhận chuyến bay",
+            "Check tình trạng vé",
+            "Xem thông tin booking",
+            "Confirm chuyến này",
+            "Xác nhận đơn"
+        ]
+    },
+    {
+        "canonical": "nang_hang",
+        "type": "intent",
+        "requests": [
+            "Nâng hạng vé cho tôi",
+            "Upgrade vé này",
+            "Nâng cấp vé",
+            "Đổi lên hạng cao hơn",
+            "Nâng hạng ghế",
+            "Upgrade lên business",
+            "Nâng vé lên skyboss",
+            "Upgrade chuyến bay",
+            "Nâng lên deluxe",
+            "Đổi hạng vé"
+        ]
+    },
+    {
+        "canonical": "xem_lich",
+        "type": "intent",
+        "requests": [
+            "Xem lịch bay",
+            "Xem hành trình",
+            "Xem booking của tôi",
+            "Tra lịch bay",
+            "Xem lịch trình",
+            "Xem thông tin đặt vé",
+            "Mở itinerary",
+            "Xem chuyến bay",
+            "Xem lịch đặt vé",
+            "Check lịch bay"
+        ]
+    },
+    {
+        "canonical": "in_ve",
+        "type": "intent",
+        "requests": [
+            "In vé cho tôi",
+            "Tải vé về",
+            "Download vé",
+            "Xuất vé",
+            "Gửi vé qua email",
+            "Lấy vé điện tử",
+            "Print ticket",
+            "Gửi vé giúp tôi",
+            "Xuất file vé",
+            "Tải vé pdf"
+        ]
+    },
+    {
+        "canonical": "ap_ma",
+        "type": "intent",
+        "requests": [
+            "Áp mã giảm giá",
+            "Nhập mã khuyến mãi",
+            "Dùng voucher này",
+            "Nhập coupon",
+            "Áp dụng mã",
+            "Dùng mã ưu đãi",
+            "Apply promo code",
+            "Nhập mã giảm giá",
+            "Áp mã này",
+            "Dùng coupon"
+        ]
+    },
+    {
+        "canonical": "mua_bao_hiem",
+        "type": "intent",
+        "requests": [
+            "Mua bảo hiểm cho chuyến bay",
+            "Đăng ký bảo hiểm",
+            "Thêm bảo hiểm du lịch",
+            "Mua travel insurance",
+            "Thêm bảo hiểm",
+            "Đăng ký bảo hiểm chuyến bay",
+            "Mua thêm bảo hiểm",
+            "Chọn bảo hiểm",
+            "Add insurance",
+            "Mua insurance"
+        ]
+    },
+    {
+        "canonical": "mua_ve_ho",
+        "type": "intent",
+        "requests": [
+            "Mua vé cho người khác",
+            "Đặt vé hộ",
+            "Book vé giúp người khác",
+            "Mua vé dùm",
+            "Đặt vé cho bạn",
+            "Đặt vé cho người thân",
+            "Mua hộ vé",
+            "Đặt hộ vé máy bay",
+            "Book hộ chuyến bay",
+            "Mua vé giúp người khác"
+        ]
+    }
+]

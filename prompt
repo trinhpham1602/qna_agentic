@@ -1,14 +1,8 @@
-Todo:
-I. dataset
-    1. Thêm mới một số intent thuộc về nghiệp vụ đặt vé máy bay. Cập nhật vào file intents.json
-    2. entities.json chỉ chứa các đối tượng cụ thể. không được chứa các đối tượng chung chung. ví dụ như id=hanh_khach.
-        Các đối tượng cụ thể được gom nhóm, bởi field type như hiện tại.
-        THÊM các entity đầy đủ cho nghiệp vụ máy bay. 
-    3. claude_dataset chỉ chứa atomic entity, KHÔNG ĐƯỢC chứa các type chung chung.
-II. Phần slot mapping:
-    1. Nếu atomic thuộc type required của slotmapping thì yêu cầu user nhập thêm vào
-III. uitls.py
-    1. tôi muốn output của model ML trích xuất được multi intents và multi
-    2. thêm knowledge gragh traverse vào để tôi có thể test path
-
-Nếu dùng lib thì thêm vào file requirements.txt để cài mới và tôi cũng có .venv cho project này.
+Tôi đã phần được loại query của user là {'command': value1, 'question': value2} ở function predict_type_of_query trong file utils.py
+    Bạn hãy update lại rag_workflow sao cho:
+        a. Nếu câu hỏi là command thì cho LLM trả lời chưa support các dạng câu hỏi kiểu booking
+        b. Nếu câu hỏi là dạng question thì:
+            i. extract trong câu hỏi và check thử câu hỏi đó có tồn tại trong canonical của faq_data hay không
+                * Nếu tồn tại thì thực hiện yêu cầu nhập hạng vé nếu chưa có, sau khi có hạng vé rồi thì kết hợp với câu trước đó để thực hiện RAG và trả lời cho user
+                * Nếu không tồn tại thì nói là chưa ghi nhận được data. Liên hệ VJ
+Nếu thiếu lib thì thêm vào file requirements.txt, tôi cũng đã có săn .venv rồi.

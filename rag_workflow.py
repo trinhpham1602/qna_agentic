@@ -21,9 +21,30 @@ from config import (
     VECTOR_K,
     BM25_K,
 )
+from utils import predict_type_of_query
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ------------------------------------------------------------------
+# FAQ canonical lookup — loaded once from faq_data.json
+# ------------------------------------------------------------------
+
+_FAQ_CANONICALS: set[str] = set()
+
+
+def _load_faq_canonicals() -> None:
+    global _FAQ_CANONICALS
+    try:
+        with open("faq_data.json", "r") as f:
+            data = json.load(f)
+        _FAQ_CANONICALS = {item["canonical"] for item in data if item.get("canonical")}
+        logger.info("FAQ canonicals loaded: %d entries", len(_FAQ_CANONICALS))
+    except Exception as exc:
+        logger.warning("Could not load faq_data.json for canonical lookup: %s", exc)
+
+
+_load_faq_canonicals()
 
 # ------------------------------------------------------------------
 # Intent → document category mapping (used by retrieve_node)
@@ -513,6 +534,10 @@ class GraphState(TypedDict):
     documents:            List[Document]
     max_risk_level:       int
     final_answer:         str
+    # --- new fields for query-type routing ---
+    query_type:            str          # "command" | "question"
+    faq_canonical_matched: str          # canonical từ faq_data khớp với câu hỏi
+    faq_original_question: str          # câu hỏi gốc của topic hiện tại (multi-turn)
 
 
 # ------------------------------------------------------------------
@@ -613,6 +638,165 @@ def _get_extractors():
         _intent_extractor.save(_INTENT_MODEL_PATH)
 
     return _entity_extractor, _intent_extractor
+
+
+# Ordered list: check longer/more-specific keywords first to avoid substring conflicts
+_CABIN_KEYWORD_MAP: list[tuple[str, str]] = [
+    ("eco standard",   "eco"),
+    ("eco basic",      "promo"),
+    ("sky boss",       "skyboss"),
+    ("skyboss",        "skyboss"),
+    ("hang thuong gia","skyboss"),
+    ("hạng thương gia","skyboss"),
+    ("ve skyboss",     "skyboss"),
+    ("vé skyboss",     "skyboss"),
+    ("hang deluxe",    "deluxe"),
+    ("hạng deluxe",    "deluxe"),
+    ("ve deluxe",      "deluxe"),
+    ("vé deluxe",      "deluxe"),
+    ("deluxe",         "deluxe"),
+    ("hang eco",       "eco"),
+    ("hạng eco",       "eco"),
+    ("ve eco",         "eco"),
+    ("vé eco",         "eco"),
+    ("pho thong",      "eco"),
+    ("phổ thông",      "eco"),
+    ("hang promo",     "promo"),
+    ("hạng promo",     "promo"),
+    ("ve promo",       "promo"),
+    ("vé promo",       "promo"),
+    ("gia re",         "promo"),
+    ("giá rẻ",         "promo"),
+    ("eco",            "eco"),
+    ("promo",          "promo"),
+]
+
+
+def _extract_cabin_class_keyword(text: str) -> str | None:
+    """Keyword fallback khi ML extractor không nhận ra hạng vé (confidence dưới ngưỡng)."""
+    lower = text.lower()
+    for keyword, canonical in _CABIN_KEYWORD_MAP:
+        if keyword in lower:
+            return canonical
+    return None
+
+
+# ------------------------------------------------------------------
+# Node: query type classification (command vs question)
+# ------------------------------------------------------------------
+
+async def query_type_node(state: GraphState) -> GraphState:
+    logger.info("---QUERY TYPE NODE---")
+
+    # Nếu đang chờ user nhập hạng vé (missing_slots từ lượt trước) → bỏ qua phân loại,
+    # coi luôn là "question" để tiếp tục luồng faq_canonical_check
+    if "cabin_class" in (state.get("missing_slots") or []):
+        logger.info("Query type: question (slot continuation — waiting for cabin_class)")
+        return {"query_type": "question"}
+
+    result = predict_type_of_query(state["question"])
+    query_type = "command" if result.get("command", 0) > result.get("question", 0) else "question"
+    logger.info("Query type: %s | scores: %s", query_type, result)
+    return {"query_type": query_type}
+
+
+def _route_after_query_type(state: GraphState) -> str:
+    return "command" if state.get("query_type") == "command" else "question"
+
+
+async def command_not_supported_node(state: GraphState) -> GraphState:
+    logger.info("---COMMAND NOT SUPPORTED NODE---")
+    return {
+        "final_answer": (
+            "Hiện tại mình chưa hỗ trợ các yêu cầu đặt vé, đổi vé, hủy vé hay "
+            "các thao tác đặt chỗ trực tiếp. Bạn vui lòng truy cập website hoặc "
+            "ứng dụng VietJet Air để thực hiện nhé!"
+        )
+    }
+
+
+# ------------------------------------------------------------------
+# Node: check question against faq_data canonicals
+# ------------------------------------------------------------------
+
+async def faq_canonical_check_node(state: GraphState) -> GraphState:
+    logger.info("---FAQ CANONICAL CHECK NODE---")
+    question = state["question"]
+    prev_canonical = state.get("faq_canonical_matched", "")
+    prev_original_q = state.get("faq_original_question", "")
+
+    # Extract entities trực tiếp trong node này (không cần entity_extraction_node)
+    entity_ext, _ = _get_extractors()
+    entities = entity_ext.predict_single(question, threshold=0.3)
+
+    # Tìm canonical trong entities khớp với faq_data
+    matched_canonical = ""
+    for e in entities:
+        if e.get("canonical") in _FAQ_CANONICALS:
+            matched_canonical = e["canonical"]
+            break
+
+    # Nếu không tìm thấy canonical mới → tiếp tục dùng canonical cũ (multi-turn)
+    if not matched_canonical:
+        matched_canonical = prev_canonical
+
+    # Lưu câu hỏi gốc khi bắt đầu topic mới
+    if matched_canonical and matched_canonical != prev_canonical:
+        faq_original_question = question
+    else:
+        faq_original_question = prev_original_q or question
+
+    # Fill slots từ entities (đặc biệt cabin_class)
+    filled: dict = dict(state.get("filled_slots") or {})
+    for e in entities:
+        slot_name = ENTITY_TYPE_TO_SLOT.get(e.get("type", ""))
+        if slot_name:
+            filled[slot_name] = e["canonical"]
+    for slot, default_val in SLOT_DEFAULTS.items():
+        if slot not in filled:
+            filled[slot] = default_val
+
+    # Fallback: ML extractor đôi khi cho cabin_class dưới ngưỡng 0.3 khi câu dài.
+    # Dùng keyword match để đảm bảo không bỏ sót.
+    if "cabin_class" not in filled:
+        filled["cabin_class"] = _extract_cabin_class_keyword(question)
+
+    logger.info("FAQ canonical: %s | cabin_class: %s", matched_canonical, filled.get("cabin_class"))
+
+    return {
+        "faq_canonical_matched": matched_canonical,
+        "faq_original_question": faq_original_question,
+        "filled_slots": filled,
+        "entities": entities,
+    }
+
+
+def _route_after_faq_check(state: GraphState) -> str:
+    if not state.get("faq_canonical_matched"):
+        return "no_match"
+    if not state.get("filled_slots", {}).get("cabin_class"):
+        return "ask_cabin"
+    return "proceed"
+
+
+async def faq_not_found_node(state: GraphState) -> GraphState:
+    logger.info("---FAQ NOT FOUND NODE---")
+    return {
+        "final_answer": (
+            "Mình chưa ghi nhận được thông tin về vấn đề này trong hệ thống. "
+            "Bạn vui lòng liên hệ trực tiếp VietJet để được hỗ trợ nhé!"
+        )
+    }
+
+
+async def ask_cabin_class_node(state: GraphState) -> GraphState:
+    logger.info("---ASK CABIN CLASS NODE---")
+    q = "Bạn đang sử dụng hạng vé nào? (Promo / Eco / Deluxe / SkyBoss)"
+    return {
+        "final_answer": q,
+        "missing_slots": ["cabin_class"],
+        "slot_question": q,
+    }
 
 
 # ------------------------------------------------------------------
@@ -785,10 +969,14 @@ async def graph_traversal_node(state: GraphState) -> GraphState:
 
     entities = state.get("entities", [])
     intents  = state.get("intents",  [])
-    question = state["question"]
+    # Dùng câu hỏi gốc của topic (cho multi-turn: Turn 2 chỉ có "SkyBoss" nhưng topic là "xach_tay")
+    question = state.get("faq_original_question") or state["question"]
 
-    # Seed with entity canonicals, intent verb canonicals, and resolved concepts
+    # Seed with entity canonicals, intent verb canonicals, resolved concepts, and faq canonical
     seed_ids: set[str] = set()
+    faq_canonical = state.get("faq_canonical_matched", "")
+    if faq_canonical:
+        seed_ids.add(faq_canonical)
     for e in entities:
         seed_ids.add(e["canonical"])
     for i in intents:
@@ -876,11 +1064,11 @@ async def off_topic_node(state: GraphState) -> GraphState:
 
 async def retrieve_node(state: GraphState) -> GraphState:
     logger.info("---RETRIEVAL NODE---")
-    question      = state["question"]
+    # Dùng câu hỏi gốc cho BM25 (tránh trường hợp Turn 2 chỉ có "SkyBoss")
+    question      = state.get("faq_original_question") or state["question"]
     intents       = state.get("intents", [])
     filled_slots  = state.get("filled_slots") or {}
     graph_queries = state.get("graph_queries") or [question]
-
     # ── Metadata filter từ filled_slots ──────────────────────────────────
     meta_filter: dict = {}
     for slot in ("airline", "cabin_class", "passenger_type", "route"):
@@ -891,15 +1079,11 @@ async def retrieve_node(state: GraphState) -> GraphState:
 
     # 1. Semantic search — chạy mỗi graph query, merge kết quả
     all_pg_docs: list[Document] = []
-    for q in graph_queries:
-        try:
-            hits = vector_store.similarity_search(
-                q, k=VECTOR_K,
+    hits = vector_store.similarity_search(
+                question, k=VECTOR_K,
                 filter=meta_filter if meta_filter else None,
             )
-            all_pg_docs.extend(hits)
-        except Exception as e:
-            logger.error("Vector search failed for query '%s': %s", q, e)
+    all_pg_docs.extend(hits)
 
     # Deduplicate by content while preserving retrieval order
     seen_content: set[str] = set()
@@ -908,19 +1092,6 @@ async def retrieve_node(state: GraphState) -> GraphState:
         if doc.page_content not in seen_content:
             seen_content.add(doc.page_content)
             pg_docs.append(doc)
-
-    # Fallback: bỏ filter nếu không tìm thấy gì
-    if not pg_docs and meta_filter:
-        logger.info("Filter returned 0 results — fallback to unfiltered search")
-        for q in graph_queries[:3]:
-            try:
-                hits = vector_store.similarity_search(q, k=VECTOR_K)
-                for doc in hits:
-                    if doc.page_content not in seen_content:
-                        seen_content.add(doc.page_content)
-                        pg_docs.append(doc)
-            except Exception as e:
-                logger.error("Unfiltered vector search failed: %s", e)
 
     # 2. BM25
     bm25_docs = _bm25_retriever.invoke(question) if _bm25_retriever else []
@@ -957,7 +1128,7 @@ async def retrieve_node(state: GraphState) -> GraphState:
         expanded = [d for d in _all_documents if d.metadata.get("category") == top_category]
         logger.info(f"Category expand: {len(expanded)} docs for '{top_category}'")
         return {"documents": expanded[:CONTEXT_DOC_LIMIT]}
-
+    print(best)
     return {"documents": best}
 
 
@@ -983,16 +1154,17 @@ async def assess_risk_node(state: GraphState) -> GraphState:
 
 async def generate_node(state: GraphState) -> GraphState:
     logger.info("---GENERATE NODE---")
-    question   = state["question"]
+    # Dùng câu hỏi gốc của topic (đảm bảo đúng khi user chỉ trả lời "SkyBoss")
+    question   = state.get("faq_original_question") or state["question"]
     docs       = state.get("documents", [])
     max_risk   = state.get("max_risk_level", 1)
     entities   = state.get("entities", [])
     intents    = state.get("intents", [])
     confidence = state.get("confidence", 0.0)
     suggested  = state.get("suggested_questions", [])
-
+    print(confidence)
     # Low confidence or no retrieval → skip LLM entirely
-    if confidence < CONFIDENCE_THRESHOLD or not docs:
+    if not docs:
         logger.info("Low confidence (%.2f) — returning 'not provided' response", confidence)
         return {
             "final_answer":        "Xin lỗi, câu hỏi này chưa được cung cấp thông tin trong hệ thống. Vui lòng liên hệ hotline VietJet để được hỗ trợ trực tiếp.",
@@ -1055,35 +1227,39 @@ async def escalate_api_action() -> str:
 # Build LangGraph
 #
 # START
-#   → entity_extraction
-#   → slot_filling  ──┬── (off_topic)       → off_topic  ──┐
-#                     ├── (ask_slot)        → ask_slot   ──┤
-#                     └── (graph_traversal) → graph_traversal
-#                                               → retrieve
-#                                                 → assess_risk
-#                                                   → generate ──┘
-#                                                        → END
+#   → query_type ──┬── (command)  → command_not_supported ──────────┐
+#                  └── (question) → faq_canonical_check             │
+#                                      ├── (no_match)  → faq_not_found ──┤
+#                                      ├── (ask_cabin) → ask_cabin_class ─┤
+#                                      └── (proceed)   → retrieve        │
+#                                                           → assess_risk │
+#                                                             → generate ─┘
+#                                                                 → END
 # ------------------------------------------------------------------
 builder = StateGraph(GraphState)
-builder.add_node("entity_extraction", entity_extraction_node)
-builder.add_node("slot_filling",      slot_filling_node)
-builder.add_node("ask_slot",          ask_slot_node)
-builder.add_node("off_topic",         off_topic_node)
-builder.add_node("graph_traversal",   graph_traversal_node)
-builder.add_node("retrieve",          retrieve_node)
-builder.add_node("assess_risk",       assess_risk_node)
-builder.add_node("generate",          generate_node)
+builder.add_node("query_type",            query_type_node)
+builder.add_node("command_not_supported", command_not_supported_node)
+builder.add_node("faq_canonical_check",   faq_canonical_check_node)
+builder.add_node("faq_not_found",         faq_not_found_node)
+builder.add_node("ask_cabin_class",       ask_cabin_class_node)
+builder.add_node("retrieve",              retrieve_node)
+builder.add_node("assess_risk",           assess_risk_node)
+builder.add_node("generate",              generate_node)
 
-builder.add_edge(START,               "entity_extraction")
-builder.add_edge("entity_extraction", "slot_filling")
+builder.add_edge(START, "query_type")
 builder.add_conditional_edges(
-    "slot_filling",
-    _route_after_slots,
-    {"off_topic": "off_topic", "ask_slot": "ask_slot", "graph_traversal": "graph_traversal"},
+    "query_type",
+    _route_after_query_type,
+    {"command": "command_not_supported", "question": "faq_canonical_check"},
 )
-builder.add_edge("graph_traversal",  "retrieve")
-builder.add_edge("retrieve",         "assess_risk")
-builder.add_edge("assess_risk",      "generate")
-builder.add_edge("generate",         END)
-builder.add_edge("ask_slot",         END)
-builder.add_edge("off_topic",        END)
+builder.add_conditional_edges(
+    "faq_canonical_check",
+    _route_after_faq_check,
+    {"no_match": "faq_not_found", "ask_cabin": "ask_cabin_class", "proceed": "retrieve"},
+)
+builder.add_edge("retrieve",              "assess_risk")
+builder.add_edge("assess_risk",           "generate")
+builder.add_edge("generate",              END)
+builder.add_edge("ask_cabin_class",       END)
+builder.add_edge("faq_not_found",         END)
+builder.add_edge("command_not_supported", END)

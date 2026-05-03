@@ -1,0 +1,15 @@
+keyword cần research:
+    Speech Act
+    detect cụm từ thay vì detect từng từ
+    Hard Negatives: có độ tương đồng so với mẫu đúng
+    Linguistic Patterns
+    phan biet intent type.
+
+Model:
+    1. Chưa hiểu đúng cụm từ. 
+    phí đổi vé skyboss nội địa
+        Intents : nang_hang(0.40), doi(0.36)
+        Entities: skyboss(0.41)
+        Mode    : booking (1.00)
+    2. chưa phân biệt được này là qna hay là một action booking
+    ví dụ: "mua thêm ký gửi 20kg vietjet thì cần gì" là một câu hỏi nhưng nó nói là booking
