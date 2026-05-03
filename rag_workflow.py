@@ -468,8 +468,9 @@ def _build_path_docs(item: dict) -> list[Document]:
         "escalate_when": item.get("escalate_when", ""),
     }
     for e in cabin_classes:
-        content = f"""Câu hỏi tình huống: {item.get("question", "")} {e.get("name", "")}.
-        \nTrả lời: {e.get("content", "")}"""
+        for q in item.get("questions", []):
+            content = f"""Câu hỏi tình huống: {q} {e.get("name", "")}.
+            \nTrả lời: {e.get("content", "")}"""
         docs.append(Document(page_content=content, metadata=base_meta))
   
     return docs

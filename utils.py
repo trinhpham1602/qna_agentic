@@ -139,7 +139,7 @@ class MultiLabelExtractor:
         texts, label_sets = self._build_samples(dataset, is_intent)
 
         self.vectorizer = TfidfVectorizer(
-            analyzer="char_wb", ngram_range=(2, 5), max_features=50000
+            analyzer="char_wb", ngram_range=(2, 7), max_features=50000
         )
         self.binarizer = MultiLabelBinarizer()
         self.classifier = OneVsRestClassifier(
@@ -452,7 +452,7 @@ if __name__ == "__main__":
         "quy định phụ nữ mang thai và hành lý xách tay",
         "phí đổi vé skyboss nội địa",
         "trẻ đi một mình cần giấy tờ gì",
-        "mua thêm ký gửi 20kg vietjet",
+        "mua thêm ký gửi 20kg vietjet thì cần làm gì",
         "nâng hạng lên deluxe mất bao nhiêu",
         "mã khuyến mãi nhập ở đâu",
     ]
