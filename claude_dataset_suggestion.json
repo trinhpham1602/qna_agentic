@@ -1,0 +1,1383 @@
+{
+    "metadata": {
+        "version": "1.0.0",
+        "language": "vi",
+        "domain": "airline_customer_service",
+        "description": "Dataset NLP cho chatbot hàng không: phân loại intent, thu thập slot và vector metadata để truy vấn database",
+        "total_intents": 6,
+        "created": "2026-05-06",
+        "usage": {
+            "step_1": "Dùng sample_questions để train intent classifier (fine-tune hoặc embedding similarity)",
+            "step_2": "Khi intent xác định, dùng slots để hỏi khai thác thông tin còn thiếu",
+            "step_3": "Khi đủ required_slots, tạo vector query từ vector_metadata.fields để tra vector DB",
+            "step_4": "Kết quả từ vector DB trả lời cho user"
+        }
+    },
+    "intents": [
+        {
+            "intent_id": "doi_ve",
+            "intent_name": "Đổi vé",
+            "intent_name_en": "flight_change",
+            "description": "Hành khách muốn thay đổi ngày bay, giờ bay, hành trình hoặc hạng vé",
+            "priority": 1,
+            "sample_questions": [
+                "Tôi muốn đổi vé thì có mất phí không?",
+                "Làm thế nào để đổi chuyến bay?",
+                "Vé của tôi có được đổi ngày bay không?",
+                "Tôi cần chuyển chuyến bay sang ngày khác",
+                "Đổi vé hạng thương gia có khác không?",
+                "Tôi muốn dời chuyến bay lại một ngày",
+                "Có thể đổi giờ bay được không?",
+                "Vé promo có đổi được không?",
+                "Phí đổi vé là bao nhiêu?",
+                "Tôi đặt nhầm ngày, đổi lại được không?",
+                "Quy trình đổi vé máy bay như thế nào?",
+                "Tôi muốn bay sớm hơn, có thể thay đổi không?",
+                "Vé economy có được đổi chuyến không?",
+                "Đổi vé online được không hay phải ra quầy?",
+                "Tôi cần thay đổi hành trình bay",
+                "Có thể đổi điểm đến không?",
+                "Mua vé rồi nhưng muốn bay ngày khác",
+                "Đổi tên trên vé có được không?",
+                "Thay đổi số lượng hành khách được không?",
+                "Vé hạng nhất có điều kiện đổi như thế nào?"
+            ],
+            "slots": [
+                {
+                    "slot_name": "booking_code",
+                    "slot_name_vi": "Mã đặt chỗ (PNR)",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "pattern": "^[A-Z0-9]{6}$",
+                        "example": "ABC123",
+                        "error_message": "Mã đặt chỗ gồm 6 ký tự chữ và số in hoa"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị vui lòng cho biết mã đặt chỗ (PNR) của mình? Mã này gồm 6 ký tự, có trong email xác nhận đặt vé.",
+                        "Để tra cứu vé, anh/chị có thể cho tôi biết mã booking không? Ví dụ: ABC123",
+                        "Mã đặt chỗ trên vé của anh/chị là gì ạ?"
+                    ]
+                },
+                {
+                    "slot_name": "passenger_name",
+                    "slot_name_vi": "Tên hành khách",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "pattern": "^[A-Z\\s]+$",
+                        "example": "NGUYEN VAN A",
+                        "error_message": "Tên phải trùng với tên trên vé (chữ in hoa, không dấu)"
+                    },
+                    "elicitation_questions": [
+                        "Tên hành khách ghi trên vé là gì ạ? (Vui lòng nhập theo định dạng không dấu, ví dụ: NGUYEN VAN A)",
+                        "Anh/chị cho tôi biết họ tên đầy đủ trên vé?"
+                    ]
+                },
+                {
+                    "slot_name": "ticket_class",
+                    "slot_name_vi": "Hạng vé",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 3,
+                    "validation": {
+                        "enum_values": [
+                            "economy",
+                            "premium_economy",
+                            "business",
+                            "first"
+                        ],
+                        "enum_labels_vi": [
+                            "Phổ thông",
+                            "Phổ thông đặc biệt",
+                            "Thương gia",
+                            "Hạng nhất"
+                        ],
+                        "error_message": "Vui lòng chọn hạng vé hợp lệ"
+                    },
+                    "elicitation_questions": [
+                        "Vé của anh/chị thuộc hạng nào ạ? (Phổ thông / Thương gia / Hạng nhất)",
+                        "Anh/chị đang đi hạng vé gì? Phổ thông, Thương gia hay Hạng nhất?"
+                    ]
+                },
+                {
+                    "slot_name": "fare_condition",
+                    "slot_name_vi": "Điều kiện vé",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 4,
+                    "validation": {
+                        "enum_values": [
+                            "flexible",
+                            "standard",
+                            "saver",
+                            "promo"
+                        ],
+                        "enum_labels_vi": [
+                            "Linh hoạt",
+                            "Tiêu chuẩn",
+                            "Tiết kiệm",
+                            "Khuyến mãi"
+                        ],
+                        "note": "Thường lấy được từ booking_code khi tra database, không cần hỏi trực tiếp"
+                    },
+                    "elicitation_questions": [
+                        "Vé của anh/chị là loại vé Linh hoạt, Tiêu chuẩn, Tiết kiệm hay Khuyến mãi?",
+                        "Khi mua vé, anh/chị chọn gói vé nào? Thường ghi trong email xác nhận."
+                    ]
+                },
+                {
+                    "slot_name": "original_flight_date",
+                    "slot_name_vi": "Ngày bay hiện tại",
+                    "data_type": "date",
+                    "required": true,
+                    "priority_order": 5,
+                    "validation": {
+                        "format": "DD/MM/YYYY",
+                        "constraint": "Phải là ngày trong tương lai hoặc trong vòng 24h qua",
+                        "error_message": "Ngày bay không hợp lệ"
+                    },
+                    "elicitation_questions": [
+                        "Ngày bay hiện tại trên vé của anh/chị là ngày mấy?",
+                        "Chuyến bay gốc của anh/chị bay vào ngày nào?"
+                    ]
+                },
+                {
+                    "slot_name": "new_flight_date",
+                    "slot_name_vi": "Ngày bay muốn đổi sang",
+                    "data_type": "date",
+                    "required": true,
+                    "priority_order": 6,
+                    "validation": {
+                        "format": "DD/MM/YYYY",
+                        "constraint": "Phải sau ngày hiện tại và sau original_flight_date hoặc trước tùy yêu cầu",
+                        "error_message": "Ngày đổi không hợp lệ"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị muốn đổi sang ngày bay nào?",
+                        "Ngày bay mới anh/chị mong muốn là ngày mấy?"
+                    ]
+                },
+                {
+                    "slot_name": "route",
+                    "slot_name_vi": "Hành trình",
+                    "data_type": "string",
+                    "required": false,
+                    "priority_order": 7,
+                    "validation": {
+                        "format": "SGN-HAN hoặc Hồ Chí Minh - Hà Nội",
+                        "note": "Thường lấy từ booking_code"
+                    },
+                    "elicitation_questions": [
+                        "Hành trình bay có thay đổi không? Điểm đi và điểm đến vẫn giữ nguyên?",
+                        "Anh/chị có muốn thay đổi điểm đến không?"
+                    ]
+                }
+            ],
+            "vector_metadata": {
+                "description": "Các field này được kết hợp tạo vector query khi đủ required slots",
+                "embedding_strategy": "Concatenate field values sau khi normalize, encode bằng sentence-transformer",
+                "fields": [
+                    {
+                        "field": "booking_code",
+                        "weight": 1.0,
+                        "type": "identifier"
+                    },
+                    {
+                        "field": "ticket_class",
+                        "weight": 0.9,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "fare_condition",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "days_before_flight",
+                        "weight": 0.8,
+                        "type": "numeric",
+                        "derive_from": "original_flight_date - today"
+                    },
+                    {
+                        "field": "route",
+                        "weight": 0.5,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "change_type",
+                        "weight": 0.7,
+                        "type": "categorical",
+                        "values": [
+                            "date_change",
+                            "route_change",
+                            "class_upgrade",
+                            "class_downgrade"
+                        ]
+                    }
+                ],
+                "query_template": "Đổi vé {ticket_class} {fare_condition} chuyến {route} ngày {original_flight_date} sang {new_flight_date}",
+                "expected_db_response_fields": [
+                    "change_fee",
+                    "fee_amount_vnd",
+                    "fee_amount_usd",
+                    "allowed",
+                    "conditions",
+                    "deadline_to_change"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi có thể hỗ trợ anh/chị đổi vé. Để kiểm tra điều kiện và phí đổi vé, tôi cần một vài thông tin.",
+                "completion_response": "Cảm ơn anh/chị. Đang tra cứu thông tin đổi vé cho chuyến bay {route} ngày {original_flight_date}...",
+                "fallback": "Xin lỗi, tôi chưa hiểu rõ. Anh/chị có thể cung cấp {missing_slot} không?"
+            }
+        },
+        {
+            "intent_id": "hoan_ve",
+            "intent_name": "Hoàn vé / Hủy vé",
+            "intent_name_en": "refund_cancellation",
+            "description": "Hành khách muốn hủy vé và nhận lại tiền hoàn",
+            "priority": 2,
+            "sample_questions": [
+                "Tôi muốn hủy vé, tiền có được hoàn không?",
+                "Vé khuyến mãi có hoàn được không?",
+                "Chuyến bay bị hủy, tôi được hoàn bao nhiêu?",
+                "Quy trình hoàn vé mất bao lâu?",
+                "Hoàn vé mất bao nhiêu phần trăm?",
+                "Tôi không đi được nữa, làm sao hủy vé?",
+                "Phí hủy vé là bao nhiêu?",
+                "Vé business có hoàn toàn bộ không?",
+                "Hủy vé trước bao lâu thì không mất phí?",
+                "Tôi bị bệnh, có được hoàn vé không?",
+                "Chính sách hoàn tiền của hãng như thế nào?",
+                "Tiền hoàn về tài khoản hay ví điện tử?",
+                "Hủy vé online được không?",
+                "Vé không hoàn có nghĩa là gì?",
+                "Tôi cần hủy chuyến bay khẩn cấp",
+                "Hoàn vé do chuyến bay delay nhiều giờ",
+                "Mua vé rồi nhưng muốn cancel",
+                "Refund bao nhiêu ngày?",
+                "Hủy vé group có khác không?",
+                "Vé 2 chiều hủy 1 chiều được không?"
+            ],
+            "slots": [
+                {
+                    "slot_name": "booking_code",
+                    "slot_name_vi": "Mã đặt chỗ (PNR)",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "pattern": "^[A-Z0-9]{6}$",
+                        "example": "XYZ789"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị vui lòng cung cấp mã đặt chỗ (PNR) để tôi tra cứu thông tin vé?",
+                        "Mã booking trên email xác nhận của anh/chị là gì?"
+                    ]
+                },
+                {
+                    "slot_name": "ticket_class",
+                    "slot_name_vi": "Hạng vé",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "enum_values": [
+                            "economy",
+                            "premium_economy",
+                            "business",
+                            "first"
+                        ],
+                        "enum_labels_vi": [
+                            "Phổ thông",
+                            "Phổ thông đặc biệt",
+                            "Thương gia",
+                            "Hạng nhất"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Vé của anh/chị thuộc hạng vé nào?"
+                    ]
+                },
+                {
+                    "slot_name": "fare_condition",
+                    "slot_name_vi": "Điều kiện vé",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 3,
+                    "validation": {
+                        "enum_values": [
+                            "flexible",
+                            "standard",
+                            "saver",
+                            "promo",
+                            "non_refundable"
+                        ],
+                        "enum_labels_vi": [
+                            "Linh hoạt",
+                            "Tiêu chuẩn",
+                            "Tiết kiệm",
+                            "Khuyến mãi",
+                            "Không hoàn tiền"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Loại vé anh/chị mua là vé Linh hoạt, Tiêu chuẩn, Tiết kiệm hay Khuyến mãi?",
+                        "Gói vé khi mua có điều kiện hoàn tiền không?"
+                    ]
+                },
+                {
+                    "slot_name": "flight_date",
+                    "slot_name_vi": "Ngày bay",
+                    "data_type": "date",
+                    "required": true,
+                    "priority_order": 4,
+                    "validation": {
+                        "format": "DD/MM/YYYY"
+                    },
+                    "elicitation_questions": [
+                        "Ngày bay trên vé của anh/chị là ngày mấy?",
+                        "Chuyến bay dự kiến của anh/chị vào ngày nào?"
+                    ]
+                },
+                {
+                    "slot_name": "cancellation_reason",
+                    "slot_name_vi": "Lý do hủy",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 5,
+                    "validation": {
+                        "enum_values": [
+                            "voluntary",
+                            "illness",
+                            "flight_cancelled",
+                            "flight_delayed",
+                            "force_majeure",
+                            "other"
+                        ],
+                        "enum_labels_vi": [
+                            "Tự nguyện",
+                            "Bệnh/Y tế",
+                            "Hãng hủy chuyến",
+                            "Chuyến bay delay",
+                            "Bất khả kháng",
+                            "Lý do khác"
+                        ],
+                        "note": "Lý do ảnh hưởng đến mức phí hoàn - cần kèm giấy tờ chứng minh với illness/force_majeure"
+                    },
+                    "elicitation_questions": [
+                        "Lý do anh/chị muốn hủy vé là gì? (Tự nguyện / Bệnh / Chuyến bay bị hủy...)",
+                        "Anh/chị có thể cho biết nguyên nhân hủy vé để tôi kiểm tra chính sách phù hợp?"
+                    ]
+                },
+                {
+                    "slot_name": "refund_method",
+                    "slot_name_vi": "Hình thức hoàn tiền",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 6,
+                    "validation": {
+                        "enum_values": [
+                            "original_payment",
+                            "bank_transfer",
+                            "e_wallet",
+                            "travel_credit"
+                        ],
+                        "enum_labels_vi": [
+                            "Về phương thức thanh toán gốc",
+                            "Chuyển khoản ngân hàng",
+                            "Ví điện tử",
+                            "Credit bay"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị muốn nhận tiền hoàn về hình thức nào?",
+                        "Hoàn về thẻ/tài khoản gốc hay anh/chị muốn chuyển sang credit bay?"
+                    ]
+                }
+            ],
+            "vector_metadata": {
+                "description": "Query vector DB để lấy chính sách hoàn vé tương ứng",
+                "fields": [
+                    {
+                        "field": "ticket_class",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "fare_condition",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "cancellation_reason",
+                        "weight": 0.9,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "days_before_flight",
+                        "weight": 1.0,
+                        "type": "numeric",
+                        "derive_from": "flight_date - today"
+                    },
+                    {
+                        "field": "route_type",
+                        "weight": 0.6,
+                        "type": "categorical",
+                        "values": [
+                            "domestic",
+                            "international"
+                        ]
+                    }
+                ],
+                "query_template": "Hoàn vé {ticket_class} {fare_condition} lý do {cancellation_reason} còn {days_before_flight} ngày trước chuyến bay",
+                "expected_db_response_fields": [
+                    "refund_percentage",
+                    "refund_fee_vnd",
+                    "processing_days",
+                    "conditions",
+                    "required_documents"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi sẽ hỗ trợ anh/chị về việc hoàn/hủy vé. Chính sách hoàn vé phụ thuộc vào loại vé và thời điểm hủy.",
+                "completion_response": "Đang tra cứu chính sách hoàn vé {fare_condition} còn {days_before_flight} ngày trước chuyến bay...",
+                "fallback": "Tôi cần biết thêm {missing_slot} để tra cứu chính xác chính sách hoàn tiền cho anh/chị."
+            }
+        },
+        {
+            "intent_id": "hanh_ly",
+            "intent_name": "Hành lý",
+            "intent_name_en": "baggage_policy",
+            "description": "Quy định hành lý xách tay, ký gửi, mua thêm hành lý, hành lý quá khổ/quá cân",
+            "priority": 3,
+            "sample_questions": [
+                "Tôi được mang bao nhiêu kg hành lý?",
+                "Mua thêm hành lý giá bao nhiêu?",
+                "Vali 30kg có phải trả thêm phí không?",
+                "Hành lý xách tay tối đa bao nhiêu?",
+                "Hành lý ký gửi miễn phí bao nhiêu kg?",
+                "Mang xe đạp lên máy bay như thế nào?",
+                "Hành lý quá cân tính phí ra sao?",
+                "Vé business được bao nhiêu kg?",
+                "Mua thêm hành lý online rẻ hơn không?",
+                "Quy định hành lý quốc tế khác nội địa không?",
+                "Có thể mang thú cưng không?",
+                "Hành lý thể thao có được không?",
+                "Kích thước hành lý xách tay tối đa?",
+                "Mang laptop và máy ảnh có tính không?",
+                "Chất lỏng mang theo bao nhiêu ml?",
+                "Hành lý vé khuyến mãi có miễn phí không?",
+                "Trẻ em được mang hành lý bao nhiêu?",
+                "Mang nhạc cụ lên máy bay được không?",
+                "Hành lý quá khổ xử lý như thế nào?",
+                "Mua thêm 10kg hành lý giá bao nhiêu?"
+            ],
+            "slots": [
+                {
+                    "slot_name": "ticket_class",
+                    "slot_name_vi": "Hạng vé",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "enum_values": [
+                            "economy",
+                            "premium_economy",
+                            "business",
+                            "first"
+                        ],
+                        "enum_labels_vi": [
+                            "Phổ thông",
+                            "Phổ thông đặc biệt",
+                            "Thương gia",
+                            "Hạng nhất"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Vé của anh/chị thuộc hạng vé nào ạ?",
+                        "Anh/chị đang đi hạng Phổ thông, Thương gia hay Hạng nhất?"
+                    ]
+                },
+                {
+                    "slot_name": "route_type",
+                    "slot_name_vi": "Loại chuyến bay",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "enum_values": [
+                            "domestic",
+                            "international_asean",
+                            "international_asia",
+                            "international_intercontinental"
+                        ],
+                        "enum_labels_vi": [
+                            "Nội địa",
+                            "Quốc tế ASEAN",
+                            "Quốc tế châu Á",
+                            "Quốc tế liên lục địa"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Chuyến bay của anh/chị là nội địa hay quốc tế?",
+                        "Bay từ đâu đến đâu ạ? (để xác định loại hành trình)"
+                    ]
+                },
+                {
+                    "slot_name": "baggage_inquiry_type",
+                    "slot_name_vi": "Loại hỏi về hành lý",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 3,
+                    "validation": {
+                        "enum_values": [
+                            "carry_on",
+                            "checked",
+                            "extra_purchase",
+                            "oversize",
+                            "special",
+                            "liquid"
+                        ],
+                        "enum_labels_vi": [
+                            "Xách tay",
+                            "Ký gửi",
+                            "Mua thêm",
+                            "Quá khổ/quá cân",
+                            "Đặc biệt (nhạc cụ/thể thao/thú cưng)",
+                            "Chất lỏng"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị hỏi về hành lý xách tay hay ký gửi?",
+                        "Anh/chị cần thông tin về loại hành lý nào?"
+                    ]
+                },
+                {
+                    "slot_name": "extra_weight_kg",
+                    "slot_name_vi": "Số kg cần mua thêm",
+                    "data_type": "integer",
+                    "required": false,
+                    "priority_order": 4,
+                    "validation": {
+                        "min": 5,
+                        "max": 50,
+                        "unit": "kg",
+                        "note": "Chỉ cần khi baggage_inquiry_type = extra_purchase"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị muốn mua thêm bao nhiêu kg hành lý?",
+                        "Cần thêm bao nhiêu kg anh/chị?"
+                    ]
+                },
+                {
+                    "slot_name": "fare_condition",
+                    "slot_name_vi": "Điều kiện vé",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 5,
+                    "validation": {
+                        "enum_values": [
+                            "flexible",
+                            "standard",
+                            "saver",
+                            "promo"
+                        ],
+                        "note": "Một số gói vé khuyến mãi không bao gồm hành lý ký gửi miễn phí"
+                    },
+                    "elicitation_questions": [
+                        "Vé anh/chị mua là gói nào? (Tiêu chuẩn, Tiết kiệm hay Khuyến mãi?)"
+                    ]
+                }
+            ],
+            "vector_metadata": {
+                "description": "Query DB quy định hành lý theo hạng vé và hành trình",
+                "fields": [
+                    {
+                        "field": "ticket_class",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "route_type",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "fare_condition",
+                        "weight": 0.8,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "baggage_inquiry_type",
+                        "weight": 0.9,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "extra_weight_kg",
+                        "weight": 0.7,
+                        "type": "numeric"
+                    },
+                    {
+                        "field": "passenger_type",
+                        "weight": 0.6,
+                        "type": "categorical",
+                        "values": [
+                            "adult",
+                            "child",
+                            "infant"
+                        ]
+                    }
+                ],
+                "query_template": "Quy định hành lý {baggage_inquiry_type} hạng {ticket_class} chuyến {route_type} gói vé {fare_condition}",
+                "expected_db_response_fields": [
+                    "free_allowance_kg",
+                    "carry_on_limit_kg",
+                    "carry_on_dimensions",
+                    "extra_fee_per_kg",
+                    "prepaid_discount",
+                    "special_items_policy"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi có thể cung cấp thông tin về quy định hành lý. Phụ cấp hành lý phụ thuộc vào hạng vé và hành trình bay.",
+                "completion_response": "Đang tra cứu quy định hành lý {baggage_inquiry_type} cho vé {ticket_class} chuyến {route_type}...",
+                "fallback": "Để tra cứu chính xác, anh/chị có thể cho biết {missing_slot} không?"
+            }
+        },
+        {
+            "intent_id": "check_in",
+            "intent_name": "Check-in",
+            "intent_name_en": "check_in",
+            "description": "Check-in online, tại quầy, chọn chỗ ngồi, in boarding pass",
+            "priority": 4,
+            "sample_questions": [
+                "Khi nào có thể làm check-in online?",
+                "Tôi muốn chọn chỗ ngồi trước",
+                "Check-in online bắt đầu trước bao lâu?",
+                "Làm sao in boarding pass?",
+                "Check-in online đóng bao giờ?",
+                "Có thể check-in bằng điện thoại không?",
+                "Tôi chưa check-in, bây giờ còn kịp không?",
+                "Chọn ghế sát cửa sổ như thế nào?",
+                "Ghế exit row có đặt trước được không?",
+                "Check-in tại quầy cần đến trước bao lâu?",
+                "Boarding pass điện tử có được chấp nhận không?",
+                "Tôi quên check-in online, giờ phải làm gì?",
+                "Có bao nhiêu cổng check-in?",
+                "Mã QR boarding pass ở đâu?",
+                "Check-in nhóm nhiều người cùng lúc được không?",
+                "Ghế hàng đầu có phụ phí không?",
+                "Trẻ em cần giấy tờ gì khi check-in?",
+                "Đã check-in rồi có đổi chỗ được không?",
+                "Web check-in cho vé quốc tế khác không?",
+                "Thủ tục check-in cần giấy tờ gì?"
+            ],
+            "slots": [
+                {
+                    "slot_name": "booking_code",
+                    "slot_name_vi": "Mã đặt chỗ",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "pattern": "^[A-Z0-9]{6}$"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị cho tôi biết mã đặt chỗ (PNR) để kiểm tra tình trạng check-in?",
+                        "Mã booking của anh/chị là gì?"
+                    ]
+                },
+                {
+                    "slot_name": "flight_date",
+                    "slot_name_vi": "Ngày bay",
+                    "data_type": "date",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "format": "DD/MM/YYYY",
+                        "constraint": "Từ hôm nay đến 30 ngày tới"
+                    },
+                    "elicitation_questions": [
+                        "Ngày bay của anh/chị là ngày mấy?",
+                        "Chuyến bay dự kiến vào ngày nào?"
+                    ]
+                },
+                {
+                    "slot_name": "departure_time",
+                    "slot_name_vi": "Giờ bay",
+                    "data_type": "time",
+                    "required": false,
+                    "priority_order": 3,
+                    "validation": {
+                        "format": "HH:MM"
+                    },
+                    "elicitation_questions": [
+                        "Giờ khởi hành trên vé của anh/chị là mấy giờ?",
+                        "Chuyến bay cất cánh lúc mấy giờ?"
+                    ]
+                },
+                {
+                    "slot_name": "flight_number",
+                    "slot_name_vi": "Số hiệu chuyến bay",
+                    "data_type": "string",
+                    "required": false,
+                    "priority_order": 4,
+                    "validation": {
+                        "pattern": "^[A-Z]{2}[0-9]{3,4}$",
+                        "example": "VN123"
+                    },
+                    "elicitation_questions": [
+                        "Số hiệu chuyến bay là gì? (Ví dụ: VN123)",
+                        "Chuyến bay số bao nhiêu anh/chị?"
+                    ]
+                },
+                {
+                    "slot_name": "check_in_type",
+                    "slot_name_vi": "Hình thức check-in",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 5,
+                    "validation": {
+                        "enum_values": [
+                            "online_web",
+                            "online_app",
+                            "airport_counter",
+                            "airport_kiosk"
+                        ],
+                        "enum_labels_vi": [
+                            "Online qua web",
+                            "Online qua app",
+                            "Quầy sân bay",
+                            "Kiosk tự phục vụ"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị muốn check-in online hay tại sân bay?",
+                        "Hình thức check-in anh/chị dự định?"
+                    ]
+                },
+                {
+                    "slot_name": "seat_preference",
+                    "slot_name_vi": "Yêu cầu chỗ ngồi",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 6,
+                    "validation": {
+                        "enum_values": [
+                            "window",
+                            "aisle",
+                            "middle",
+                            "front_row",
+                            "exit_row",
+                            "bulkhead",
+                            "no_preference"
+                        ],
+                        "enum_labels_vi": [
+                            "Cửa sổ",
+                            "Lối đi",
+                            "Giữa",
+                            "Hàng đầu",
+                            "Hàng exit",
+                            "Hàng đầu cabin",
+                            "Không yêu cầu"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị có yêu cầu về chỗ ngồi không? (Cửa sổ / Lối đi / Hàng đầu...)",
+                        "Muốn ngồi vị trí nào anh/chị?"
+                    ]
+                }
+            ],
+            "vector_metadata": {
+                "description": "Query DB thông tin check-in và ghế ngồi",
+                "fields": [
+                    {
+                        "field": "flight_number",
+                        "weight": 1.0,
+                        "type": "identifier"
+                    },
+                    {
+                        "field": "flight_date",
+                        "weight": 1.0,
+                        "type": "date"
+                    },
+                    {
+                        "field": "check_in_type",
+                        "weight": 0.8,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "seat_preference",
+                        "weight": 0.7,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "hours_before_departure",
+                        "weight": 0.9,
+                        "type": "numeric",
+                        "derive_from": "departure_time - now"
+                    },
+                    {
+                        "field": "ticket_class",
+                        "weight": 0.6,
+                        "type": "categorical"
+                    }
+                ],
+                "query_template": "Check-in {check_in_type} chuyến {flight_number} ngày {flight_date} giờ {departure_time} yêu cầu ghế {seat_preference}",
+                "expected_db_response_fields": [
+                    "check_in_open_time",
+                    "check_in_close_time",
+                    "available_seats",
+                    "seat_fee",
+                    "boarding_pass_url",
+                    "gate_number"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi có thể hỗ trợ thủ tục check-in. Check-in online thường mở 24 giờ trước giờ bay.",
+                "completion_response": "Đang kiểm tra tình trạng check-in và chỗ ngồi cho chuyến {flight_number} ngày {flight_date}...",
+                "fallback": "Để hỗ trợ check-in, tôi cần thêm thông tin về {missing_slot}."
+            }
+        },
+        {
+            "intent_id": "dich_vu_dac_biet",
+            "intent_name": "Dịch vụ đặc biệt",
+            "intent_name_en": "special_services",
+            "description": "Hỗ trợ xe lăn, suất ăn đặc biệt, trẻ em đi một mình, phụ nữ mang thai, thiết bị y tế",
+            "priority": 5,
+            "sample_questions": [
+                "Tôi cần hỗ trợ xe lăn tại sân bay",
+                "Đặt suất ăn chay được không?",
+                "Cho trẻ em đi một mình có quy định gì?",
+                "Tôi đang mang thai, có được bay không?",
+                "Người khuyết tật đi máy bay cần làm gì?",
+                "Suất ăn Halal có không?",
+                "Trẻ mấy tuổi được đi máy bay một mình?",
+                "Mang máy trợ thính lên máy bay được không?",
+                "Đặt nôi cho em bé trên máy bay",
+                "Hỗ trợ đặc biệt cho người cao tuổi",
+                "Bình oxy y tế mang theo được không?",
+                "Thủ tục cho hành khách cần hỗ trợ đặc biệt",
+                "Mang thuốc theo người có cần khai báo không?",
+                "Đặt suất ăn không gluten được không?",
+                "Dịch vụ đưa đón trong sân bay cho người già",
+                "Mang xe lăn gấp xách tay được không?",
+                "Suất ăn cho người tiểu đường",
+                "Bé 2 tuổi ngồi ghế riêng hay bế?",
+                "Khai báo dị ứng thức ăn như thế nào?",
+                "Mang bình sữa cho bé qua an ninh"
+            ],
+            "slots": [
+                {
+                    "slot_name": "booking_code",
+                    "slot_name_vi": "Mã đặt chỗ",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "pattern": "^[A-Z0-9]{6}$"
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị cho tôi biết mã đặt chỗ để tôi ghi nhận yêu cầu đặc biệt?",
+                        "Mã PNR của chuyến bay cần hỗ trợ là gì?"
+                    ]
+                },
+                {
+                    "slot_name": "service_type",
+                    "slot_name_vi": "Loại dịch vụ đặc biệt",
+                    "data_type": "enum",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "enum_values": [
+                            "wheelchair",
+                            "special_meal",
+                            "unaccompanied_minor",
+                            "pregnant_passenger",
+                            "medical_equipment",
+                            "elderly_assistance",
+                            "visual_impairment",
+                            "hearing_impairment",
+                            "bassinet"
+                        ],
+                        "enum_labels_vi": [
+                            "Hỗ trợ xe lăn",
+                            "Suất ăn đặc biệt",
+                            "Trẻ em đi một mình",
+                            "Phụ nữ mang thai",
+                            "Thiết bị y tế",
+                            "Hỗ trợ người cao tuổi",
+                            "Khiếm thị",
+                            "Khiếm thính",
+                            "Nôi cho bé"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị cần hỗ trợ dịch vụ gì ạ? (Xe lăn / Suất ăn đặc biệt / Hỗ trợ y tế...)",
+                        "Loại hỗ trợ đặc biệt anh/chị cần là gì?"
+                    ]
+                },
+                {
+                    "slot_name": "service_detail",
+                    "slot_name_vi": "Chi tiết dịch vụ",
+                    "data_type": "string",
+                    "required": false,
+                    "priority_order": 3,
+                    "validation": {
+                        "note": "Phụ thuộc service_type",
+                        "conditional_values": {
+                            "special_meal": [
+                                "vegetarian",
+                                "vegan",
+                                "halal",
+                                "kosher",
+                                "diabetic",
+                                "gluten_free",
+                                "low_sodium",
+                                "child_meal",
+                                "bland"
+                            ],
+                            "wheelchair": [
+                                "WCHR_ramp",
+                                "WCHS_stairs",
+                                "WCHC_cabin"
+                            ],
+                            "unaccompanied_minor": {
+                                "age_range": "5-12 years"
+                            }
+                        }
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị có thể cho biết thêm chi tiết về yêu cầu không? (Ví dụ: suất ăn chay, xe lăn lên xuống cầu thang...)",
+                        "Cụ thể hơn về nhu cầu của anh/chị là gì?"
+                    ]
+                },
+                {
+                    "slot_name": "passenger_type",
+                    "slot_name_vi": "Loại hành khách",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 4,
+                    "validation": {
+                        "enum_values": [
+                            "adult",
+                            "child_5_12",
+                            "infant_under_2",
+                            "elderly_65_plus",
+                            "pregnant"
+                        ],
+                        "enum_labels_vi": [
+                            "Người lớn",
+                            "Trẻ em 5-12 tuổi",
+                            "Trẻ sơ sinh dưới 2 tuổi",
+                            "Người cao tuổi 65+",
+                            "Phụ nữ mang thai"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Dịch vụ này cho hành khách nào? (Trẻ em / Người cao tuổi / Phụ nữ mang thai...)"
+                    ]
+                },
+                {
+                    "slot_name": "flight_date",
+                    "slot_name_vi": "Ngày bay",
+                    "data_type": "date",
+                    "required": false,
+                    "priority_order": 5,
+                    "validation": {
+                        "format": "DD/MM/YYYY"
+                    },
+                    "elicitation_questions": [
+                        "Ngày bay anh/chị cần đăng ký dịch vụ đặc biệt là ngày mấy?"
+                    ]
+                },
+                {
+                    "slot_name": "advance_notice_required",
+                    "slot_name_vi": "Cần đăng ký trước",
+                    "data_type": "boolean",
+                    "required": false,
+                    "priority_order": 6,
+                    "validation": {
+                        "note": "Hệ thống tự xác định dựa vào service_type - một số dịch vụ cần đăng ký trước 48-72h"
+                    },
+                    "elicitation_questions": []
+                }
+            ],
+            "vector_metadata": {
+                "description": "Query DB quy định và quy trình đăng ký dịch vụ đặc biệt",
+                "fields": [
+                    {
+                        "field": "service_type",
+                        "weight": 1.0,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "service_detail",
+                        "weight": 0.9,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "passenger_type",
+                        "weight": 0.8,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "days_before_flight",
+                        "weight": 0.7,
+                        "type": "numeric",
+                        "derive_from": "flight_date - today"
+                    },
+                    {
+                        "field": "route_type",
+                        "weight": 0.5,
+                        "type": "categorical"
+                    }
+                ],
+                "query_template": "Dịch vụ {service_type} {service_detail} cho {passenger_type} chuyến bay còn {days_before_flight} ngày",
+                "expected_db_response_fields": [
+                    "available",
+                    "registration_deadline_hours",
+                    "fee",
+                    "required_documents",
+                    "process_steps",
+                    "contact_info"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi sẽ hỗ trợ đăng ký dịch vụ đặc biệt cho anh/chị. Một số dịch vụ cần đăng ký trước ít nhất 48 giờ.",
+                "completion_response": "Đang kiểm tra dịch vụ {service_type} cho chuyến bay ngày {flight_date}...",
+                "fallback": "Để đăng ký dịch vụ, tôi cần biết thêm {missing_slot}."
+            }
+        },
+        {
+            "intent_id": "trang_thai_chuyen_bay",
+            "intent_name": "Trạng thái chuyến bay",
+            "intent_name_en": "flight_status",
+            "description": "Kiểm tra delay, hủy chuyến, cổng lên máy bay, thời gian thực tế",
+            "priority": 6,
+            "sample_questions": [
+                "Chuyến bay VN123 hôm nay có đúng giờ không?",
+                "Chuyến bay của tôi bị delay bao lâu?",
+                "Gate số mấy vậy?",
+                "Chuyến bay có bị hủy không?",
+                "Máy bay đã cất cánh chưa?",
+                "Chuyến bay từ Hà Nội vào Sài Gòn lúc 8h còn không?",
+                "Chuyến bay đang ở đâu rồi?",
+                "Bay từ Đà Nẵng về Hà Nội chuyến nào gần nhất?",
+                "Thời gian hạ cánh dự kiến là mấy giờ?",
+                "Vì sao chuyến bay bị delay?",
+                "Chuyến bay có đổi gate không?",
+                "Hành lý ra băng số mấy?",
+                "Máy bay đến trễ bao nhiêu phút?",
+                "Có chuyến bay thay thế nào không?",
+                "Tôi cần theo dõi chuyến bay đón người thân",
+                "Khi nào mở cổng boarding?",
+                "Chuyến bay bị hủy tôi được hỗ trợ gì?",
+                "Thông báo về chuyến bay VJ456 ngày mai",
+                "Sân bay có thông tin delay không?",
+                "Máy bay từ Hồ Chí Minh đến Phú Quốc mấy giờ đến?"
+            ],
+            "slots": [
+                {
+                    "slot_name": "flight_number",
+                    "slot_name_vi": "Số hiệu chuyến bay",
+                    "data_type": "string",
+                    "required": true,
+                    "priority_order": 1,
+                    "validation": {
+                        "pattern": "^[A-Z]{2}[0-9]{3,4}$",
+                        "example": "VN123",
+                        "airlines_vi": {
+                            "VN": "Vietnam Airlines",
+                            "VJ": "VietJet Air",
+                            "QH": "Bamboo Airways",
+                            "BL": "Pacific Airlines"
+                        }
+                    },
+                    "elicitation_questions": [
+                        "Số hiệu chuyến bay của anh/chị là gì? (Ví dụ: VN123, VJ456)",
+                        "Chuyến bay số mấy và hãng nào anh/chị?"
+                    ]
+                },
+                {
+                    "slot_name": "flight_date",
+                    "slot_name_vi": "Ngày bay",
+                    "data_type": "date",
+                    "required": true,
+                    "priority_order": 2,
+                    "validation": {
+                        "format": "DD/MM/YYYY",
+                        "constraint": "Từ hôm qua đến 2 ngày tới",
+                        "default": "today"
+                    },
+                    "elicitation_questions": [
+                        "Ngày bay là hôm nay hay ngày khác?",
+                        "Chuyến bay ngày mấy anh/chị?"
+                    ]
+                },
+                {
+                    "slot_name": "departure_airport",
+                    "slot_name_vi": "Sân bay đi",
+                    "data_type": "string",
+                    "required": false,
+                    "priority_order": 3,
+                    "validation": {
+                        "format": "IATA code hoặc tên sân bay",
+                        "examples": [
+                            "SGN",
+                            "HAN",
+                            "DAD",
+                            "Tân Sơn Nhất",
+                            "Nội Bài"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Chuyến bay khởi hành từ sân bay nào?",
+                        "Bay từ đâu anh/chị?"
+                    ]
+                },
+                {
+                    "slot_name": "arrival_airport",
+                    "slot_name_vi": "Sân bay đến",
+                    "data_type": "string",
+                    "required": false,
+                    "priority_order": 4,
+                    "validation": {
+                        "format": "IATA code hoặc tên sân bay"
+                    },
+                    "elicitation_questions": [
+                        "Điểm đến của chuyến bay là sân bay nào?"
+                    ]
+                },
+                {
+                    "slot_name": "status_inquiry_type",
+                    "slot_name_vi": "Loại thông tin cần tra",
+                    "data_type": "enum",
+                    "required": false,
+                    "priority_order": 5,
+                    "validation": {
+                        "enum_values": [
+                            "departure_time",
+                            "arrival_time",
+                            "delay_info",
+                            "gate_number",
+                            "baggage_belt",
+                            "cancellation",
+                            "real_time_position"
+                        ],
+                        "enum_labels_vi": [
+                            "Giờ khởi hành",
+                            "Giờ đến",
+                            "Thông tin delay",
+                            "Số cổng gate",
+                            "Băng chuyền hành lý",
+                            "Hủy chuyến",
+                            "Vị trí thực tế"
+                        ]
+                    },
+                    "elicitation_questions": [
+                        "Anh/chị cần biết thông tin gì về chuyến bay? (Delay / Gate / Hành lý...)"
+                    ]
+                }
+            ],
+            "vector_metadata": {
+                "description": "Query real-time flight data từ database hoặc API hãng bay",
+                "fields": [
+                    {
+                        "field": "flight_number",
+                        "weight": 1.0,
+                        "type": "identifier"
+                    },
+                    {
+                        "field": "flight_date",
+                        "weight": 1.0,
+                        "type": "date"
+                    },
+                    {
+                        "field": "departure_airport",
+                        "weight": 0.7,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "arrival_airport",
+                        "weight": 0.7,
+                        "type": "categorical"
+                    },
+                    {
+                        "field": "status_inquiry_type",
+                        "weight": 0.8,
+                        "type": "categorical"
+                    }
+                ],
+                "query_template": "Trạng thái chuyến {flight_number} ngày {flight_date} từ {departure_airport} đến {arrival_airport}",
+                "expected_db_response_fields": [
+                    "status",
+                    "scheduled_departure",
+                    "actual_departure",
+                    "delay_minutes",
+                    "delay_reason",
+                    "gate",
+                    "terminal",
+                    "baggage_belt",
+                    "cancellation_info"
+                ]
+            },
+            "conversation_flow": {
+                "greeting_response": "Tôi sẽ kiểm tra thông tin chuyến bay cho anh/chị ngay.",
+                "completion_response": "Đang tra cứu trạng thái chuyến bay {flight_number} ngày {flight_date}...",
+                "fallback": "Để tra cứu chuyến bay, anh/chị có thể cung cấp {missing_slot} không?"
+            }
+        }
+    ],
+    "shared_entities": {
+        "description": "Các entity dùng chung across intents",
+        "airports": {
+            "domestic_vi": [
+                {
+                    "code": "SGN",
+                    "name": "Tân Sơn Nhất",
+                    "city": "Hồ Chí Minh"
+                },
+                {
+                    "code": "HAN",
+                    "name": "Nội Bài",
+                    "city": "Hà Nội"
+                },
+                {
+                    "code": "DAD",
+                    "name": "Đà Nẵng",
+                    "city": "Đà Nẵng"
+                },
+                {
+                    "code": "PQC",
+                    "name": "Phú Quốc",
+                    "city": "Phú Quốc"
+                },
+                {
+                    "code": "CXR",
+                    "name": "Cam Ranh",
+                    "city": "Nha Trang"
+                },
+                {
+                    "code": "HPH",
+                    "name": "Cát Bi",
+                    "city": "Hải Phòng"
+                },
+                {
+                    "code": "VII",
+                    "name": "Vinh",
+                    "city": "Vinh"
+                },
+                {
+                    "code": "HUI",
+                    "name": "Phú Bài",
+                    "city": "Huế"
+                }
+            ]
+        },
+        "ticket_classes": {
+            "economy": {
+                "code": "Y",
+                "name_vi": "Phổ thông",
+                "baggage_domestic_kg": 23,
+                "baggage_international_kg": 23
+            },
+            "premium_economy": {
+                "code": "W",
+                "name_vi": "Phổ thông đặc biệt",
+                "baggage_domestic_kg": 30,
+                "baggage_international_kg": 30
+            },
+            "business": {
+                "code": "C",
+                "name_vi": "Thương gia",
+                "baggage_domestic_kg": 40,
+                "baggage_international_kg": 40
+            },
+            "first": {
+                "code": "F",
+                "name_vi": "Hạng nhất",
+                "baggage_domestic_kg": 50,
+                "baggage_international_kg": 50
+            }
+        },
+        "fare_conditions": {
+            "flexible": {
+                "change_fee": 0,
+                "refund_fee_percent": 0,
+                "name_vi": "Linh hoạt"
+            },
+            "standard": {
+                "change_fee_vnd": 300000,
+                "refund_fee_percent": 25,
+                "name_vi": "Tiêu chuẩn"
+            },
+            "saver": {
+                "change_fee_vnd": 600000,
+                "refund_fee_percent": 50,
+                "name_vi": "Tiết kiệm"
+            },
+            "promo": {
+                "change_fee_vnd": 900000,
+                "refund_fee_percent": 75,
+                "name_vi": "Khuyến mãi"
+            },
+            "non_refundable": {
+                "change_fee_vnd": null,
+                "refund_fee_percent": 100,
+                "name_vi": "Không hoàn tiền"
+            }
+        }
+    },
+    "slot_filling_strategy": {
+        "description": "Chiến lược hỏi khai thác slot",
+        "rules": [
+            "Hỏi tối đa 1-2 slot mỗi lần để không gây phiền",
+            "Ưu tiên hỏi required slots trước theo priority_order",
+            "Nếu booking_code đã có thể suy ra nhiều slot khác từ database, hỏi booking_code trước",
+            "Ghi nhớ context trong conversation để không hỏi lại",
+            "Nếu user cung cấp thông tin không cần hỏi, ghi nhận và bỏ qua câu hỏi đó",
+            "Validate ngay sau khi nhận để phát hiện lỗi sớm",
+            "Khi đủ required_slots, thực hiện vector query ngay, optional_slots hỏi sau nếu cần"
+        ],
+        "confidence_threshold": 0.75,
+        "max_clarification_turns": 3
+    },
+    "vector_db_config": {
+        "embedding_model": "paraphrase-multilingual-mpnet-base-v2",
+        "dimension": 768,
+        "similarity_metric": "cosine",
+        "top_k": 5,
+        "score_threshold": 0.7,
+        "collections": [
+            {
+                "name": "change_fee_policies",
+                "intent": "doi_ve"
+            },
+            {
+                "name": "refund_policies",
+                "intent": "hoan_ve"
+            },
+            {
+                "name": "baggage_policies",
+                "intent": "hanh_ly"
+            },
+            {
+                "name": "check_in_info",
+                "intent": "check_in"
+            },
+            {
+                "name": "special_services_catalog",
+                "intent": "dich_vu_dac_biet"
+            },
+            {
+                "name": "flight_status_realtime",
+                "intent": "trang_thai_chuyen_bay"
+            }
+        ]
+    }
+}
