@@ -13,3 +13,10 @@ Model:
         Mode    : booking (1.00)
     2. chưa phân biệt được này là qna hay là một action booking
     ví dụ: "mua thêm ký gửi 20kg vietjet thì cần gì" là một câu hỏi nhưng nó nói là booking
+
+
+[identify_intent] → [check_missing_slots] → [ask_slot] → (user reply)
+                            ↑___________________________________|
+                                    loop until đủ slots
+                                          ↓
+                              [vector_db_query] → [respond]

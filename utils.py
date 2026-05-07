@@ -1,5 +1,5 @@
-from __future__ import annotations
-
+import joblib
+import os
 import logging
 import random
 from dataclasses import dataclass, field
@@ -8,6 +8,13 @@ from typing import List, Union
 import re
 
 from graph_db import KnowledgeGraph
+import json
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+
+import joblib
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -63,6 +70,7 @@ _INTENT_TEMPLATES: list[str] = [
     "cho tôi {anchor}",
     "mình {anchor} được không",
 ]
+vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 5), max_features=50000)
 
 
 @dataclass
@@ -463,6 +471,36 @@ def find_paths(
         "seed_nodes": sorted(seed_nodes),
         "paths": paths,
     }
+
+
+def get_intent_classifier(dataset_path: str = "dataset/standard_dataset.json", model_path: str = "models/intent_classifier.pkl") -> LogisticRegression:
+    model = LogisticRegression()
+    if os.path.exists(model_path):
+        model = joblib.load("models/intent_classifier.pkl")
+        return model
+
+    if not dataset_path:
+        dataset_path = 'dataset/standard_dataset.json'
+    
+    with open(dataset_path, "r") as f:
+        data = json.load(f)
+        intents: list = data.get("intents", [])
+        X = []
+        y = []
+        for item in intents:
+            q = item.get("sample_questions", [])
+            X.extend(q)
+            y.extend([item.get("intent_id")] * len(q))
+
+    pipeline = Pipeline([
+        ("tfidf", TfidfVectorizer()),
+        ("clf", LogisticRegression())
+    ])
+
+    pipeline.fit(X, y)
+    joblib.dump(pipeline, "models/intent_classifier.pkl")
+    return pipeline
+
 
 
 if __name__ == "__main__":
