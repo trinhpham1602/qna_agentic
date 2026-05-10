@@ -196,73 +196,121 @@ SLOT_PROMPT = {
 class SlotState(TypedDict, total=False):
     user_input: str         # input mới nhất từ user
     question: str           # câu hỏi gốc (tự do) — dùng để embed
-    slots: dict             # đã điền: {slot_name: value}
+    slots: dict             # đã điền: {slot_name: List[str]} — multi-value
     next_slot: Optional[str]
     slot_question: str      # prompt để hỏi user slot tiếp theo
     retrieved_rows: list    # rows trả về từ vector search
     answer: str             # answer cuối cùng (do generate_node tạo)
+    is_off_topic: bool      # True nếu LLM không extract được slot nào (off-topic)
+    escalate: bool          # True nếu không tìm thấy nội dung trong DB
     done: bool
 
 
 # ---------------------------------------------------------------------------
-# Catalog các giá trị slot khả dĩ — dùng cho entity extraction.
-# Lazy-load từ CSV (tránh phụ thuộc DB).
+# Helpers cho LLM-based slot extraction
 # ---------------------------------------------------------------------------
-_slot_catalog_cache: Optional[Dict[str, List[str]]] = None
+SYS_PROMPT_EXTRACT_PATH = "sys_prompt/extract_required_slots"
+
+_sys_prompt_cache: Optional[str] = None
 
 
-def _load_slot_catalog() -> Dict[str, List[str]]:
-    catalog: Dict[str, set] = {s: set() for s in REQUIRED_SLOTS}
-    with open(CSV_PATH, "r", encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            for col, field in CSV_TO_FIELD.items():
-                if field in REQUIRED_SLOTS:
-                    val = (row.get(col) or "").strip()
-                    if val:
-                        catalog[field].add(val)
-    # Match longer values first → "Vietnam Airlines" thắng "Vietnam"
-    return {k: sorted(v, key=len, reverse=True) for k, v in catalog.items()}
+def _load_sys_prompt(path: str = SYS_PROMPT_EXTRACT_PATH) -> str:
+    """Đọc system prompt từ file (cache module-level)."""
+    global _sys_prompt_cache
+    if _sys_prompt_cache is None:
+        with open(path, "r", encoding="utf-8") as f:
+            _sys_prompt_cache = f.read()
+    return _sys_prompt_cache
 
 
-def _get_slot_catalog() -> Dict[str, List[str]]:
-    global _slot_catalog_cache
-    if _slot_catalog_cache is None:
-        _slot_catalog_cache = _load_slot_catalog()
-    return _slot_catalog_cache
+def _parse_slot_json(raw: str) -> Dict[str, List[str]]:
+    """Parse JSON output của LLM thành {slot: List[str]}, robust với markdown/junk."""
+    import json
+    import re
+
+    text = (raw or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"```\s*$", "", text).strip()
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if m:
+        text = m.group(0)
+    try:
+        data = json.loads(text)
+    except Exception:
+        data = {}
+
+    out: Dict[str, List[str]] = {}
+    for s in REQUIRED_SLOTS:
+        v = data.get(s, [])
+        if isinstance(v, str):
+            v = [v]
+        if not isinstance(v, list):
+            v = []
+        out[s] = [str(x).strip() for x in v if str(x).strip()]
+    return out
+
+
+def _is_slot_filled(slots: dict, name: str) -> bool:
+    v = slots.get(name)
+    if isinstance(v, list):
+        return len(v) > 0
+    return bool(v)
 
 
 def _missing_slot(slots: dict) -> Optional[str]:
     for s in REQUIRED_SLOTS:
-        if not slots.get(s):
+        if not _is_slot_filled(slots, s):
             return s
     return None
 
 
 def extract_entity_node(state: SlotState) -> SlotState:
     """
-    NODE 1: Extract entity từ câu chat của user, fill vào missing slot.
-    Quét user_input theo catalog các giá trị đã biết — match dài thắng match ngắn.
+    NODE 1: Dùng LLM (sys_prompt/extract_required_slots) để extract slot
+    từ câu chat của user. Output là List[str] cho mỗi slot. Chỉ fill vào
+    các slot đang thiếu (giữ nguyên slot đã được điền từ lượt trước).
     """
     user_input = (state.get("user_input") or "").strip()
-    text = user_input.lower()
-    slots = dict(state.get("slots") or {})
+    slots: Dict[str, List[str]] = dict(state.get("slots") or {})
 
     if user_input and not state.get("question"):
         state["question"] = user_input
 
-    catalog = _get_slot_catalog()
-    for slot in REQUIRED_SLOTS:
-        if slots.get(slot):
-            continue
-        for value in catalog.get(slot, []):
-            if value.lower() in text:
-                slots[slot] = value
-                break
+    state["is_off_topic"] = False
+
+    if not user_input:
+        state["slots"] = slots
+        state["next_slot"] = _missing_slot(slots)
+        state["user_input"] = ""
+        return state
+
+    sys_prompt = _load_sys_prompt()
+    extracted: Dict[str, List[str]] = {s: [] for s in REQUIRED_SLOTS}
+    try:
+        llm = ChatOllama(model=LLM_MODEL, temperature=0)
+        resp = llm.invoke([
+            ("system", sys_prompt),
+            ("human", user_input),
+        ])
+        raw = resp.content if hasattr(resp, "content") else str(resp)
+        extracted = _parse_slot_json(raw)
+    except Exception:
+        # LLM lỗi → giữ extracted = empty; flow xuống request_slot
+        pass
+
+    pre_empty = all(not _is_slot_filled(slots, s) for s in REQUIRED_SLOTS)
+    for s in REQUIRED_SLOTS:
+        if not _is_slot_filled(slots, s) and extracted.get(s):
+            slots[s] = extracted[s]
+    post_empty = all(not _is_slot_filled(slots, s) for s in REQUIRED_SLOTS)
+
+    # Off-topic: không có slot nào được fill từ trước, và LLM cũng không extract được gì
+    state["is_off_topic"] = pre_empty and post_empty
 
     state["slots"] = slots
     state["next_slot"] = _missing_slot(slots)
-    state["user_input"] = ""  # đã consume
+    state["user_input"] = ""
     return state
 
 
@@ -289,13 +337,26 @@ def request_slot_node(state: SlotState) -> SlotState:
     return state
 
 
+def _pick_one(slots: dict, name: str) -> str:
+    """Lấy 1 giá trị đại diện từ slot list (dùng để filter SQL exact)."""
+    v = slots.get(name)
+    if isinstance(v, list):
+        return v[0] if v else ""
+    return v or ""
+
+
 def query_node(state: SlotState) -> SlotState:
     """Đủ 4 slot: filter exact + rank by cosine distance. Lưu rows vào state."""
     slots = state["slots"]
     embedder = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
 
+    airline      = _pick_one(slots, "airline")
+    ticket_class = _pick_one(slots, "ticket_class")
+    route_type   = _pick_one(slots, "route_type")
+    group_policy = _pick_one(slots, "group_policy")
+
     query_text = state.get("question") or (
-        f"{slots['group_policy']} {slots['airline']} hạng vé {slots['ticket_class']} {slots['route_type']}"
+        f"{group_policy} {airline} hạng vé {ticket_class} {route_type}"
     )
     qvec = embedder.embed_query(query_text)
 
@@ -311,11 +372,7 @@ def query_node(state: SlotState) -> SlotState:
         LIMIT 3;
     """
     vec_lit = _vec_literal(qvec)
-    params = (
-        vec_lit,
-        slots["airline"], slots["ticket_class"], slots["route_type"], slots["group_policy"],
-        vec_lit,
-    )
+    params = (vec_lit, airline, ticket_class, route_type, group_policy, vec_lit)
 
     with psycopg2.connect(DB_CONNECTION_STRING) as conn:
         with conn.cursor() as cur:
@@ -336,6 +393,14 @@ def query_node(state: SlotState) -> SlotState:
     return state
 
 
+def _slot_repr(slots: dict, name: str) -> str:
+    """Hiển thị slot list dưới dạng 'a, b' để đưa vào prompt LLM."""
+    v = slots.get(name)
+    if isinstance(v, list):
+        return ", ".join(v) if v else "(không có)"
+    return v or "(không có)"
+
+
 def generate_node(state: SlotState) -> SlotState:
     """
     NODE 3: Generate câu trả lời từ rows tìm được bằng vector embedding.
@@ -343,15 +408,6 @@ def generate_node(state: SlotState) -> SlotState:
     """
     slots = state.get("slots") or {}
     rows = state.get("retrieved_rows") or []
-
-    if not rows:
-        state["answer"] = (
-            f"Không tìm thấy qui định cho: {slots.get('airline')} / "
-            f"{slots.get('ticket_class')} / {slots.get('route_type')} / "
-            f"{slots.get('group_policy')}."
-        )
-        state["done"] = True
-        return state
 
     context_lines = []
     for i, r in enumerate(rows, 1):
@@ -368,8 +424,10 @@ def generate_node(state: SlotState) -> SlotState:
         "Bạn là trợ lý CSKH của hãng hàng không. Trả lời người dùng bằng tiếng Việt, "
         "ngắn gọn, đầy đủ ý, dựa duy nhất vào CONTEXT bên dưới, không bịa.\n\n"
         f"CONTEXT (top match theo vector embedding):\n{context}\n\n"
-        f"Thông tin slot: hãng={slots.get('airline')}, hạng vé={slots.get('ticket_class')}, "
-        f"chặng={slots.get('route_type')}, nhóm qui định={slots.get('group_policy')}\n"
+        f"Thông tin slot: hãng={_slot_repr(slots, 'airline')}, "
+        f"hạng vé={_slot_repr(slots, 'ticket_class')}, "
+        f"chặng={_slot_repr(slots, 'route_type')}, "
+        f"nhóm qui định={_slot_repr(slots, 'group_policy')}\n"
         f"Câu hỏi gốc: {state.get('question') or '(không có)'}\n\n"
         "Trả lời:"
     )
@@ -379,7 +437,6 @@ def generate_node(state: SlotState) -> SlotState:
         resp = llm.invoke(prompt)
         answer = resp.content if hasattr(resp, "content") else str(resp)
     except Exception:
-        # Fallback template
         answer = "Dựa trên qui định tìm được:\n" + context
 
     state["answer"] = answer
@@ -387,8 +444,68 @@ def generate_node(state: SlotState) -> SlotState:
     return state
 
 
+def escalate_node(state: SlotState) -> SlotState:
+    """
+    NODE 4: Khi vector search không trả về kết quả nào → chuyển sang
+    nhân viên tư vấn. Đặt cờ escalate=True để FE/CSKH biết.
+    """
+    slots = state.get("slots") or {}
+    state["answer"] = (
+        "Rất tiếc, hệ thống chưa có thông tin chính xác cho yêu cầu của bạn "
+        f"(hãng: {_slot_repr(slots, 'airline')}, hạng vé: {_slot_repr(slots, 'ticket_class')}, "
+        f"chặng: {_slot_repr(slots, 'route_type')}, nhóm qui định: {_slot_repr(slots, 'group_policy')}).\n"
+        "Tôi sẽ chuyển bạn tới nhân viên tư vấn để được hỗ trợ trực tiếp. "
+        "Vui lòng giữ máy hoặc liên hệ hotline CSKH."
+    )
+    state["escalate"] = True
+    state["done"] = True
+    return state
+
+
+def off_topic_node(state: SlotState) -> SlotState:
+    """
+    NODE 5: Khi LLM không extract được slot nào → câu hỏi không liên quan
+    đến nghiệp vụ máy bay. Dùng LLM trả lời lịch sự BẰNG TIẾNG VIỆT,
+    nhắc user đặt câu hỏi đúng chủ đề.
+    """
+    user_text = state.get("question") or ""
+    prompt = (
+        "Bạn là trợ lý CSKH chuyên về nghiệp vụ hàng không (vé máy bay, đổi/hoàn vé, "
+        "hành lý, hạng vé, qui định bay, giấy tờ bay...). Người dùng vừa hỏi một câu "
+        "KHÔNG liên quan đến nghiệp vụ máy bay. Hãy trả lời NGẮN GỌN, LỊCH SỰ, "
+        "HOÀN TOÀN BẰNG TIẾNG VIỆT. Giải thích rằng bạn chỉ hỗ trợ các vấn đề về "
+        "vé máy bay, và mời người dùng đặt lại câu hỏi đúng chủ đề. Không bịa thông "
+        "tin, không trả lời câu hỏi off-topic.\n\n"
+        f"Câu hỏi của người dùng: {user_text}\n\n"
+        "Trả lời:"
+    )
+    try:
+        llm = ChatOllama(model=LLM_MODEL, temperature=0.2)
+        resp = llm.invoke(prompt)
+        answer = resp.content if hasattr(resp, "content") else str(resp)
+    except Exception:
+        answer = (
+            "Xin lỗi, tôi chỉ hỗ trợ các câu hỏi liên quan đến nghiệp vụ vé máy bay "
+            "(đổi vé, hoàn vé, hành lý, qui định bay, giấy tờ bay,...). "
+            "Bạn vui lòng đặt câu hỏi đúng chủ đề giúp mình nhé."
+        )
+
+    state["answer"] = answer
+    state["is_off_topic"] = True
+    state["done"] = True
+    return state
+
+
 def _route_after_extract(state: SlotState) -> str:
-    return "query" if state.get("next_slot") is None else "request_slot"
+    if state.get("is_off_topic"):
+        return "off_topic"
+    if state.get("next_slot") is None:
+        return "query"
+    return "request_slot"
+
+
+def _route_after_query(state: SlotState) -> str:
+    return "generate" if (state.get("retrieved_rows") or []) else "escalate"
 
 
 def build_graph():
@@ -397,17 +514,34 @@ def build_graph():
     g.add_node("request_slot", request_slot_node)
     g.add_node("query", query_node)
     g.add_node("generate", generate_node)
+    g.add_node("escalate", escalate_node)
 
     g.set_entry_point("extract_entity")
     g.add_conditional_edges(
         "extract_entity",
         _route_after_extract,
-        {"query": "query", "request_slot": "request_slot"},
+        {
+            "query":        "query",
+            "request_slot": "request_slot",
+        },
     )
     g.add_edge("request_slot", END)
-    g.add_edge("query", "generate")
+    g.add_conditional_edges(
+        "query",
+        _route_after_query,
+        {"generate": "generate", "escalate": "escalate"},
+    )
     g.add_edge("generate", END)
-    return g.compile()
+    g.add_edge("escalate", END)
+
+    g_compiled = g.compile()
+    try:
+        img = g_compiled.get_graph().draw_mermaid_png()
+        with open("graph.png", "wb") as f:
+            f.write(img)
+    except Exception:
+        pass
+    return g_compiled
 
 
 # ---------------------------------------------------------------------------
@@ -440,6 +574,8 @@ class ChatResponse(BaseModel):
     missing_slots: List[str] = []
     slots: dict = {}
     answer: str = ""
+    is_off_topic: bool = False
+    escalate: bool = False
 
 
 class IngestResponse(BaseModel):
@@ -460,7 +596,7 @@ def _new_state() -> SlotState:
 
 
 def _missing_list(slots: dict) -> List[str]:
-    return [s for s in REQUIRED_SLOTS if not slots.get(s)]
+    return [s for s in REQUIRED_SLOTS if not _is_slot_filled(slots, s)]
 
 
 @app.post("/thread", response_model=ThreadResponse)
@@ -494,6 +630,8 @@ def chat(req: ChatRequest) -> ChatResponse:
             done=True,
             slots=state.get("slots", {}),
             answer=state.get("answer", ""),
+            is_off_topic=bool(state.get("is_off_topic")),
+            escalate=bool(state.get("escalate")),
         )
 
     state["user_input"] = (req.message or "").strip()
@@ -507,6 +645,8 @@ def chat(req: ChatRequest) -> ChatResponse:
         missing_slots=_missing_list(new_state.get("slots") or {}),
         slots=new_state.get("slots", {}),
         answer=new_state.get("answer", ""),
+        is_off_topic=bool(new_state.get("is_off_topic")),
+        escalate=bool(new_state.get("escalate")),
     )
 
 

@@ -1,4 +1,9 @@
-trong file review.py tôi muốn:
-thêm một node có nhiệm vụ extract entity từ câu chat tiếp theo của user để fill vào missing slot
-Thêm một node có nhiệm vụ request một hoặc nhiều trong những missing slot còn lại
-thêm một node có nhiệm vụ generate content khi tìm thấy các nội dung gần với vector embedding.
+Tôi muốn file review custom lại extract_entity_node sao cho:
+
+Task 1: Node này sử dụng một LLM mà nó sử dụng câu prompt trong path: sys_prompt/extract_required_slots để extract ra các required slot cho tôi
+Từ đó custom lại flow, sao cho khi một câu user truyền vào thì tìm thấy một hoặc nhiều slot, để fill vào required slot.
+ví dụ: "tôi muốn huỷ vé hạng skyboss bay nội địa" => chỉ missing hãng bay.
+
+Task 2: Thêm node hỗ trợ gọi nhận viện tư vấn khi không tìm thấy kết quả trong DB
+
+Task 3: thêm một node sử dụng LLM trả lời hoàn toàn bằng tiếng việt, nếu câu hỏi của user không liên quan đến nghiệp vụ máy bay

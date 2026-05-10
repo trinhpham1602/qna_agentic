@@ -1,101 +1,100 @@
 Hãng,Hạng vé,Loại chặng,Nhóm qui định,Loại qui định,Mô tả qui định,Điều kiện / Thời hạn,Ghi chú thêm,Đối tượng áp dụng
-Vietjet Air,Eco,Nội địa,Đổi vé,Đổi ngày/giờ/chặng bay,350.000 VNĐ/khách/chặng + chênh lệch giá,Trước ít nhất 06 giờ khởi hành,Không áp dụng nếu đặt vé trễ dưới 3 tiếng,Người lớn & trẻ em
-Vietjet Air,Eco,Quốc tế,Đổi vé,Đổi ngày/giờ/chặng bay,800.000 VNĐ/khách/chặng + chênh lệch giá,Trước ít nhất 06 giờ khởi hành,Riêng chặng Úc: theo biểu phí riêng,Người lớn & trẻ em
-Vietjet Air,Eco,Nội địa,Đổi tên,Đổi tên hành khách,KHÔNG được phép,,Tuyệt đối không hỗ trợ đổi tên cho hạng Eco,Tất cả
-Vietjet Air,Eco,Quốc tế,Đổi tên,Đổi tên hành khách,KHÔNG được phép,,Tuyệt đối không hỗ trợ đổi tên cho hạng Eco,Tất cả
-Vietjet Air,Eco,Nội địa,Hoàn vé,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Báo trước ít nhất 26 giờ. Bảo lưu tối đa 01 năm từ ngày bay,Tiền bảo lưu dùng để mua vé mới,Tất cả
-Vietjet Air,Eco,Quốc tế,Hoàn vé,Hoàn bảo lưu tiền vé,Phí hoàn 800.000 VNĐ/khách/chặng (trừ Úc: 2.000.000),Báo trước ít nhất 26 giờ. Bảo lưu tối đa 01 năm,Chặng Úc áp phí cao hơn,Tất cả
-Vietjet Air,Eco,Quốc tế,Hành lý,Hành lý ký gửi,Không có miễn cước – phải mua thêm,Gói ký gửi: 15/20/25/30 kg – mua trước giá rẻ hơn tại sân bay,,Tất cả
-Vietjet Air,Eco,Nội địa,Hành lý,Hành lý ký gửi,Không có miễn cước – phải mua thêm,Gói ký gửi: 15/20/25/30 kg – mua trước giá rẻ hơn tại sân bay,Phí nội địa: ~155.000–435.000 VNĐ tùy gói,Tất cả
-Vietjet Air,Eco,Quốc tế,Hành lý,Hành lý xách tay,7 kg miễn cước (gồm 1 kiện chính + 1 túi nhỏ),Kích thước tối đa 56x36x23 cm; túi nhỏ 30x20x10 cm,Không áp dụng cho em bé dưới 2 tuổi,Tất cả
-Vietjet Air,Eco,Nội địa,Hành lý,Hành lý xách tay,7 kg miễn cước (gồm 1 kiện chính + 1 túi nhỏ),Kích thước tối đa 56x36x23 cm; túi nhỏ 30x20x10 cm,Không áp dụng cho em bé dưới 2 tuổi,Tất cả
-Vietjet Air,Eco,Quốc tế,Giá vé trẻ em,Giá vé trẻ em < 2 tuổi,100.000 VNĐ/chuyến,"Trẻ ngồi trong lòng người lớn, không có chỗ riêng",Tính từ 14 ngày tuổi đến dưới 24 tháng,Trẻ em
-Vietjet Air,Eco,Nội địa,Giá vé trẻ em,Giá vé trẻ em < 2 tuổi,200.000 VNĐ/chuyến,"Trẻ ngồi trong lòng người lớn, không có chỗ riêng",Tính từ 14 ngày tuổi đến dưới 24 tháng,Trẻ em
-Vietjet Air,Eco,Quốc tế,Giá vé trẻ em,Giá vé trẻ em ≥ 2 tuổi,Bằng giá vé người lớn,Trẻ trên 24 tháng: có ghế ngồi riêng,Áp dụng tương tự điều kiện vé người lớn,Trẻ em
-Vietjet Air,Eco,Nội địa,Giá vé trẻ em,Giá vé trẻ em ≥ 2 tuổi,Bằng giá vé người lớn,Trẻ trên 24 tháng: có ghế ngồi riêng,Áp dụng tương tự điều kiện vé người lớn,Trẻ em
-Vietjet Air,Deluxe,Nội địa,Đổi vé,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Đổi vé,Đổi ngày/giờ/chặng bay,800.000 VNĐ/khách/chặng + chênh lệch giá,Trước khi kết sổ chuyến bay,Nội địa miễn phí; quốc tế vẫn có phí,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Đổi tên,Đổi tên hành khách,KHÔNG được phép,,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Đổi tên,Đổi tên hành khách,KHÔNG được phép,,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Hoàn vé,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Báo trước 26 giờ. Bảo lưu tối đa 01 năm,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Hành lý,Hành lý xách tay,7 kg miễn cước,Kích thước tối đa 56x36x23 cm,,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Hành lý,Hành lý xách tay,7 kg miễn cước,Kích thước tối đa 56x36x23 cm,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Hành lý,Hành lý ký gửi,20 kg miễn cước,Chặng bay dưới 7 tiếng,,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Hành lý,Hành lý ký gửi,20 kg miễn cước,Chặng bay dưới 7 tiếng,,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Hành lý,Hành lý ký gửi,40 kg miễn cước,Chặng bay quốc tế trên 7 tiếng,"Áp dụng các đường bay dài (Úc, Kazakhstan)",Tất cả
-Vietjet Air,SkyBoss,Nội địa,Đổi vé,Đổi ngày/giờ/chặng bay,Miễn phí,Trước khi kết sổ chuyến bay,"Đặc quyền cao cấp – đổi linh hoạt nhất, chênh lệch giá (nếu có)",Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Đổi vé,Đổi ngày/giờ/chặng bay,Miễn phí,Trước khi kết sổ chuyến bay,"Đặc quyền cao cấp – đổi linh hoạt nhất, chênh lệch giá (nếu có)",Tất cả
-Vietjet Air,SkyBoss,Nội địa,Đổi tên,Đổi tên hành khách,350.000 VNĐ/khách,Chỉ áp dụng vé mua ban đầu là SkyBoss (không áp dụng vé nâng hạng). Đổi tối thiểu 3 tiếng trước bay,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Đổi tên,Đổi tên hành khách,800.000 VNĐ/khách,Chỉ áp dụng vé mua ban đầu là SkyBoss (không áp dụng vé nâng hạng). Đổi tối thiểu 3 tiếng trước bay,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Hoàn vé,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Bảo lưu tối đa 02 năm từ ngày bay dự kiến,Thời hạn bảo lưu dài gấp đôi Eco/Deluxe,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hoàn vé,Hoàn bảo lưu tiền vé,Phí hoàn 800.000 VNĐ/khách/chặng,"Bảo lưu tối đa 02 năm, (trừ Úc: 2.000.000)",Chặng Úc: phí cao hơn,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Hành lý,Hành lý xách tay,10 kg miễn cước,Nội địa Việt Nam,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hành lý,Hành lý xách tay,10 kg miễn cước,Quốc tế có thời gian bay nhỏ hơn 7 tiếng,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hành lý,Hành lý xách tay,14 kg miễn cước,Chặng đến/từ Úc và Kazakhstan,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Hành lý,Hành lý ký gửi,30 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Nội địa Việt Nam,Miễn phí bộ dụng cụ golf cho SkyBoss,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hành lý,Hành lý ký gửi,30 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Quốc tế có thời gian bay nhỏ hơn 7 tiếng,Miễn phí bộ dụng cụ golf cho SkyBoss,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hành lý,Hành lý ký gửi,50 kg miễn cước,Chặng quốc tế trên 7 tiếng,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Tiện ích,Phòng chờ cao cấp,Bao gồm (miễn phí),Không áp dụng nội địa Thái Lan và sân bay không có phòng chờ đạt chuẩn,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Tiện ích,Phòng chờ cao cấp,Bao gồm (miễn phí),Không áp dụng nội địa Thái Lan và sân bay không có phòng chờ đạt chuẩn,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Tiện ích,Xe riêng ra máy bay,Bao gồm (tùy điều kiện sân bay),Phụ thuộc điều kiện cung ứng tại từng sân bay,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Tiện ích,Xe riêng ra máy bay,Bao gồm (tùy điều kiện sân bay),Phụ thuộc điều kiện cung ứng tại từng sân bay,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Tiện ích,Suất ăn trên chuyến bay,Bao gồm (miễn phí),,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Tiện ích,Suất ăn trên chuyến bay,Bao gồm (miễn phí),,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Tiện ích,Bảo hiểm SkyBoss Flight Care,Bao gồm trong giá vé,,,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Tiện ích,Bảo hiểm SkyBoss Flight Care,Bao gồm trong giá vé,Chưa áp dụng chuyến bay Thai VietJet khai thác,,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Đổi vé,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Đổi vé,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa ,Hành lý,Hành lý ký gửi,40 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Chặng bay dưới 7 tiếng,,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế ,Hành lý,Hành lý ký gửi,40 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Chặng bay dưới 7 tiếng,,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Hành lý,Hành lý ký gửi,50–60 kg miễn cước,Chặng quốc tế trên 7 tiếng,,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Hành lý,Hành lý xách tay,18 kg miễn cước,Cao nhất trong các hạng vé,,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Hành lý,Hành lý xách tay,18 kg miễn cước,Cao nhất trong các hạng vé,,Tất cả
-Vietjet Air,Eco,Nội địa,Phí hủy,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Phải tự hủy đúng thời hạn,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Phí hủy,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,Deluxe đặc biệt
-Vietjet Air,SkyBoss,Nội địa,Phí hủy,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,SkyBoss đặc biệt
-Vietjet Air,SkyBoss Business,Nội địa,Phí hủy,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,SkyBoss đặc biệt
-Vietjet Air,Eco,Nội địa,Phí dịch vụ,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
-Vietjet Air,Deluxe,Nội địa,Phí dịch vụ,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Phí dịch vụ,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Phí dịch vụ,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
-Vietjet Air,Eco,Quốc tế,Phí dịch vụ,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Phí dịch vụ,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Phí dịch vụ,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Phí dịch vụ,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
-Vietjet Air,Eco,Nội địa,Nâng hạng,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,Deluxe,Nội địa,Nâng hạng,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Nâng hạng,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Nâng hạng,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,Eco,Quốc tế,Nâng hạng,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Nâng hạng,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Nâng hạng,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Nâng hạng,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → Deluxe, SkyBoss, SkyBoss Business",,Tất cả
-Vietjet Air,Eco,Quốc tế,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
-Vietjet Air,Eco,Nội địa,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
-Vietjet Air,Deluxe,Nội địa,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Hoàn bất khả kháng,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
-Vietjet Air,Tất cả hạng,Tất cả,Hành lý,Kích thước hành lý ký gửi tối đa,119 x 119 x 81 cm; trọng lượng ≤ 32 kg/kiện,"Vượt kích thước = hành lý quá khổ, tính phụ phí",,Tất cả
-Vietjet Air,Eco,Nội địa,Giấy tờ,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
-Vietjet Air,Deluxe,Nội địa,Giấy tờ,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
-Vietjet Air,SkyBoss,Nội địa,Giấy tờ,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
-Vietjet Air,SkyBoss Business,Nội địa,Giấy tờ,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
-Vietjet Air,Eco,Nội địa,Giấy tờ,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
-Vietjet Air,Deluxe,Nội địa,Giấy tờ,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
-Vietjet Air,SkyBoss,Nội địa,Giấy tờ,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
-Vietjet Air,SkyBoss Business,Nội địa,Giấy tờ,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
-Vietjet Air,Eco,Quốc tế,Giấy tờ,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
-Vietjet Air,Deluxe,Quốc tế,Giấy tờ,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Giấy tờ,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Giấy tờ,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
-Vietjet Air,Eco,Nội địa,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
-Vietjet Air,Deluxe,Nội địa,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
-Vietjet Air,SkyBoss,Nội địa,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
-Vietjet Air,SkyBoss Business,Nội địa,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
-Vietjet Air,Eco,Quốc tế,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
-Vietjet Air,Deluxe,Quốc tế,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
-Vietjet Air,SkyBoss,Quốc tế,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
-Vietjet Air,SkyBoss Business,Quốc tế,Check-in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
+vietjet,eco,dom,ticket_change,Đổi ngày/giờ/chặng bay,350.000 VNĐ/khách/chặng + chênh lệch giá,Trước ít nhất 06 giờ khởi hành,Không áp dụng nếu đặt vé trễ dưới 3 tiếng,Người lớn & trẻ em
+vietjet,eco,int,ticket_change,Đổi ngày/giờ/chặng bay,800.000 VNĐ/khách/chặng + chênh lệch giá,Trước ít nhất 06 giờ khởi hành,Riêng chặng Úc: theo biểu phí riêng,Người lớn & trẻ em
+vietjet,eco,dom,correction,Đổi tên hành khách,KHÔNG được phép,,Tuyệt đối không hỗ trợ đổi tên cho hạng Eco,Tất cả
+vietjet,eco,int,correction,Đổi tên hành khách,KHÔNG được phép,,Tuyệt đối không hỗ trợ đổi tên cho hạng Eco,Tất cả
+vietjet,eco,dom,refund,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Báo trước ít nhất 26 giờ. Bảo lưu tối đa 01 năm từ ngày bay,Tiền bảo lưu dùng để mua vé mới,Tất cả
+vietjet,eco,int,refund,Hoàn bảo lưu tiền vé,Phí hoàn 800.000 VNĐ/khách/chặng (trừ Úc: 2.000.000),Báo trước ít nhất 26 giờ. Bảo lưu tối đa 01 năm,Chặng Úc áp phí cao hơn,Tất cả
+vietjet,eco,int,baggage,Hành lý ký gửi,Không có miễn cước – phải mua thêm,Gói ký gửi: 15/20/25/30 kg – mua trước giá rẻ hơn tại sân bay,,Tất cả
+vietjet,eco,dom,baggage,Hành lý ký gửi,Không có miễn cước – phải mua thêm,Gói ký gửi: 15/20/25/30 kg – mua trước giá rẻ hơn tại sân bay,Phí nội địa: ~155.000–435.000 VNĐ tùy gói,Tất cả
+vietjet,eco,int,baggage,Hành lý xách tay,7 kg miễn cước (gồm 1 kiện chính + 1 túi nhỏ),Kích thước tối đa 56x36x23 cm; túi nhỏ 30x20x10 cm,Không áp dụng cho em bé dưới 2 tuổi,Tất cả
+vietjet,eco,dom,baggage,Hành lý xách tay,7 kg miễn cước (gồm 1 kiện chính + 1 túi nhỏ),Kích thước tối đa 56x36x23 cm; túi nhỏ 30x20x10 cm,Không áp dụng cho em bé dưới 2 tuổi,Tất cả
+vietjet,eco,int,ticket_price,Giá vé trẻ em < 2 tuổi,100.000 VNĐ/chuyến,"Trẻ ngồi trong lòng người lớn, không có chỗ riêng",Tính từ 14 ngày tuổi đến dưới 24 tháng,Trẻ em
+vietjet,eco,dom,ticket_price,Giá vé trẻ em < 2 tuổi,200.000 VNĐ/chuyến,"Trẻ ngồi trong lòng người lớn, không có chỗ riêng",Tính từ 14 ngày tuổi đến dưới 24 tháng,Trẻ em
+vietjet,eco,int,ticket_price,Giá vé trẻ em ≥ 2 tuổi,Bằng giá vé người lớn,Trẻ trên 24 tháng: có ghế ngồi riêng,Áp dụng tương tự điều kiện vé người lớn,Trẻ em
+vietjet,eco,dom,ticket_price,Giá vé trẻ em ≥ 2 tuổi,Bằng giá vé người lớn,Trẻ trên 24 tháng: có ghế ngồi riêng,Áp dụng tương tự điều kiện vé người lớn,Trẻ em
+vietjet,deluxe,dom,ticket_change,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
+vietjet,deluxe,int,ticket_change,Đổi ngày/giờ/chặng bay,800.000 VNĐ/khách/chặng + chênh lệch giá,Trước khi kết sổ chuyến bay,Nội địa miễn phí; quốc tế vẫn có phí,Tất cả
+vietjet,deluxe,int,correction,Đổi tên hành khách,KHÔNG được phép,,,Tất cả
+vietjet,deluxe,dom,correction,Đổi tên hành khách,KHÔNG được phép,,,Tất cả
+vietjet,deluxe,dom,refund,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Báo trước 26 giờ. Bảo lưu tối đa 01 năm,,Tất cả
+vietjet,deluxe,dom,baggage,Hành lý xách tay,7 kg miễn cước,Kích thước tối đa 56x36x23 cm,,Tất cả
+vietjet,deluxe,int,baggage,Hành lý xách tay,7 kg miễn cước,Kích thước tối đa 56x36x23 cm,,Tất cả
+vietjet,deluxe,dom,baggage,Hành lý ký gửi,20 kg miễn cước,Chặng bay dưới 7 tiếng,,Tất cả
+vietjet,deluxe,int,baggage,Hành lý ký gửi,20 kg miễn cước,Chặng bay dưới 7 tiếng,,Tất cả
+vietjet,deluxe,int,baggage,Hành lý ký gửi,40 kg miễn cước,Chặng bay quốc tế trên 7 tiếng,"Áp dụng các đường bay dài (Úc, Kazakhstan)",Tất cả
+vietjet,skyboss,dom,ticket_change,Đổi ngày/giờ/chặng bay,Miễn phí,Trước khi kết sổ chuyến bay,"Đặc quyền cao cấp – đổi linh hoạt nhất, chênh lệch giá (nếu có)",Tất cả
+vietjet,skyboss,int,ticket_change,Đổi ngày/giờ/chặng bay,Miễn phí,Trước khi kết sổ chuyến bay,"Đặc quyền cao cấp – đổi linh hoạt nhất, chênh lệch giá (nếu có)",Tất cả
+vietjet,skyboss,dom,correction,Đổi tên hành khách,350.000 VNĐ/khách,Chỉ áp dụng vé mua ban đầu là SkyBoss (không áp dụng vé nâng hạng). Đổi tối thiểu 3 tiếng trước bay,,Tất cả
+vietjet,skyboss,int,correction,Đổi tên hành khách,800.000 VNĐ/khách,Chỉ áp dụng vé mua ban đầu là SkyBoss (không áp dụng vé nâng hạng). Đổi tối thiểu 3 tiếng trước bay,,Tất cả
+vietjet,skyboss,dom,refund,Hoàn bảo lưu tiền vé,Phí hoàn 350.000 VNĐ/khách/chặng,Bảo lưu tối đa 02 năm từ ngày bay dự kiến,Thời hạn bảo lưu dài gấp đôi Eco/deluxe,Tất cả
+vietjet,skyboss,int,refund,Hoàn bảo lưu tiền vé,Phí hoàn 800.000 VNĐ/khách/chặng,"Bảo lưu tối đa 02 năm, (trừ Úc: 2.000.000)",Chặng Úc: phí cao hơn,Tất cả
+vietjet,skyboss,dom,baggage,Hành lý xách tay,10 kg miễn cước,Nội địa Việt Nam,,Tất cả
+vietjet,skyboss,int,baggage,Hành lý xách tay,10 kg miễn cước,Quốc tế có thời gian bay nhỏ hơn 7 tiếng,,Tất cả
+vietjet,skyboss,int,baggage,Hành lý xách tay,14 kg miễn cước,Chặng đến/từ Úc và Kazakhstan,,Tất cả
+vietjet,skyboss,dom,baggage,Hành lý ký gửi,30 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Nội địa Việt Nam,Miễn phí bộ dụng cụ golf cho SkyBoss,Tất cả
+vietjet,skyboss,int,baggage,Hành lý ký gửi,30 kg + 1 bộ gậy golf ≤ 15 kg (nếu có),Quốc tế có thời gian bay nhỏ hơn 7 tiếng,Miễn phí bộ dụng cụ golf cho SkyBoss,Tất cả
+vietjet,skyboss,int,baggage,Hành lý ký gửi,50 kg miễn cước,Chặng quốc tế trên 7 tiếng,,Tất cả
+vietjet,skyboss,dom,services,Phòng chờ cao cấp,Bao gồm (miễn phí),Không áp dụng nội địa Thái Lan và sân bay không có phòng chờ đạt chuẩn,,Tất cả
+vietjet,skyboss,int,services,Phòng chờ cao cấp,Bao gồm (miễn phí),Không áp dụng nội địa Thái Lan và sân bay không có phòng chờ đạt chuẩn,,Tất cả
+vietjet,skyboss,dom,services,Xe riêng ra máy bay,Bao gồm (tùy điều kiện sân bay),Phụ thuộc điều kiện cung ứng tại từng sân bay,,Tất cả
+vietjet,skyboss,int,services,Xe riêng ra máy bay,Bao gồm (tùy điều kiện sân bay),Phụ thuộc điều kiện cung ứng tại từng sân bay,,Tất cả
+vietjet,skyboss,dom,services,Suất ăn trên chuyến bay,Bao gồm (miễn phí),,,Tất cả
+vietjet,skyboss,int,services,Suất ăn trên chuyến bay,Bao gồm (miễn phí),,,Tất cả
+vietjet,skyboss,dom,services,Bảo hiểm SkyBoss Flight Care,Bao gồm trong giá vé,,,Tất cả
+vietjet,skyboss,int,services,Bảo hiểm SkyBoss Flight Care,Bao gồm trong giá vé,Chưa áp dụng chuyến bay Thai VietJet khai thác,,Tất cả
+vietjet,skyboss_business,dom,ticket_change,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
+vietjet,skyboss_business,int,ticket_change,Đổi ngày/giờ/chặng bay,Miễn phí + chênh lệch giá (nếu có),Trước khi kết sổ chuyến bay,,Tất cả
+vietjet,skyboss_business,dom,baggage,Hành lý ký gửi,"40 kg + 1 bộ gậy golf ≤ 15 kg (nếu có), Kích thước hành lý ký gửi tối đa 119 x 119 x 81 cm; trọng lượng ≤ 32 kg/kiện",Chặng bay dưới 7 tiếng,,Tất cả
+vietjet,skyboss_business,int,baggage,Hành lý ký gửi,"40 kg + 1 bộ gậy golf ≤ 15 kg (nếu có), Kích thước hành lý ký gửi tối đa 119 x 119 x 81 cm; trọng lượng ≤ 32 kg/kiện",Chặng bay dưới 7 tiếng,,Tất cả
+vietjet,skyboss_business,int,baggage,Hành lý ký gửi,"50–60 kg miễn cước, Kích thước hành lý ký gửi tối đa 119 x 119 x 81 cm; trọng lượng ≤ 32 kg/kiện",Chặng quốc tế trên 7 tiếng,,Tất cả
+vietjet,skyboss_business,dom,baggage,Hành lý xách tay,18 kg miễn cước,Cao nhất trong các hạng vé,,Tất cả
+vietjet,skyboss_business,int,baggage,Hành lý xách tay,18 kg miễn cước,Cao nhất trong các hạng vé,,Tất cả
+vietjet,eco,dom,cancellation_fee,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Phải tự hủy đúng thời hạn,,Tất cả
+vietjet,deluxe,dom,cancellation_fee,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,deluxe đặc biệt
+vietjet,skyboss,dom,cancellation_fee,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,SkyBoss đặc biệt
+vietjet,skyboss_business,dom,cancellation_fee,Phí hủy chỗ (No-show / Bỏ chỗ),250.000 VNĐ/khách/chặng,Hủy trước 3h hoặc báo trong 72h sau giờ bay,,SkyBoss đặc biệt
+vietjet,eco,dom,service_fee,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
+vietjet,deluxe,dom,service_fee,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
+vietjet,skyboss,dom,service_fee,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
+vietjet,skyboss_business,dom,service_fee,Phí đến muộn (Late check-in),400.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy là 40 phút trước bay. Khách được sắp xếp chuyến bay kế tiếp,,Tất cả
+vietjet,eco,int,service_fee,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
+vietjet,deluxe,int,service_fee,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
+vietjet,skyboss,int,service_fee,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
+vietjet,skyboss_business,int,service_fee,Phí đến muộn (Late check-in),1.000.000 VNĐ/khách,Áp dụng khi đến quầy sau giờ đóng quầy. Khách được sắp xếp chuyến bay kế tiếp,Đối với chặng Úc: 3.000.000 VNĐ,Tất cả
+vietjet,eco,dom,ticket_upgrade,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,deluxe,dom,ticket_upgrade,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,skyboss,dom,ticket_upgrade,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,skyboss_business,dom,ticket_upgrade,Nâng hạng từ Eco,Từ 350.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,eco,int,ticket_upgrade,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,deluxe,int,ticket_upgrade,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,skyboss,int,ticket_upgrade,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,skyboss_business,int,ticket_upgrade,Nâng hạng từ Eco,Từ 800.000 VNĐ/khách + chênh lệch giá,"Eco → deluxe, SkyBoss, SkyBoss Business",,Tất cả
+vietjet,eco,int,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
+vietjet,deluxe,int,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
+vietjet,skyboss,int,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
+vietjet,skyboss_business,int,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,Thai VJ: 180 ngày,Tất cả
+vietjet,eco,dom,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
+vietjet,deluxe,dom,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
+vietjet,skyboss,dom,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
+vietjet,skyboss_business,dom,majeure_refund,Hoàn bất khả kháng – Hãng hủy chuyến,Hoàn bảo lưu định danh toàn bộ – Miễn phí,Hãng hủy chuyến hoặc delay > 4 tiếng. Báo trước 4 tiếng trước bay,VJ: bảo lưu 1 năm,Tất cả
+vietjet,eco,dom,travel_document,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
+vietjet,deluxe,dom,travel_document,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
+vietjet,skyboss,dom,travel_document,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
+vietjet,skyboss_business,dom,travel_document,Giấy tờ tùy thân – Người ≥ 14 tuổi,"CCCD (ưu tiên), Hộ chiếu, Giấy phép lái xe, Thẻ quân nhân, Thẻ nhà báo, v.v.",Từ 01/01/2025: CMND không còn hiệu lực. Phải dùng CCCD (gắn chip hoặc không) còn hạn,"Giấy xác nhận nhân thân CA phường/xã (có ảnh, hiệu lực 30 ngày) nếu mất CCCD",≥ 14 tuổi
+vietjet,eco,dom,travel_document,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
+vietjet,deluxe,dom,travel_document,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
+vietjet,skyboss,dom,travel_document,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
+vietjet,skyboss_business,dom,travel_document,Giấy tờ tùy thân – Trẻ em < 14 tuổi,Giấy khai sinh bản gốc hoặc bản sao có chứng thực,Trẻ < 1 tháng tuổi: dùng Giấy chứng sinh. Trẻ < 12 tuổi: phải có người ≥ 18 tuổi đi kèm,Trẻ 12–16 tuổi đi một mình: cần cam kết của bố mẹ; 16–18 tuổi: không cần cam kết,< 14 tuổi
+vietjet,eco,int,travel_document,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
+vietjet,deluxe,int,travel_document,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
+vietjet,skyboss,int,travel_document,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
+vietjet,skyboss_business,int,travel_document,Giấy tờ tùy thân,Hộ chiếu còn hạn ≥ 6 tháng từ ngày nhập cảnh + Visa (nếu có yêu cầu),Trẻ < 14 tuổi: phải đi cùng bố/mẹ/người giám hộ; nếu không cần Giấy ủy quyền hợp pháp,Vietjet chỉ khai thác đơn chặng – không nối chuyến tự động,Tất cả
+vietjet,eco,dom,check_in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
+vietjet,deluxe,dom,check_in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
+vietjet,skyboss,dom,check_in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
+vietjet,skyboss_business,dom,check_in,Check-in quầy – Giờ đóng,Đóng quầy 40 phút trước giờ bay,Check-in trực tuyến: từ 24h đến 1h trước giờ bay,Có hành lý ký gửi: đến trước ≥ 2 tiếng; chỉ xách tay: đến trước ≥ 60 phút,Tất cả
+vietjet,eco,int,check_in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
+vietjet,deluxe,int,check_in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
+vietjet,skyboss,int,check_in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
+vietjet,skyboss_business,int,check_in,Check-in quầy – Giờ đóng,Đóng quầy 50 phút trước giờ bay,,"Nhật Bản, Hàn Quốc, Ấn Độ: đóng 60 phút trước bay",Tất cả
