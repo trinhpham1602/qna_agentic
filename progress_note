@@ -20,3 +20,16 @@ Model:
                                     loop until đủ slots
                                           ↓
                               [vector_db_query] → [respond]
+
+
+-- MULTI QUERY --
+Nhờ LLM gen giúp
+Đồng thời nhờ LLM gen ra một câu trả lời -> tăng lấy được ngữ cảnh -> trả lời đúng hơn
+
+Tìm kiếm vector rất tốt về ngữ nghĩa nhưng lại yếu về từ khóa chính xác. Ví
+dụ: vector của “iPhone 14” và “iPhone 15” rất gần nhau về ngữ nghĩa, nhưng người
+dùng cần tìm chính xác thông tin về phiên bản 15.
+
+=> hyber bridge => khắc phục từ khoá chính xác.
+=> nên tách
+

@@ -1,8 +1,4 @@
-Tôi đã phần được loại query của user là {'command': value1, 'question': value2} ở function predict_type_of_query trong file utils.py
-    Bạn hãy update lại rag_workflow sao cho:
-        a. Nếu câu hỏi là command thì cho LLM trả lời chưa support các dạng câu hỏi kiểu booking
-        b. Nếu câu hỏi là dạng question thì:
-            i. extract trong câu hỏi và check thử câu hỏi đó có tồn tại trong canonical của faq_data hay không
-                * Nếu tồn tại thì thực hiện yêu cầu nhập hạng vé nếu chưa có, sau khi có hạng vé rồi thì kết hợp với câu trước đó để thực hiện RAG và trả lời cho user
-                * Nếu không tồn tại thì nói là chưa ghi nhận được data. Liên hệ VJ
-Nếu thiếu lib thì thêm vào file requirements.txt, tôi cũng đã có săn .venv rồi.
+trong file review.py tôi muốn:
+thêm một node có nhiệm vụ extract entity từ câu chat tiếp theo của user để fill vào missing slot
+Thêm một node có nhiệm vụ request một hoặc nhiều trong những missing slot còn lại
+thêm một node có nhiệm vụ generate content khi tìm thấy các nội dung gần với vector embedding.
