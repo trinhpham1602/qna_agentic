@@ -1,9 +1,3 @@
-Tôi muốn file review custom lại extract_entity_node sao cho:
-
-Task 1: Node này sử dụng một LLM mà nó sử dụng câu prompt trong path: sys_prompt/extract_required_slots để extract ra các required slot cho tôi
-Từ đó custom lại flow, sao cho khi một câu user truyền vào thì tìm thấy một hoặc nhiều slot, để fill vào required slot.
-ví dụ: "tôi muốn huỷ vé hạng skyboss bay nội địa" => chỉ missing hãng bay.
-
-Task 2: Thêm node hỗ trợ gọi nhận viện tư vấn khi không tìm thấy kết quả trong DB
-
-Task 3: thêm một node sử dụng LLM trả lời hoàn toàn bằng tiếng việt, nếu câu hỏi của user không liên quan đến nghiệp vụ máy bay
+Tôi muốn bạn thực hiện như task vụ sau:
+1. restruct lại các task dành cho vietjet. Full flow từ crawl, clean data, chunk data, build RAG
+2. build cho tôi muôn QnA Vietjet agentic, sử dụng pgvector và langgraph. Chứ không phải cách cho ra input như bạn
