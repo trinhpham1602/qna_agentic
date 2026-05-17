@@ -1,0 +1,5 @@
+{
+  "embed_model": "bkai-foundation-models/vietnamese-bi-encoder",
+  "n_chunks": 297,
+  "dim": 768
+}
