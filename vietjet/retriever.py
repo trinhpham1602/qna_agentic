@@ -40,11 +40,21 @@ def _rrf(rankings: Iterable[list[str]]) -> dict[str, float]:
 
 class VietjetRetriever:
     def __init__(self, use_rerank: bool = True):
-        with BM25_PATH.open("rb") as f:
-            d = pickle.load(f)
-        self.bm25 = d["bm25"]
-        self.chunks: list[dict] = d["chunks"]
-        self._chunk_by_id = {c["id"]: c for c in self.chunks}
+        # BM25 là sidecar tuỳ chọn. Thiếu file → degrade sang vector-only.
+        if BM25_PATH.exists():
+            with BM25_PATH.open("rb") as f:
+                d = pickle.load(f)
+            self.bm25 = d["bm25"]
+            self.chunks: list[dict] = d["chunks"]
+            self._chunk_by_id = {c["id"]: c for c in self.chunks}
+        else:
+            print(
+                f"[retriever] WARNING: {BM25_PATH} không tồn tại — chạy vector-only. "
+                f"Chạy `python -m vietjet.pipeline ingest` để bật hybrid retrieval."
+            )
+            self.bm25 = None
+            self.chunks = []
+            self._chunk_by_id = {}
 
         self.embedder = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
         self.store = PGVector(
@@ -62,10 +72,11 @@ class VietjetRetriever:
         order = sorted(range(len(scores)), key=lambda i: -scores[i])[:k]
         return [self.chunks[i]["id"] for i in order]
 
-    def _vector_ranking(self, query: str, k: int, doc_type: str | None) -> list[tuple[str, float]]:
+    def _vector_ranking(
+        self, query: str, k: int, doc_type: str | None
+    ) -> list[tuple[Document, float]]:
         filter_dict = {"doc_type": {"$eq": doc_type}} if doc_type else None
-        results = self.store.similarity_search_with_score(query, k=k, filter=filter_dict)
-        return [(doc.metadata["id"], score) for doc, score in results]
+        return self.store.similarity_search_with_score(query, k=k, filter=filter_dict)
 
     def search(
         self,
@@ -75,44 +86,67 @@ class VietjetRetriever:
         doc_type: str | None = None,
         boost_tables: bool = False,
     ) -> list[Document]:
-        # Vector ranking with optional metadata filter
+        # Vector ranking with optional metadata filter — always available
         vec_ranked = self._vector_ranking(query, candidates, doc_type)
-        vec_ids = [cid for cid, _ in vec_ranked]
-        # BM25 always over the whole corpus (filtering BM25 by metadata is awkward;
-        # we let RRF demote out-of-type chunks via the vector side instead).
-        bm25_ids = self._bm25_ranking(query, candidates)
+        # Cache Document by id để build kết quả cuối ở vector-only mode
+        vec_doc_by_id = {doc.metadata["id"]: doc for doc, _ in vec_ranked}
+        vec_ids = [doc.metadata["id"] for doc, _ in vec_ranked]
 
-        fused = _rrf([vec_ids, bm25_ids])
+        if self.bm25 is None:
+            # Vector-only path: giữ thứ tự pgvector, tuỳ chọn boost_tables nếu metadata có
+            cand_ids = vec_ids[:]
+            if boost_tables:
+                # ưu tiên các doc có has_table=True trong metadata pgvector
+                cand_ids.sort(
+                    key=lambda cid: 0 if vec_doc_by_id[cid].metadata.get("has_table") else 1
+                )
+            cand_ids = cand_ids[:candidates]
+        else:
+            # Hybrid: BM25 + RRF
+            bm25_ids = self._bm25_ranking(query, candidates)
+            fused = _rrf([vec_ids, bm25_ids])
+            if boost_tables:
+                for cid in list(fused):
+                    chunk = self._chunk_by_id.get(cid)
+                    if chunk and chunk["has_table"]:
+                        fused[cid] *= 1.3
+            cand_ids = sorted(fused, key=lambda c: -fused[c])[:candidates]
 
-        if boost_tables:
-            for cid in list(fused):
-                if self._chunk_by_id[cid]["has_table"]:
-                    fused[cid] *= 1.3
+        # Rerank (tuỳ chọn). Chỉ rerank những id có text — ở vector-only mode dùng
+        # page_content; ở hybrid dùng chunk text từ sidecar.
+        def _text_of(cid: str) -> str:
+            if cid in self._chunk_by_id:
+                return self._chunk_by_id[cid]["text"][:RERANK_TEXT_CAP]
+            doc = vec_doc_by_id.get(cid)
+            return (doc.page_content if doc else "")[:RERANK_TEXT_CAP]
 
-        cand_ids = sorted(fused, key=lambda c: -fused[c])[:candidates]
-
-        if self.reranker is None:
+        if self.reranker is None or not cand_ids:
             picked = cand_ids[:top_k]
         else:
-            pairs = [(query, self._chunk_by_id[cid]["text"][:RERANK_TEXT_CAP]) for cid in cand_ids]
+            pairs = [(query, _text_of(cid)) for cid in cand_ids]
             scores = self.reranker.predict(pairs, batch_size=4, show_progress_bar=False)
             order = sorted(range(len(cand_ids)), key=lambda i: -scores[i])[:top_k]
             picked = [cand_ids[i] for i in order]
 
-        return [self._to_doc(cid) for cid in picked]
+        return [self._to_doc(cid, vec_doc_by_id) for cid in picked]
 
-    def _to_doc(self, cid: str) -> Document:
-        c = self._chunk_by_id[cid]
-        return Document(
-            page_content=c["text"],
-            metadata={
-                "id": c["id"],
-                "source": c["source"],
-                "doc_type": c["doc_type"],
-                "section_path": c["section_path"],
-                "has_table": c["has_table"],
-            },
-        )
+    def _to_doc(self, cid: str, vec_doc_by_id: dict[str, Document] | None = None) -> Document:
+        c = self._chunk_by_id.get(cid)
+        if c is not None:
+            return Document(
+                page_content=c["text"],
+                metadata={
+                    "id": c["id"],
+                    "source": c["source"],
+                    "doc_type": c["doc_type"],
+                    "section_path": c["section_path"],
+                    "has_table": c["has_table"],
+                },
+            )
+        if vec_doc_by_id and cid in vec_doc_by_id:
+            return vec_doc_by_id[cid]
+        # Cuối cùng: fallback empty doc để không crash
+        return Document(page_content="", metadata={"id": cid})
 
 
 @lru_cache(maxsize=1)

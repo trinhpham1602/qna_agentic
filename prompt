@@ -1,3 +1,8 @@
-Tôi muốn bạn thực hiện như task vụ sau:
-1. restruct lại các task dành cho vietjet. Full flow từ crawl, clean data, chunk data, build RAG
-2. build cho tôi muôn QnA Vietjet agentic, sử dụng pgvector và langgraph. Chứ không phải cách cho ra input như bạn
+Kết hợp file review.py để viết vào trong vietjet folder và tôi muôn output như sau:
+
+vietjet agent có thể nhận biết được đâu là câu hỏi và đâu là câu yêu cầu user nhập thêm thông tin. Nên là một node sử dụng LLM
+Đối với câu hỏi thì agent nên dùng flow hiện tại (hệ thống QnA hiện tại)
+Đới với câu yêu cầu thì dùng flow trong file review.py
+
+Tạo cho tôi một ảnh langraph mới thể hiện mối quan hệ giữa các node.
+Tôi có thể dùng fastAPi để chat như là một user.
