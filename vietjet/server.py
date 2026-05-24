@@ -1,17 +1,3 @@
-"""FastAPI server cho Vietjet combined agent.
-
-Endpoints:
-- POST /thread          → khởi tạo session, trả thread_id + prompt khởi đầu.
-- POST /chat            → gửi message vào graph, server giữ state theo thread_id.
-- GET  /thread/{id}     → debug, xem state hiện tại.
-- DELETE /thread/{id}   → xoá session.
-
-Chạy:
-    uvicorn vietjet.server:app --host 127.0.0.1 --port 8002 --reload
-hoặc:
-    python -m vietjet.server
-"""
-
 from __future__ import annotations
 
 import uuid
@@ -28,12 +14,7 @@ from vietjet.combined_agent import (
     get_graph,
 )
 
-
-# ---------------------------------------------------------------------------
-# In-memory session store (production nên dùng Redis hoặc langgraph checkpointer)
-# ---------------------------------------------------------------------------
 _sessions: Dict[str, CombinedState] = {}
-
 
 def _new_state() -> CombinedState:
     return {
@@ -45,6 +26,11 @@ def _new_state() -> CombinedState:
         "intent": None,
         "answer": "",
         "slot_question": "",
+        "web_candidates": [],
+        "web_chosen_urls": [],
+        "web_docs": [],
+        "web_skipped_reason": None,
+        "merged_docs": [],
     }
 
 
@@ -52,9 +38,6 @@ def _missing_list(slots: dict) -> List[str]:
     return [s for s in REQUIRED_SLOTS if not _is_slot_filled(slots, s)]
 
 
-# ---------------------------------------------------------------------------
-# DTOs
-# ---------------------------------------------------------------------------
 class ThreadResponse(BaseModel):
     thread_id: str
     message: str
@@ -76,11 +59,10 @@ class ChatResponse(BaseModel):
     citations: List[str] = []
     is_off_topic: bool = False
     escalate: bool = False
+    web_chosen_urls: List[str] = []
+    web_skipped_reason: Optional[str] = None
 
 
-# ---------------------------------------------------------------------------
-# App
-# ---------------------------------------------------------------------------
 app = FastAPI(title="Vietjet Combined Agent", version="1.0.0")
 
 # build graph & sinh ảnh ngay khi import
@@ -132,6 +114,8 @@ async def chat(req: ChatRequest) -> ChatResponse:
         citations=new_state.get("citations", []) or [],
         is_off_topic=bool(new_state.get("is_off_topic")),
         escalate=bool(new_state.get("escalate")),
+        web_chosen_urls=new_state.get("web_chosen_urls", []) or [],
+        web_skipped_reason=new_state.get("web_skipped_reason"),
     )
 
 
@@ -140,8 +124,8 @@ def get_thread(thread_id: str) -> Dict[str, Any]:
     state = _sessions.get(thread_id)
     if state is None:
         raise HTTPException(status_code=404, detail="thread_id không tồn tại")
-    # docs là Document objects → bỏ ra cho JSON-friendly
-    clean = {k: v for k, v in state.items() if k != "docs"}
+    _drop = {"docs", "web_docs", "merged_docs"}
+    clean = {k: v for k, v in state.items() if k not in _drop}
     return clean
 
 

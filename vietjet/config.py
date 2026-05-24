@@ -51,6 +51,16 @@ RERANK_TEXT_CAP = 2000  # truncate chunk text fed to reranker to dodge MPS OOM
 MAX_REWRITES = 2
 GRADE_THRESHOLD = 0.5  # heuristic fraction of "grounded" tokens
 
+# --- Web Search Agent ---
+WEB_SEARCH_LIMIT = 8
+WEB_SEARCH_TIMEOUT = 12.0
+WEB_SEARCH_INCLUDE_DOMAINS = ["vietjetair.com"]
+WEB_SEARCH_URL_PREFIX = "https://www.vietjetair.com/vi"
+WEB_JUDGE_MAX_PICKS = 2
+WEB_FETCH_CHUNK_CAP = 4000
+WEB_FETCH_TIMEOUT = 12.0
+WEB_FETCH_CACHE_TTL = 7200
+
 # --- URLs to crawl ---
 URLS: list[dict[str, str]] = [
     {"filename": "dieu-le-van-chuyen-vietjet", "url": "https://www.vietjetair.com/vi/pages/dieu-le-van-chuyen-vietjet-1618221808366"},

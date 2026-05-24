@@ -34,18 +34,19 @@ import os
 POLICY_EMBED_MODEL = os.getenv("EMBEDDING_MODEL", "intfloat/multilingual-e5-large")
 
 
-from config import (
-    DB_CONNECTION_STRING as POLICY_DB,
+from vietjet.config import DB_CONNECTION_STRING as POLICY_DB, LLM_MODEL
+from vietjet.qna_nodes import (
+    after_grade,
+    db_retrieve_node,
+    generate_node,
+    grade_node,
+    link_judge_node,
+    merge_node,
+    rewrite_node,
+    route_node,
+    web_fetch_node,
+    web_search_node,
 )
-from vietjet.agent import (
-    grade_node as qna_grade_node,
-    generate_node as qna_generate_node,
-    retrieve_node as qna_retrieve_node,
-    rewrite_node as qna_rewrite_node,
-    route_node as qna_route_node,
-    _after_grade,
-)
-from vietjet.config import LLM_MODEL
 
 
 # ---------------------------------------------------------------------------
@@ -73,14 +74,12 @@ Intent = Literal["question", "request"]
 
 
 class CombinedState(TypedDict, total=False):
-    # ---- chung ----
     user_input: str
     question: str
     intent: Optional[Intent]
     answer: str
     done: bool
 
-    # ---- nhánh question (QnA) ----
     query: str
     doc_type: Optional[str]
     boost_tables: bool
@@ -89,7 +88,12 @@ class CombinedState(TypedDict, total=False):
     sufficient: bool
     citations: List[str]
 
-    # ---- nhánh request (slot-filling) ----
+    web_candidates: List[dict]
+    web_chosen_urls: List[str]
+    web_docs: List[Document]
+    web_skipped_reason: Optional[str]
+    merged_docs: List[Document]
+
     slots: Dict[str, List[str]]
     next_slot: Optional[str]
     slot_question: str
@@ -177,39 +181,42 @@ async def classify_intent_node(state: CombinedState) -> CombinedState:
     return state
 
 
-# ---------------------------------------------------------------------------
-# QnA branch — reuse từ vietjet.agent
-# Wrap route_node để set question/query đúng theo state combined
-# ---------------------------------------------------------------------------
-async def qna_route_wrapper(state: CombinedState) -> CombinedState:
-    out = await qna_route_node({"question": state.get("question") or ""})
-    state.update(out)
-    return state
+async def qna_route_wrapper(state: CombinedState) -> dict:
+    return await route_node({"question": state.get("question") or ""})
 
 
-async def qna_retrieve_wrapper(state: CombinedState) -> CombinedState:
-    out = await qna_retrieve_node(state)  # type: ignore[arg-type]
-    state.update(out)
-    return state
+async def qna_db_retrieve_wrapper(state: CombinedState) -> dict:
+    return await db_retrieve_node(state)
 
 
-async def qna_grade_wrapper(state: CombinedState) -> CombinedState:
-    out = await qna_grade_node(state)  # type: ignore[arg-type]
-    state.update(out)
-    return state
+async def qna_web_search_wrapper(state: CombinedState) -> dict:
+    return await web_search_node(state)
 
 
-async def qna_rewrite_wrapper(state: CombinedState) -> CombinedState:
-    out = await qna_rewrite_node(state)  # type: ignore[arg-type]
-    state.update(out)
-    return state
+async def qna_link_judge_wrapper(state: CombinedState) -> dict:
+    return await link_judge_node(state)
 
 
-async def qna_generate_wrapper(state: CombinedState) -> CombinedState:
-    out = await qna_generate_node(state)  # type: ignore[arg-type]
-    state.update(out)
-    state["done"] = True
-    return state
+async def qna_web_fetch_wrapper(state: CombinedState) -> dict:
+    return await web_fetch_node(state)
+
+
+async def qna_merge_wrapper(state: CombinedState) -> dict:
+    return await merge_node(state)
+
+
+async def qna_grade_wrapper(state: CombinedState) -> dict:
+    return await grade_node(state)
+
+
+async def qna_rewrite_wrapper(state: CombinedState) -> dict:
+    return await rewrite_node(state)
+
+
+async def qna_generate_wrapper(state: CombinedState) -> dict:
+    out = await generate_node(state)
+    out["done"] = True
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -475,17 +482,18 @@ def _route_after_query_request(state: CombinedState) -> str:
 def build_graph(save_image: bool = True):
     g = StateGraph(CombinedState)
 
-    # entry
     g.add_node("classify_intent", classify_intent_node)
 
-    # nhánh QnA
     g.add_node("qna_route", qna_route_wrapper)
-    g.add_node("qna_retrieve", qna_retrieve_wrapper)
+    g.add_node("qna_db_retrieve", qna_db_retrieve_wrapper)
+    g.add_node("qna_web_search", qna_web_search_wrapper)
+    g.add_node("qna_link_judge", qna_link_judge_wrapper)
+    g.add_node("qna_web_fetch", qna_web_fetch_wrapper)
+    g.add_node("qna_merge", qna_merge_wrapper)
     g.add_node("qna_grade", qna_grade_wrapper)
     g.add_node("qna_rewrite", qna_rewrite_wrapper)
     g.add_node("qna_generate", qna_generate_wrapper)
 
-    # nhánh request
     g.add_node("extract_entity", extract_entity_node)
     g.add_node("request_slot", request_slot_node)
     g.add_node("query_request", query_request_node)
@@ -500,15 +508,20 @@ def build_graph(save_image: bool = True):
         {"qna": "qna_route", "request": "extract_entity"},
     )
 
-    # QnA edges
-    g.add_edge("qna_route", "qna_retrieve")
-    g.add_edge("qna_retrieve", "qna_grade")
+    g.add_edge("qna_route", "qna_db_retrieve")
+    g.add_edge("qna_route", "qna_web_search")
+    g.add_edge("qna_web_search", "qna_link_judge")
+    g.add_edge("qna_link_judge", "qna_web_fetch")
+    g.add_edge("qna_db_retrieve", "qna_merge")
+    g.add_edge("qna_web_fetch", "qna_merge")
+    g.add_edge("qna_merge", "qna_grade")
     g.add_conditional_edges(
         "qna_grade",
-        _after_grade,
+        after_grade,
         {"generate": "qna_generate", "rewrite": "qna_rewrite"},
     )
-    g.add_edge("qna_rewrite", "qna_retrieve")
+    g.add_edge("qna_rewrite", "qna_db_retrieve")
+    g.add_edge("qna_rewrite", "qna_web_search")
     g.add_edge("qna_generate", END)
 
     # Request edges
