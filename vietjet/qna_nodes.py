@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from langchain_core.documents import Document
+
 from vietjet.config import MAX_REWRITES
 from vietjet.qna_agents import (
     generate_agent,
@@ -102,6 +104,94 @@ async def web_fetch_node(state: dict) -> dict:
         return {"web_docs": docs}
     except Exception as exc:
         return {"web_docs": [], "web_skipped_reason": f"fetch_error: {exc}"}
+
+
+async def parallel_crawl_node(state: dict) -> dict:
+    """Node thay thế cho `web_search + link_judge + web_fetch`.
+
+    Gọi CrawlCoordinator.stream():
+      - cache_hit → dùng luôn docs từ DB web_live (skip Firecrawl)
+      - partial_answer → gom JudgeResult thành web_docs
+      - ingested / done → metadata
+
+    Lazy import để tránh load CrawlCoordinator (heavy: Firecrawl + embedder)
+    khi chỉ chạy nhánh request không có web search.
+    """
+    from vietjet.crawl_parallel.ask import _cache_doc_to_document, _result_to_document
+    from vietjet.crawl_parallel.coordinator import CrawlCoordinator
+
+    query = state.get("query") or state.get("question") or ""
+    if not query.strip():
+        return {
+            "web_docs": [],
+            "web_chosen_urls": [],
+            "web_skipped_reason": "empty_query",
+            "cache_hit": False,
+            "early_fired": False,
+            "crawl_session_id": None,
+            "background_pages": 0,
+        }
+
+    coord = CrawlCoordinator()
+    web_docs: list[Document] = []
+    cache_hit = False
+    early_fired = False
+    session_id: str | None = None
+    bg_pages = 0
+    skipped_reason: str | None = None
+
+    try:
+        async for ev in coord.stream(query):
+            if ev.type == "cache_hit":
+                cache_hit = True
+                for d in ev.payload.get("docs", []):
+                    web_docs.append(_cache_doc_to_document(d))
+                print(f"[parallel_crawl] CACHE HIT — {len(web_docs)} docs")
+            elif ev.type == "partial_answer":
+                early_fired = ev.payload.get("early_fired", False)
+                session_id = ev.payload.get("session_id")
+                reason = ev.payload.get("reason")
+                results = ev.payload.get("results") or []
+                if not results and not web_docs:
+                    skipped_reason = f"no_results:{reason}"
+                for r in results:
+                    web_docs.append(_result_to_document(r))
+                print(
+                    f"[parallel_crawl] partial_answer reason={reason} "
+                    f"early={early_fired} results={len(results)}"
+                )
+            elif ev.type == "ingested":
+                bg_pages = ev.payload.get("pages", 0)
+            elif ev.type == "done":
+                session_id = session_id or ev.payload.get("session_id")
+            elif ev.type == "error":
+                skipped_reason = f"coord_error: {ev.payload.get('reason')}"
+    except Exception as exc:
+        print(f"[parallel_crawl] FAIL: {exc}")
+        skipped_reason = f"crawl_error: {exc}"
+
+    # Dedup theo source URL
+    seen = set()
+    deduped: list[Document] = []
+    for d in web_docs:
+        u = d.metadata.get("source") or d.metadata.get("id")
+        if u in seen:
+            continue
+        seen.add(u)
+        deduped.append(d)
+
+    chosen_urls = [d.metadata.get("source") for d in deduped if d.metadata.get("source")]
+
+    return {
+        "web_docs": deduped,
+        "web_chosen_urls": chosen_urls,
+        "web_candidates": [],  # legacy field, để combined_agent không vỡ
+        "web_skipped_reason": skipped_reason,
+        "cache_hit": cache_hit,
+        "early_fired": early_fired,
+        "crawl_session_id": session_id,
+        "background_pages": bg_pages,
+    }
 
 
 async def merge_node(state: dict) -> dict:

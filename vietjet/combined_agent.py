@@ -42,6 +42,7 @@ from vietjet.qna_nodes import (
     grade_node,
     link_judge_node,
     merge_node,
+    parallel_crawl_node,
     rewrite_node,
     route_node,
     web_fetch_node,
@@ -93,6 +94,12 @@ class CombinedState(TypedDict, total=False):
     web_docs: List[Document]
     web_skipped_reason: Optional[str]
     merged_docs: List[Document]
+
+    # Parallel-crawl metadata (PLAN_PARALLEL_CRAWL_AGENT.md)
+    cache_hit: bool
+    early_fired: bool
+    crawl_session_id: Optional[str]
+    background_pages: int
 
     slots: Dict[str, List[str]]
     next_slot: Optional[str]
@@ -189,16 +196,8 @@ async def qna_db_retrieve_wrapper(state: CombinedState) -> dict:
     return await db_retrieve_node(state)
 
 
-async def qna_web_search_wrapper(state: CombinedState) -> dict:
-    return await web_search_node(state)
-
-
-async def qna_link_judge_wrapper(state: CombinedState) -> dict:
-    return await link_judge_node(state)
-
-
-async def qna_web_fetch_wrapper(state: CombinedState) -> dict:
-    return await web_fetch_node(state)
+async def qna_parallel_crawl_wrapper(state: CombinedState) -> dict:
+    return await parallel_crawl_node(state)
 
 
 async def qna_merge_wrapper(state: CombinedState) -> dict:
@@ -486,9 +485,7 @@ def build_graph(save_image: bool = True):
 
     g.add_node("qna_route", qna_route_wrapper)
     g.add_node("qna_db_retrieve", qna_db_retrieve_wrapper)
-    g.add_node("qna_web_search", qna_web_search_wrapper)
-    g.add_node("qna_link_judge", qna_link_judge_wrapper)
-    g.add_node("qna_web_fetch", qna_web_fetch_wrapper)
+    g.add_node("qna_parallel_crawl", qna_parallel_crawl_wrapper)
     g.add_node("qna_merge", qna_merge_wrapper)
     g.add_node("qna_grade", qna_grade_wrapper)
     g.add_node("qna_rewrite", qna_rewrite_wrapper)
@@ -508,12 +505,11 @@ def build_graph(save_image: bool = True):
         {"qna": "qna_route", "request": "extract_entity"},
     )
 
+    # Fan-out song song: DB retrieve + Parallel crawl (Firecrawl streaming)
     g.add_edge("qna_route", "qna_db_retrieve")
-    g.add_edge("qna_route", "qna_web_search")
-    g.add_edge("qna_web_search", "qna_link_judge")
-    g.add_edge("qna_link_judge", "qna_web_fetch")
+    g.add_edge("qna_route", "qna_parallel_crawl")
     g.add_edge("qna_db_retrieve", "qna_merge")
-    g.add_edge("qna_web_fetch", "qna_merge")
+    g.add_edge("qna_parallel_crawl", "qna_merge")
     g.add_edge("qna_merge", "qna_grade")
     g.add_conditional_edges(
         "qna_grade",
@@ -521,7 +517,7 @@ def build_graph(save_image: bool = True):
         {"generate": "qna_generate", "rewrite": "qna_rewrite"},
     )
     g.add_edge("qna_rewrite", "qna_db_retrieve")
-    g.add_edge("qna_rewrite", "qna_web_search")
+    g.add_edge("qna_rewrite", "qna_parallel_crawl")
     g.add_edge("qna_generate", END)
 
     # Request edges

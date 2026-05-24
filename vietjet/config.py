@@ -61,6 +61,22 @@ WEB_FETCH_CHUNK_CAP = 4000
 WEB_FETCH_TIMEOUT = 12.0
 WEB_FETCH_CACHE_TTL = 7200
 
+# --- Parallel Crawl Agent (PLAN_PARALLEL_CRAWL_AGENT.md) ---
+PARALLEL_CRAWL_HOMES: list[str] = ["https://www.vietjetair.com/vi"]
+PARALLEL_MAX_CONCURRENT_AGENTS = 4
+PARALLEL_MAX_PAGES_PER_QUERY = 30
+PARALLEL_MAX_DEPTH = 2
+PARALLEL_EARLY_ANSWER_TIMEOUT = 15.0   # giây
+PARALLEL_MAX_TASK_LIFETIME = 60.0       # giây — tổng thời gian background tối đa
+PARALLEL_CACHE_TTL_SECONDS = 3600       # 1h
+PARALLEL_CACHE_SIM_THRESHOLD = 0.70      # cosine sim trên top-K để coi là "câu hỏi liên quan"
+PARALLEL_JUDGE_SIM_HIGH = 0.75
+PARALLEL_JUDGE_SIM_MED = 0.60
+PARALLEL_INGEST_BATCH_SIZE = 5
+PARALLEL_SNIPPET_WINDOW = 600           # ký tự snippet cho judge
+PARALLEL_FRONTIER_MAX = 200
+PARALLEL_WATCHER_POLL = 2               # giây between snapshots
+
 # --- URLs to crawl ---
 URLS: list[dict[str, str]] = [
     {"filename": "dieu-le-van-chuyen-vietjet", "url": "https://www.vietjetair.com/vi/pages/dieu-le-van-chuyen-vietjet-1618221808366"},

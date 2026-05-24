@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import uuid
 from typing import Any, Dict, List, Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from vietjet.combined_agent import (
@@ -13,6 +15,7 @@ from vietjet.combined_agent import (
     _is_slot_filled,
     get_graph,
 )
+from vietjet.crawl_parallel import CrawlCoordinator
 
 _sessions: Dict[str, CombinedState] = {}
 
@@ -31,6 +34,10 @@ def _new_state() -> CombinedState:
         "web_docs": [],
         "web_skipped_reason": None,
         "merged_docs": [],
+        "cache_hit": False,
+        "early_fired": False,
+        "crawl_session_id": None,
+        "background_pages": 0,
     }
 
 
@@ -61,12 +68,27 @@ class ChatResponse(BaseModel):
     escalate: bool = False
     web_chosen_urls: List[str] = []
     web_skipped_reason: Optional[str] = None
+    # Parallel crawl metadata
+    cache_hit: bool = False
+    early_fired: bool = False
+    crawl_session_id: Optional[str] = None
+    background_pages: int = 0
 
 
 app = FastAPI(title="Vietjet Combined Agent", version="1.0.0")
 
 # build graph & sinh ảnh ngay khi import
 _graph = get_graph()
+
+# Singleton coordinator dùng chung cho mọi request /qa-stream
+_coordinator: CrawlCoordinator | None = None
+
+
+def _get_coordinator() -> CrawlCoordinator:
+    global _coordinator
+    if _coordinator is None:
+        _coordinator = CrawlCoordinator()
+    return _coordinator
 
 
 @app.post("/thread", response_model=ThreadResponse)
@@ -116,6 +138,10 @@ async def chat(req: ChatRequest) -> ChatResponse:
         escalate=bool(new_state.get("escalate")),
         web_chosen_urls=new_state.get("web_chosen_urls", []) or [],
         web_skipped_reason=new_state.get("web_skipped_reason"),
+        cache_hit=bool(new_state.get("cache_hit")),
+        early_fired=bool(new_state.get("early_fired")),
+        crawl_session_id=new_state.get("crawl_session_id"),
+        background_pages=int(new_state.get("background_pages") or 0),
     )
 
 
@@ -133,6 +159,142 @@ def get_thread(thread_id: str) -> Dict[str, Any]:
 def delete_thread(thread_id: str) -> Dict[str, str]:
     _sessions.pop(thread_id, None)
     return {"status": "deleted", "thread_id": thread_id}
+
+
+# ---------------------------------------------------------------------------
+# /qa-stream — SSE endpoint cho parallel crawl agent (PLAN_PARALLEL_CRAWL_AGENT)
+# ---------------------------------------------------------------------------
+class StreamRequest(BaseModel):
+    query: str
+    home_urls: Optional[List[str]] = None
+
+
+@app.post("/qa-stream")
+async def qa_stream(req: StreamRequest):
+    """SSE stream events từ CrawlCoordinator (KHÔNG qua LangGraph).
+
+    Dùng khi client muốn raw crawl events. Để có final answer (qua graph QnA),
+    xem `/chat-stream`.
+
+    Event types:
+      - cache_hit:      { docs, count }
+      - partial_answer: { results, reason, early_fired, session_id }
+      - ingested:       { pages, chunks }
+      - done:           { session_id, frontier, judge_collected }
+      - error:          { reason }
+    """
+    query = (req.query or "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query empty")
+
+    coord = _get_coordinator()
+    if req.home_urls:
+        coord = CrawlCoordinator(home_urls=req.home_urls)
+
+    async def event_gen():
+        try:
+            async for ev in coord.stream(query):
+                payload = json.dumps(ev.payload, ensure_ascii=False)
+                yield f"event: {ev.type}\ndata: {payload}\n\n"
+        except Exception as exc:
+            err = json.dumps({"reason": str(exc)}, ensure_ascii=False)
+            yield f"event: error\ndata: {err}\n\n"
+
+    return StreamingResponse(event_gen(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# /chat-stream — SSE wrapper cho /chat (LangGraph + Parallel Crawl)
+# ---------------------------------------------------------------------------
+@app.post("/chat-stream")
+async def chat_stream(req: ChatRequest):
+    """SSE: stream từng bước của graph cho user — node-by-node update.
+
+    Mỗi node hoàn thành sẽ emit 1 event với name = tên node, payload =
+    state diff. Đặc biệt:
+      - intent       — sau classify_intent
+      - parallel_crawl — sau qna_parallel_crawl (cache_hit/early_fired/...)
+      - generate     — sau qna_generate (final answer)
+    Cuối cùng emit `final` (ChatResponse đầy đủ).
+    """
+    state = _sessions.get(req.thread_id)
+    if state is None:
+        raise HTTPException(status_code=404, detail="thread_id không tồn tại")
+
+    state = _next_thread_state(state)
+    state["user_input"] = (req.message or "").strip()
+
+    # Map node-name → event-name xuất ra FE (chỉ những node có ý nghĩa)
+    EVENT_MAP = {
+        "classify_intent":   "intent",
+        "qna_route":         "route",
+        "qna_parallel_crawl": "parallel_crawl",
+        "qna_db_retrieve":   "db_retrieve",
+        "qna_merge":         "merge",
+        "qna_grade":         "grade",
+        "qna_rewrite":       "rewrite",
+        "qna_generate":      "generate",
+        "extract_entity":    "extract_entity",
+        "request_slot":      "request_slot",
+        "query_request":     "query_request",
+        "generate_request":  "generate_request",
+        "off_topic":         "off_topic",
+        "escalate":          "escalate",
+    }
+
+    def _slim(diff: dict) -> dict:
+        """Loại bỏ field nặng (Documents) để payload SSE nhẹ + JSON-safe."""
+        out: dict = {}
+        for k, v in diff.items():
+            if k in ("docs", "web_docs", "merged_docs", "user_input"):
+                if isinstance(v, list):
+                    out[f"{k}_count"] = len(v)
+                continue
+            try:
+                json.dumps(v, ensure_ascii=False)
+                out[k] = v
+            except (TypeError, ValueError):
+                out[k] = repr(v)[:200]
+        return out
+
+    async def event_gen():
+        final_state: CombinedState = dict(state)  # accumulate diffs
+        try:
+            async for step in _graph.astream(state, stream_mode="updates"):
+                # step = {node_name: state_diff}
+                for node_name, diff in step.items():
+                    if not isinstance(diff, dict):
+                        continue
+                    final_state.update(diff)
+                    ev_name = EVENT_MAP.get(node_name, node_name)
+                    payload = json.dumps(_slim(diff), ensure_ascii=False)
+                    yield f"event: {ev_name}\ndata: {payload}\n\n"
+
+            _sessions[req.thread_id] = final_state
+            final = ChatResponse(
+                thread_id=req.thread_id,
+                done=bool(final_state.get("done")),
+                intent=final_state.get("intent"),
+                answer=final_state.get("answer", "") or "",
+                slot_question=final_state.get("slot_question", "") or "",
+                missing_slots=_missing_list(final_state.get("slots") or {}),
+                slots=final_state.get("slots", {}) or {},
+                citations=final_state.get("citations", []) or [],
+                is_off_topic=bool(final_state.get("is_off_topic")),
+                escalate=bool(final_state.get("escalate")),
+                web_chosen_urls=final_state.get("web_chosen_urls", []) or [],
+                web_skipped_reason=final_state.get("web_skipped_reason"),
+                cache_hit=bool(final_state.get("cache_hit")),
+                early_fired=bool(final_state.get("early_fired")),
+                crawl_session_id=final_state.get("crawl_session_id"),
+                background_pages=int(final_state.get("background_pages") or 0),
+            )
+            yield f"event: final\ndata: {final.model_dump_json()}\n\n"
+        except Exception as exc:
+            err = json.dumps({"reason": str(exc)}, ensure_ascii=False)
+            yield f"event: error\ndata: {err}\n\n"
+
+    return StreamingResponse(event_gen(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":
