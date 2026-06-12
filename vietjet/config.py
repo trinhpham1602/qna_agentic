@@ -27,6 +27,39 @@ DB_CONNECTION_STRING = os.getenv(
 )
 COLLECTION_NAME = os.getenv("VIETJET_COLLECTION", "vietjet_collection")
 
+# --- Redis (cache backend) ---
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_KEY_PREFIX = os.getenv("VIETJET_CACHE_PREFIX", "vietjet")
+
+# --- Cache TTL (seconds) ---
+TTL_NORMALIZE = 2_592_000          # 30 days
+TTL_EMBEDDING = 5_184_000          # 60 days
+TTL_RETRIEVAL = 86_400             # 1 day
+TTL_DOC = 2_592_000                # 30 days
+TTL_CHUNK = 2_592_000              # 30 days
+TTL_WEB_SEARCH_LATEST = 900        # 15 min
+TTL_WEB_SEARCH_NORMAL = 86_400     # 1 day
+TTL_WEB_PAGE_OFFICIAL = 604_800    # 7 days
+TTL_WEB_PAGE_NEWS = 1_800          # 30 min
+TTL_WEB_PAGE_PRICE = 60            # 1 min
+TTL_SEMANTIC_ANSWER = 86_400       # 1 day
+TTL_FINAL_ANSWER = 3_600           # 1 hour
+
+# --- Versioning (bump để invalidate cache cũ) ---
+COLLECTION_VERSION = os.getenv("VIETJET_COLLECTION_VERSION", "airline-policy-v1")
+RETRIEVER_VERSION = os.getenv("VIETJET_RETRIEVER_VERSION", "v1")
+CHUNKER_VERSION = os.getenv("VIETJET_CHUNKER_VERSION", "v1")
+EMBEDDING_MODEL_VERSION = os.getenv("VIETJET_EMBED_VERSION", "bkai-bi-encoder-v1")
+PROMPT_VERSION = os.getenv("VIETJET_PROMPT_VERSION", "answer-v1")
+
+# --- Semantic cache ---
+SEMANTIC_CACHE_ENABLED = True
+SEMANTIC_CACHE_THRESHOLD = 0.93
+SEMANTIC_CACHE_SKIP_REALTIME = True
+SEMANTIC_CACHE_TABLE = "semantic_answer_cache"
+SEMANTIC_CACHE_TENANT = os.getenv("VIETJET_TENANT", "vietjet")
+SEMANTIC_CACHE_DIM = 768
+
 # --- Models ---
 # IDs are the HF Hub repo ids; the resolved EMBED_MODEL/RERANK_MODEL below
 # point to local snapshots in models/hf/ when available (downloaded via

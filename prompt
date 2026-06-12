@@ -1,8 +1,17 @@
-Kết hợp file review.py để viết vào trong vietjet folder và tôi muôn output như sau:
+Tôi có nhu cầu như sau:
+    - Tìm hiểu thử con Firecrawl khi crawl có trả về response theo chunk được hay không.
+    - Trường hợp được (*):
+        Tôi có ý tưởng là tạo nhiểu thread để đi crawl từ url home được chỉ định rõ
+            - Yêu cầu mỗi thread đại diện cho sub agent search web và các sub agent không được crawl link giống nhau.
+            - Mỗi content lấy về được một agent tổng hợp để biết rằng content đó match với câu hỏi của user.
+            - Agent tổng hợp thấy content nào match 80% thì thực hiện song song:
+                + kết hợp với vector DB để trả lời cho user content này luôn, lấy trả về nguồn search web, ƯU tiền web search
+                + Tất cả các sub agent tiếp tục crawl ở dạng background task. thực hiện pipeline để lưu vào DB
+            - User có hỏi lần sau, thì check câu hỏi user có liên quan đến link đã crawl trước đó không (nên ưu tiền BD nếu lần crawl gần nhất còn trong khỏang thời gian qui định (1h))
+            - Nếu không thì tiếp tục thực hiện crawl và làm như bước trên.
+    - Trường hợp không được thì tư vấn cho tôi một cách làm sao cho đáp ứng được trong trường hợp được (*)
 
-vietjet agent có thể nhận biết được đâu là câu hỏi và đâu là câu yêu cầu user nhập thêm thông tin. Nên là một node sử dụng LLM
-Đối với câu hỏi thì agent nên dùng flow hiện tại (hệ thống QnA hiện tại)
-Đới với câu yêu cầu thì dùng flow trong file review.py
-
-Tạo cho tôi một ảnh langraph mới thể hiện mối quan hệ giữa các node.
-Tôi có thể dùng fastAPi để chat như là một user.
+Bạn hãy thực hiện yêu cầu như sau:
+    - Cho tôi một file plan trong đó có:
+        + nhận xét về ý tưởng xem nó có hợp lý không
+        + trình bay trong một file plan gồm các step mà bạn sẽ implement nêu ý tưởng là hợp lý

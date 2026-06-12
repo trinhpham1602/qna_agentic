@@ -16,6 +16,8 @@ from vietjet.combined_agent import (
     get_graph,
 )
 from vietjet.crawl_parallel import CrawlCoordinator
+from vietjet.qna_agentic import _initial_state as _qna_initial_state
+from vietjet.qna_agentic import get_graph as _get_qna_graph
 
 _sessions: Dict[str, CombinedState] = {}
 
@@ -79,6 +81,7 @@ app = FastAPI(title="Vietjet Combined Agent", version="1.0.0")
 
 # build graph & sinh ảnh ngay khi import
 _graph = get_graph()
+_qna_graph = _get_qna_graph()  # standalone QnA graph (no intent / no slots)
 
 # Singleton coordinator dùng chung cho mọi request /qa-stream
 _coordinator: CrawlCoordinator | None = None
@@ -159,6 +162,112 @@ def get_thread(thread_id: str) -> Dict[str, Any]:
 def delete_thread(thread_id: str) -> Dict[str, str]:
     _sessions.pop(thread_id, None)
     return {"status": "deleted", "thread_id": thread_id}
+
+
+# ---------------------------------------------------------------------------
+# /qna — Standalone QnA endpoint (qna_agentic graph: RAG + parallel crawl)
+# ---------------------------------------------------------------------------
+class QnaRequest(BaseModel):
+    question: str
+
+
+class QnaResponse(BaseModel):
+    question: str
+    answer: str = ""
+    citations: List[str] = []
+    doc_type: Optional[str] = None
+    attempts: int = 0
+    sufficient: bool = False
+    db_docs_count: int = 0
+    web_docs_count: int = 0
+    web_chosen_urls: List[str] = []
+    web_skipped_reason: Optional[str] = None
+    cache_hit: bool = False
+    early_fired: bool = False
+    crawl_session_id: Optional[str] = None
+    background_pages: int = 0
+
+
+def _qna_to_response(question: str, out: Dict[str, Any]) -> QnaResponse:
+    return QnaResponse(
+        question=question,
+        answer=out.get("answer", "") or "",
+        citations=out.get("citations") or [],
+        doc_type=out.get("doc_type"),
+        attempts=int(out.get("attempts") or 0),
+        sufficient=bool(out.get("sufficient")),
+        db_docs_count=len(out.get("docs") or []),
+        web_docs_count=len(out.get("web_docs") or []),
+        web_chosen_urls=out.get("web_chosen_urls") or [],
+        web_skipped_reason=out.get("web_skipped_reason"),
+        cache_hit=bool(out.get("cache_hit")),
+        early_fired=bool(out.get("early_fired")),
+        crawl_session_id=out.get("crawl_session_id"),
+        background_pages=int(out.get("background_pages") or 0),
+    )
+
+
+@app.post("/qna", response_model=QnaResponse)
+async def qna(req: QnaRequest) -> QnaResponse:
+    """One-shot QnA qua qna_agentic graph.
+
+    Khác `/chat`: không có classify_intent / slot-filling. Luôn chạy luồng
+    RAG + parallel crawl. Phù hợp khi client biết chắc đây là câu hỏi.
+    """
+    question = (req.question or "").strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="question empty")
+    out = await _qna_graph.ainvoke(_qna_initial_state(question))
+    return _qna_to_response(question, out)
+
+
+@app.post("/qna-stream")
+async def qna_stream(req: QnaRequest):
+    """SSE stream cho qna_agentic — emit per-node update + final.
+
+    Event types:
+      - route / db_retrieve / parallel_crawl / merge / grade / rewrite / generate
+        — state diff (slim, không chứa Documents nặng)
+      - final — QnaResponse đầy đủ
+      - error
+    """
+    question = (req.question or "").strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="question empty")
+
+    def _slim(diff: dict) -> dict:
+        out: dict = {}
+        for k, v in diff.items():
+            if k in ("docs", "web_docs", "merged_docs"):
+                if isinstance(v, list):
+                    out[f"{k}_count"] = len(v)
+                continue
+            try:
+                json.dumps(v, ensure_ascii=False)
+                out[k] = v
+            except (TypeError, ValueError):
+                out[k] = repr(v)[:200]
+        return out
+
+    async def event_gen():
+        final_state: Dict[str, Any] = dict(_qna_initial_state(question))
+        try:
+            async for step in _qna_graph.astream(
+                _qna_initial_state(question), stream_mode="updates"
+            ):
+                for node_name, diff in step.items():
+                    if not isinstance(diff, dict):
+                        continue
+                    final_state.update(diff)
+                    payload = json.dumps(_slim(diff), ensure_ascii=False)
+                    yield f"event: {node_name}\ndata: {payload}\n\n"
+            final = _qna_to_response(question, final_state)
+            yield f"event: final\ndata: {final.model_dump_json()}\n\n"
+        except Exception as exc:
+            err = json.dumps({"reason": str(exc)}, ensure_ascii=False)
+            yield f"event: error\ndata: {err}\n\n"
+
+    return StreamingResponse(event_gen(), media_type="text/event-stream")
 
 
 # ---------------------------------------------------------------------------

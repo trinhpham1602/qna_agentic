@@ -1,0 +1,1 @@
+khi cần package python mới, ghi thêm lib và version lastest và file requirments.txt và cài chúng trong .venv
