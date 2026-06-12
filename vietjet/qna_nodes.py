@@ -133,6 +133,7 @@ async def parallel_crawl_node(state: dict) -> dict:
         }
 
     coord = CrawlCoordinator()
+    doc_type = state.get("doc_type")
     web_docs: list[Document] = []
     cache_hit = False
     early_fired = False
@@ -141,7 +142,7 @@ async def parallel_crawl_node(state: dict) -> dict:
     skipped_reason: str | None = None
 
     try:
-        async for ev in coord.stream(query):
+        async for ev in coord.stream(query, doc_type=doc_type):
             if ev.type == "cache_hit":
                 cache_hit = True
                 for d in ev.payload.get("docs", []):

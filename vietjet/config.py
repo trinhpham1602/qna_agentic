@@ -94,11 +94,9 @@ WEB_FETCH_CHUNK_CAP = 4000
 WEB_FETCH_TIMEOUT = 12.0
 WEB_FETCH_CACHE_TTL = 7200
 
-# --- Parallel Crawl Agent (PLAN_PARALLEL_CRAWL_AGENT.md) ---
-PARALLEL_CRAWL_HOMES: list[str] = ["https://www.vietjetair.com/vi"]
+# --- Parallel Crawl Agent (live-ingest từ URLS định sẵn) ---
 PARALLEL_MAX_CONCURRENT_AGENTS = 4
 PARALLEL_MAX_PAGES_PER_QUERY = 30
-PARALLEL_MAX_DEPTH = 2
 PARALLEL_EARLY_ANSWER_TIMEOUT = 15.0   # giây
 PARALLEL_MAX_TASK_LIFETIME = 60.0       # giây — tổng thời gian background tối đa
 PARALLEL_CACHE_TTL_SECONDS = 3600       # 1h
@@ -108,7 +106,7 @@ PARALLEL_JUDGE_SIM_MED = 0.60
 PARALLEL_INGEST_BATCH_SIZE = 5
 PARALLEL_SNIPPET_WINDOW = 600           # ký tự snippet cho judge
 PARALLEL_FRONTIER_MAX = 200
-PARALLEL_WATCHER_POLL = 2               # giây between snapshots
+PARALLEL_SCRAPE_TIMEOUT = 30.0          # timeout cho 1 lần scrape
 
 # --- URLs to crawl ---
 URLS: list[dict[str, str]] = [

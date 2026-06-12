@@ -1,16 +1,3 @@
-"""CrawlAgent: stream page từ Firecrawl watcher → push vào judge/ingest queue.
-
-Mỗi CrawlAgent đại diện cho 1 sub-agent search web (1 asyncio task), nhận 1
-home URL, dùng start_crawl + watcher để stream từng page khi Firecrawl crawl xong.
-
-Watcher của Firecrawl v2 yield CrawlJob snapshot **cumulative** — tức list .data
-mỗi lần lớn dần. Agent so với set seen ở URLFrontier để chỉ emit URL mới.
-
-Khi `mode_ref["mode"]` đổi từ `"judge"` sang `"background"`, page mới sẽ được
-push vào `ingest_queue` thay vì `judge_queue`. Agent KHÔNG cancel task crawl
-ngầm của Firecrawl — nó tự kết thúc khi đủ `limit`.
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -30,11 +17,6 @@ _SCRAPE_OPTIONS = {
 
 
 class PageItem:
-    """Wrapper bare-minimum: url + markdown + title.
-
-    Không dùng Firecrawl Document trực tiếp để giảm coupling với SDK version.
-    """
-
     __slots__ = ("url", "markdown", "title", "agent_id")
 
     def __init__(self, url: str, markdown: str, title: str = "", agent_id: int = 0) -> None:
@@ -60,10 +42,8 @@ class CrawlAgent:
         ingest_queue: asyncio.Queue,
         mode_ref: dict,
         *,
-        limit: int = 30,
-        max_depth: int = 2,
-        poll_interval: int = 2,
-        allow_external: bool = False,
+        scrape_timeout: float = 30.0,
+        idle_timeout: float = 2.0,
     ) -> None:
         self.agent_id = agent_id
         self.app = app
@@ -71,10 +51,8 @@ class CrawlAgent:
         self.judge_queue = judge_queue
         self.ingest_queue = ingest_queue
         self.mode_ref = mode_ref
-        self.limit = limit
-        self.max_depth = max_depth
-        self.poll_interval = poll_interval
-        self.allow_external = allow_external
+        self.scrape_timeout = scrape_timeout
+        self.idle_timeout = idle_timeout
         self.emitted: int = 0
         self.error: str | None = None
 
@@ -86,72 +64,41 @@ class CrawlAgent:
     async def _enqueue_page(self, url: str, markdown: str, title: str) -> None:
         if not markdown or not markdown.strip():
             return
-        # dedup ở mức coordinator — nếu URL đã thấy bởi agent khác thì bỏ qua
-        if not self.frontier.mark_seen(url):
-            return
         item = PageItem(url=url, markdown=markdown, title=title, agent_id=self.agent_id)
         await self._target_queue().put(item)
         self.emitted += 1
 
-    async def run(self, home_url: str) -> None:
-        """Stream pages từ Firecrawl crawl job → push vào target queue."""
+    async def _scrape_one(self, url: str) -> None:
         try:
-            resp = await self.app.start_crawl(
-                home_url,
-                limit=self.limit,
-                max_discovery_depth=self.max_depth,
-                allow_external_links=self.allow_external,
-                scrape_options=_SCRAPE_OPTIONS,
+            doc = await asyncio.wait_for(
+                self.app.scrape(url, **_SCRAPE_OPTIONS),
+                timeout=self.scrape_timeout,
             )
+        except asyncio.TimeoutError:
+            print(f"[crawl-agent {self.agent_id}] scrape timeout url={url}")
+            return
         except Exception as exc:
-            self.error = f"start_crawl_failed: {exc}"
-            print(f"[crawl-agent {self.agent_id}] {self.error}")
+            print(f"[crawl-agent {self.agent_id}] scrape failed url={url} err={exc}")
             return
 
-        job_id = getattr(resp, "id", None)
-        if not job_id:
-            self.error = "no_job_id"
-            return
+        md = getattr(doc, "markdown", "") or ""
+        title = self._extract_title(doc)
+        await self._enqueue_page(url, md, title)
 
-        print(f"[crawl-agent {self.agent_id}] start home={home_url} job={job_id}")
-
-        # Dedup theo URL trong cùng job (snapshot.data là cumulative)
-        seen_in_job: set[str] = set()
+    async def run(self) -> None:
         try:
-            async for snapshot in self.app.watcher(
-                job_id, kind="crawl", poll_interval=self.poll_interval
-            ):
-                for doc in snapshot.data or []:
-                    url = self._extract_url(doc)
-                    if not url or url in seen_in_job:
-                        continue
-                    seen_in_job.add(url)
-                    md = getattr(doc, "markdown", "") or ""
-                    title = self._extract_title(doc)
-                    await self._enqueue_page(url, md, title)
-                if snapshot.status in ("completed", "failed", "cancelled"):
+            while True:
+                url = await self.frontier.get(timeout=self.idle_timeout)
+                if url is None:
                     print(
-                        f"[crawl-agent {self.agent_id}] job {job_id} status={snapshot.status} "
-                        f"emitted={self.emitted}"
+                        f"[crawl-agent {self.agent_id}] frontier idle → stop "
+                        f"(emitted={self.emitted})"
                     )
                     return
+                await self._scrape_one(url)
         except asyncio.CancelledError:
             print(f"[crawl-agent {self.agent_id}] cancelled (emitted={self.emitted})")
             raise
-        except Exception as exc:
-            self.error = f"watcher_failed: {exc}"
-            print(f"[crawl-agent {self.agent_id}] {self.error}")
-
-    @staticmethod
-    def _extract_url(doc) -> str | None:
-        md = getattr(doc, "metadata", None)
-        if md is None:
-            return None
-        # DocumentMetadata pydantic model: url field
-        url = getattr(md, "url", None) or getattr(md, "source_url", None)
-        if not url and isinstance(md, dict):
-            url = md.get("url") or md.get("source_url")
-        return url
 
     @staticmethod
     def _extract_title(doc) -> str:

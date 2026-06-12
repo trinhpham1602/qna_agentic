@@ -20,7 +20,7 @@ def _fake_event(type_: str, **payload):
     return SimpleNamespace(type=type_, payload=payload)
 
 
-async def _fake_stream(self, query):
+async def _fake_stream(self, query, doc_type=None):
     """Fake CrawlCoordinator.stream() yielding cache_hit + done."""
     yield _fake_event(
         "cache_hit",
@@ -142,7 +142,7 @@ def test_parallel_crawl_node_empty_query():
 def test_parallel_crawl_node_with_partial_answer():
     """Verify node parses partial_answer event correctly."""
 
-    async def _fake_stream_partial(self, query):
+    async def _fake_stream_partial(self, query, doc_type=None):
         yield _fake_event(
             "partial_answer",
             results=[
@@ -267,7 +267,7 @@ def test_qna_agentic_rewrite_loop():
 def test_qna_agentic_with_partial_answer_early_fire():
     """Verify early_fired propagates qua qna_agentic graph."""
 
-    async def _fake_stream_partial(self, query):
+    async def _fake_stream_partial(self, query, doc_type=None):
         yield _fake_event(
             "partial_answer",
             results=[{

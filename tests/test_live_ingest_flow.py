@@ -17,7 +17,7 @@ def _fake_event(type_: str, **payload):
     return SimpleNamespace(type=type_, payload=payload)
 
 
-async def _stream_partial_answer(self, query):
+async def _stream_partial_answer(self, query, doc_type=None):
     yield _fake_event(
         "partial_answer",
         results=[

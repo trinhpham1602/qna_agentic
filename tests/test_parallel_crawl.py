@@ -174,75 +174,45 @@ def test_judge_skips_llm_when_sim_below_med():
 # ─────────── CrawlCoordinator integration với mock Firecrawl ────────────
 
 
-class _FakeCrawlJob:
-    def __init__(self, status, data):
-        self.status = status
-        self.data = data
-
-
 def _make_fake_doc(url: str, markdown: str, title: str = ""):
     md = SimpleNamespace(url=url, title=title, source_url=url, og_title=None)
     return SimpleNamespace(metadata=md, markdown=markdown)
 
 
 class _FakeAsyncFirecrawlApp:
-    """Mock đủ để CrawlAgent chạy: start_crawl + watcher."""
+    """Mock đủ để CrawlAgent chạy: scrape(url, ...) → doc."""
 
-    def __init__(self, pages_per_home: dict):
-        self.pages_per_home = pages_per_home  # {home_url: [(url, markdown, title), ...]}
-        self._next_id = 0
-        self._jobs: dict[str, str] = {}  # job_id → home
+    def __init__(self, pages_by_url: dict):
+        self.pages_by_url = pages_by_url
+        self.scrape_calls: list[str] = []
 
-    async def start_crawl(self, url, **kwargs):
-        self._next_id += 1
-        jid = f"job-{self._next_id}"
-        self._jobs[jid] = url
-        return SimpleNamespace(id=jid, url=url)
-
-    def watcher(self, job_id, **kwargs):
-        home = self._jobs[job_id]
-        pages = self.pages_per_home.get(home, [])
-        return _FakeWatcher(pages)
+    async def scrape(self, url, **kwargs):
+        self.scrape_calls.append(url)
+        page = self.pages_by_url.get(url)
+        if page is None:
+            return _make_fake_doc(url, "", "")
+        markdown, title = page
+        return _make_fake_doc(url, markdown, title)
 
 
-class _FakeWatcher:
-    def __init__(self, pages):
-        self.pages = pages
-
-    def __aiter__(self):
-        return self._iter()
-
-    async def _iter(self):
-        # Emit cumulative snapshots — mỗi yield thêm 1 page
-        acc = []
-        for url, md, title in self.pages:
-            acc.append(_make_fake_doc(url, md, title))
-            await asyncio.sleep(0)
-            yield _FakeCrawlJob("scraping", list(acc))
-        yield _FakeCrawlJob("completed", list(acc))
-
-
-def test_coordinator_emits_partial_answer_with_mock_firecrawl():
-    """End-to-end: 2 home URL, 3 pages mỗi home, 1 page match → early-answer fire."""
+def test_coordinator_emits_partial_answer_with_url_list():
+    """E2E: target URLs từ filter_target_urls, scrape song song, 1 page match → early-answer fire."""
 
     async def _run():
         from vietjet.crawl_parallel.coordinator import CrawlCoordinator
 
-        pages = {
-            "https://home1/": [
-                ("https://home1/p1", "irrelevant junk", ""),
-                ("https://home1/p2", "this is a GOOD MATCH for our query", "good"),
-            ],
-            "https://home2/": [
-                ("https://home2/p1", "lorem ipsum", ""),
-            ],
+        target = [
+            "https://example.com/policy/baggage",
+            "https://example.com/policy/refund",
+            "https://example.com/policy/change",
+        ]
+        pages_by_url = {
+            target[0]: ("irrelevant junk about flights", ""),
+            target[1]: ("this is a GOOD MATCH for our query", "good"),
+            target[2]: ("lorem ipsum dolor sit amet", ""),
         }
-        fake_app = _FakeAsyncFirecrawlApp(pages)
+        fake_app = _FakeAsyncFirecrawlApp(pages_by_url)
 
-        # Mock cache check → miss
-        # Mock embedder: text chứa "good" → vector ones, else zeros.
-        # Query "good query" cũng chứa "good" → embed cao,
-        # page p2 chứa "GOOD MATCH" cũng cao → cosine=1.0.
         def fake_embed(text):
             return (
                 np.ones(8, dtype=np.float32)
@@ -250,7 +220,6 @@ def test_coordinator_emits_partial_answer_with_mock_firecrawl():
                 else np.zeros(8, dtype=np.float32)
             )
 
-        # Mock BackgroundIngest._get_store → no-op (không cần DB)
         from vietjet.crawl_parallel import background as bg_mod
 
         class _NoopStore:
@@ -260,12 +229,10 @@ def test_coordinator_emits_partial_answer_with_mock_firecrawl():
         def fake_get_store(self):
             return _NoopStore()
 
-        # Mock cache: always miss
         from vietjet.crawl_parallel import cache as cache_mod
         def fake_cache_check(self, query):
             return False, []
 
-        # Mock LLM rate
         async def fake_rate(self, snippet):
             return "high" if "good" in snippet.lower() else "low"
 
@@ -273,9 +240,9 @@ def test_coordinator_emits_partial_answer_with_mock_firecrawl():
              patch.object(bg_mod.BackgroundIngest, "_get_store", fake_get_store), \
              patch("vietjet.crawl_parallel.coordinator._get_firecrawl", lambda: fake_app), \
              patch("vietjet.crawl_parallel.coordinator._embed_one", fake_embed), \
+             patch("vietjet.crawl_parallel.coordinator.filter_target_urls", lambda dt=None: target), \
              patch.object(JudgeConsumer, "_llm_rate", fake_rate):
             coord = CrawlCoordinator(
-                home_urls=["https://home1/", "https://home2/"],
                 max_agents=2,
                 max_pages=10,
                 early_timeout=5.0,
@@ -291,9 +258,55 @@ def test_coordinator_emits_partial_answer_with_mock_firecrawl():
         assert "done" in types
         partial = next(e for e in events if e.type == "partial_answer")
         assert partial.payload["early_fired"] is True, partial.payload
-        # URL "GOOD MATCH" page nằm trong results
         urls = [r["url"] for r in partial.payload["results"]]
-        assert "https://home1/p2" in urls
+        assert target[1] in urls
+        # All target URLs should have been scraped
+        assert set(fake_app.scrape_calls) == set(target)
+
+    asyncio.run(_run())
+
+
+def test_coordinator_passes_doc_type_to_filter():
+    """Verify CrawlCoordinator.stream() forwards doc_type vào filter_target_urls."""
+
+    async def _run():
+        from vietjet.crawl_parallel.coordinator import CrawlCoordinator
+
+        received: list = []
+
+        def capture_filter(dt=None):
+            received.append(dt)
+            return ["https://example.com/x"]
+
+        async def fake_scrape(url, **kwargs):
+            return _make_fake_doc(url, "", "")
+
+        fake_app = SimpleNamespace(scrape=fake_scrape)
+
+        from vietjet.crawl_parallel import background as bg_mod
+
+        class _NoopStore:
+            def add_documents(self, docs, ids=None):
+                pass
+
+        def fake_get_store(self):
+            return _NoopStore()
+
+        from vietjet.crawl_parallel import cache as cache_mod
+        def fake_cache_check(self, query):
+            return False, []
+
+        with patch.object(cache_mod.CacheChecker, "check", fake_cache_check), \
+             patch.object(bg_mod.BackgroundIngest, "_get_store", fake_get_store), \
+             patch("vietjet.crawl_parallel.coordinator._get_firecrawl", lambda: fake_app), \
+             patch("vietjet.crawl_parallel.coordinator._embed_one", lambda t: np.zeros(8, np.float32)), \
+             patch("vietjet.crawl_parallel.coordinator.filter_target_urls", capture_filter):
+            coord = CrawlCoordinator(max_agents=1, max_pages=2, early_timeout=2.0, task_lifetime=4.0)
+            events = []
+            async for ev in coord.stream("test query", doc_type="pricing"):
+                events.append(ev)
+
+        assert received == ["pricing"]
 
     asyncio.run(_run())
 

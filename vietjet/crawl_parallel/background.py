@@ -29,21 +29,11 @@ from vietjet.config import (
     PARALLEL_INGEST_BATCH_SIZE,
 )
 from vietjet.crawl_parallel.agent import PageItem
+from vietjet.crawl_parallel.text_clean import clean_ingest_text
 
 
 _MAX_CHARS = 1800
 _OVERLAP = 200
-
-# Reuse clean.py logic: keep only between footer and HR. Web pages crawled
-# directly từ Firecrawl with only_main_content=True đã sạch hơn nhiều, nên
-# ta chỉ strip nav/footer text patterns nếu có.
-_NAV_NOISE_RE = re.compile(r"\s*\[?\s*Skip to (main )?content\s*\]?.*\n", re.IGNORECASE)
-
-
-def _light_clean(md: str) -> str:
-    md = _NAV_NOISE_RE.sub("", md)
-    md = re.sub(r"\n{3,}", "\n\n", md)
-    return md.strip()
 
 
 def _url_hash(url: str) -> str:
@@ -51,8 +41,7 @@ def _url_hash(url: str) -> str:
 
 
 def _chunk_page(page: PageItem) -> Iterable[dict]:
-    """Reuse chunk.py: section split + prose/table split + pack."""
-    md = _light_clean(page.markdown)
+    md = clean_ingest_text(page.markdown)
     if not md:
         return
     uhash = _url_hash(page.url)
