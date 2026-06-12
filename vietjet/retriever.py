@@ -5,6 +5,7 @@ the embedder, reranker and BM25 once.
 """
 
 from __future__ import annotations
+import os
 import pickle
 from functools import lru_cache
 from typing import Iterable
@@ -29,6 +30,13 @@ from vietjet.config import (
 from vietjet.ingest import tokenize_vn
 
 
+def _has_reranker_weights(path: str) -> bool:
+    if not isinstance(path, str) or not os.path.isdir(path):
+        return os.path.exists(path)
+    weight_files = ("model.safetensors", "pytorch_model.bin", "pytorch_model.bin.index.json")
+    return any(os.path.exists(os.path.join(path, f)) for f in weight_files)
+
+
 def _rrf(rankings: Iterable[list[str]]) -> dict[str, float]:
     """Reciprocal rank fusion keyed by chunk id."""
     score: dict[str, float] = {}
@@ -49,8 +57,8 @@ class VietjetRetriever:
             self._chunk_by_id = {c["id"]: c for c in self.chunks}
         else:
             print(
-                f"[retriever] WARNING: {BM25_PATH} không tồn tại — chạy vector-only. "
-                f"Chạy `python -m vietjet.pipeline ingest` để bật hybrid retrieval."
+                f"[retriever] INFO: {BM25_PATH} không tồn tại — chạy vector-only "
+                f"(live-ingest mode, BM25 hybrid disabled)."
             )
             self.bm25 = None
             self.chunks = []
@@ -63,9 +71,19 @@ class VietjetRetriever:
             collection_name=COLLECTION_NAME,
             use_jsonb=True,
         )
-        self.reranker = (
-            CrossEncoder(RERANK_MODEL, max_length=RERANK_MAX_LENGTH) if use_rerank else None
-        )
+        self.reranker = None
+        if use_rerank:
+            if _has_reranker_weights(RERANK_MODEL):
+                try:
+                    self.reranker = CrossEncoder(RERANK_MODEL, max_length=RERANK_MAX_LENGTH)
+                except Exception as exc:
+                    print(f"[retriever] WARNING: reranker init failed ({exc}) — running without rerank.")
+                    self.reranker = None
+            else:
+                print(
+                    f"[retriever] WARNING: reranker weights not found at {RERANK_MODEL} — "
+                    f"running without rerank. Run `python -m vietjet.download_models` to enable."
+                )
 
     def _bm25_ranking(self, query: str, k: int) -> list[str]:
         scores = self.bm25.get_scores(tokenize_vn(query))
@@ -75,7 +93,10 @@ class VietjetRetriever:
     def _vector_ranking(
         self, query: str, k: int, doc_type: str | None
     ) -> list[tuple[Document, float]]:
-        filter_dict = {"doc_type": {"$eq": doc_type}} if doc_type else None
+        if doc_type:
+            filter_dict = {"doc_type": {"$in": [doc_type, "web_live"]}}
+        else:
+            filter_dict = None
         return self.store.similarity_search_with_score(query, k=k, filter=filter_dict)
 
     def search(
