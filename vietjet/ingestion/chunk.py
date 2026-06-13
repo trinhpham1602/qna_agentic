@@ -1,4 +1,4 @@
-"""Stage 4: chunk normalized markdown into retrieval units.
+"""Stage: chunk cleaned markdown (clean_data) into retrieval units.
 
   - Walk H1/H2/H3/H4 to maintain `section_path`.
   - Tables ≥ MIN_TABLE_ROWS become standalone chunks with section path as
@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-from vietjet.config import CHUNKS_PATH, DOC_TYPE_MAP, NORM_DIR
+from vietjet.config import CHUNKS_PATH, CLEAN_DIR, DOC_TYPE_MAP
 
 MAX_CHARS = 1800
 OVERLAP_CHARS = 200
@@ -146,7 +146,7 @@ def chunk_file(path: Path) -> Iterable[Chunk]:
                     idx += 1
 
 
-def chunk_folder(src: Path = NORM_DIR, out_path: Path = CHUNKS_PATH) -> list[Chunk]:
+def chunk_folder(src: Path = CLEAN_DIR, out_path: Path = CHUNKS_PATH) -> list[Chunk]:
     chunks: list[Chunk] = []
     for path in sorted(src.glob("*.md")):
         file_chunks = list(chunk_file(path))

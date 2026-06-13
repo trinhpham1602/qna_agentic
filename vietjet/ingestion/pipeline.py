@@ -3,11 +3,11 @@
   python -m vietjet.ingestion.pipeline download    — snapshot HF models → models/hf/ (offline cache)
   python -m vietjet.ingestion.pipeline crawl       — Firecrawl URLs → raw_data/
   python -m vietjet.ingestion.pipeline clean       — raw_data → clean_data
-  python -m vietjet.ingestion.pipeline normalize   — clean_data → normalized_data
-  python -m vietjet.ingestion.pipeline chunk       — normalized_data → chunks.jsonl
+  python -m vietjet.ingestion.pipeline normalize   — clean_data → normalized_data (optional, không dùng để insert DB)
+  python -m vietjet.ingestion.pipeline chunk       — clean_data → chunks.jsonl
   python -m vietjet.ingestion.pipeline ingest      — chunks.jsonl → pgvector + bm25.pkl
-  python -m vietjet.ingestion.pipeline all         — run every stage above (download → ingest)
-  python -m vietjet.ingestion.pipeline rebuild     — clean → normalize → chunk → ingest (skip crawl + download)
+  python -m vietjet.ingestion.pipeline all         — download → crawl → clean → chunk → ingest
+  python -m vietjet.ingestion.pipeline rebuild     — clean → chunk → ingest (skip crawl + download + normalize)
 """
 
 from __future__ import annotations
@@ -31,8 +31,8 @@ STAGES = {
 }
 
 GROUPS = {
-    "all": ["download", "crawl", "clean", "normalize", "chunk", "ingest"],
-    "rebuild": ["clean", "normalize", "chunk", "ingest"],
+    "all": ["download", "crawl", "clean", "chunk", "ingest"],
+    "rebuild": ["clean", "chunk", "ingest"],
 }
 
 

@@ -11,7 +11,7 @@ from pathlib import Path
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import disable_progress_bars
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 MODELS_DIR = ROOT_DIR / "models" / "hf"
 
 disable_progress_bars()

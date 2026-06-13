@@ -24,7 +24,7 @@ from vietjet.config import (
     WEB_SEARCH_URL_PREFIX,
 )
 
-_SYS_PROMPT_DIR = Path(__file__).resolve().parent.parent / "sys_prompt"
+_SYS_PROMPT_DIR = Path(__file__).resolve().parent.parent.parent / "sys_prompt"
 
 _llm_cache: dict[float, ChatOllama] = {}
 

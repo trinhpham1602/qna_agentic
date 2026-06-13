@@ -14,6 +14,7 @@ import asyncio
 from typing import Any
 
 from vietjet.agents.qna_graph import AgenticState, build_graph
+from vietjet.config import WEB_SEARCH_ENABLED
 
 _GRAPH = None
 
@@ -25,9 +26,10 @@ def get_graph():
     return _GRAPH
 
 
-def _initial_state(question: str) -> AgenticState:
+def _initial_state(question: str, web_search: bool = WEB_SEARCH_ENABLED) -> AgenticState:
     return {
         "question": question,
+        "web_search_enabled": web_search,
         "attempts": 0,
         "docs": [],
         "web_candidates": [],
@@ -48,9 +50,9 @@ def _initial_state(question: str) -> AgenticState:
     }
 
 
-async def ask(question: str) -> dict[str, Any]:
+async def ask(question: str, web_search: bool = WEB_SEARCH_ENABLED) -> dict[str, Any]:
     graph = get_graph()
-    return await graph.ainvoke(_initial_state(question))
+    return await graph.ainvoke(_initial_state(question, web_search))
 
 
 if __name__ == "__main__":

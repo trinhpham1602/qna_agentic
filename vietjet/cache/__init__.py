@@ -20,6 +20,10 @@ from vietjet.cache.semantic import (
     ensure_schema,
     get_semantic_cache,
 )
+from vietjet.cache.semantic_redis import (
+    RedisSemanticCache,
+    get_redis_semantic_cache,
+)
 from vietjet.cache.store import CacheStore, get_cache_store, stable_hash
 
 __all__ = [
@@ -44,5 +48,7 @@ __all__ = [
     "SemanticAnswerCache",
     "SemanticHit",
     "get_semantic_cache",
+    "RedisSemanticCache",
+    "get_redis_semantic_cache",
     "ensure_schema",
 ]

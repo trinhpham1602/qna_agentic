@@ -53,7 +53,7 @@ from vietjet.agents.qna_nodes import (
 # ---------------------------------------------------------------------------
 # Paths / constants
 # ---------------------------------------------------------------------------
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SYS_PROMPT_CLASSIFY = _PROJECT_ROOT / "sys_prompt" / "classify_intent"
 SYS_PROMPT_EXTRACT = _PROJECT_ROOT / "sys_prompt" / "extract_required_slots"
 

@@ -18,6 +18,7 @@ from vietjet.agents.combined_agent import (
 from vietjet.crawlers import CrawlCoordinator
 from vietjet.agents.qna_agentic import _initial_state as _qna_initial_state
 from vietjet.agents.qna_agentic import get_graph as _get_qna_graph
+from vietjet.app.timing import log_api_time
 
 _sessions: Dict[str, CombinedState] = {}
 
@@ -169,6 +170,7 @@ def delete_thread(thread_id: str) -> Dict[str, str]:
 # ---------------------------------------------------------------------------
 class QnaRequest(BaseModel):
     question: str
+    web_search: bool = False
 
 
 class QnaResponse(BaseModel):
@@ -186,6 +188,25 @@ class QnaResponse(BaseModel):
     early_fired: bool = False
     crawl_session_id: Optional[str] = None
     background_pages: int = 0
+    context_docs: List[Dict[str, Any]] = []
+
+
+def _doc_to_context(d: Any, origin: str) -> Dict[str, Any]:
+    md = getattr(d, "metadata", {}) or {}
+    return {
+        "id": md.get("id"),
+        "origin": origin,
+        "source": md.get("source"),
+        "section_path": md.get("section_path"),
+        "doc_type": md.get("doc_type"),
+        "content": getattr(d, "page_content", "") or "",
+    }
+
+
+def _collect_context_docs(out: Dict[str, Any]) -> List[Dict[str, Any]]:
+    docs = [_doc_to_context(d, "db") for d in (out.get("docs") or [])]
+    docs += [_doc_to_context(d, "web") for d in (out.get("web_docs") or [])]
+    return docs
 
 
 def _qna_to_response(question: str, out: Dict[str, Any]) -> QnaResponse:
@@ -204,10 +225,12 @@ def _qna_to_response(question: str, out: Dict[str, Any]) -> QnaResponse:
         early_fired=bool(out.get("early_fired")),
         crawl_session_id=out.get("crawl_session_id"),
         background_pages=int(out.get("background_pages") or 0),
+        context_docs=_collect_context_docs(out),
     )
 
 
 @app.post("/qna", response_model=QnaResponse)
+@log_api_time("/qna")
 async def qna(req: QnaRequest) -> QnaResponse:
     """One-shot QnA qua qna_agentic graph.
 
@@ -217,7 +240,7 @@ async def qna(req: QnaRequest) -> QnaResponse:
     question = (req.question or "").strip()
     if not question:
         raise HTTPException(status_code=400, detail="question empty")
-    out = await _qna_graph.ainvoke(_qna_initial_state(question))
+    out = await _qna_graph.ainvoke(_qna_initial_state(question, req.web_search))
     return _qna_to_response(question, out)
 
 
@@ -250,11 +273,10 @@ async def qna_stream(req: QnaRequest):
         return out
 
     async def event_gen():
-        final_state: Dict[str, Any] = dict(_qna_initial_state(question))
+        init = _qna_initial_state(question, req.web_search)
+        final_state: Dict[str, Any] = dict(init)
         try:
-            async for step in _qna_graph.astream(
-                _qna_initial_state(question), stream_mode="updates"
-            ):
+            async for step in _qna_graph.astream(init, stream_mode="updates"):
                 for node_name, diff in step.items():
                     if not isinstance(diff, dict):
                         continue

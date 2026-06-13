@@ -7,7 +7,7 @@ from vietjet.cache import (
     compute_context_hash,
     get_cache_store,
     get_final_answer,
-    get_semantic_cache,
+    get_redis_semantic_cache,
     is_realtime_intent,
     normalize_query_with_cache,
     set_final_answer,
@@ -92,8 +92,8 @@ async def check_semantic_cache_node(state: dict) -> dict:
     if not embedding:
         return {"cached_from": None}
 
-    sc = get_semantic_cache()
-    hit = await asyncio.to_thread(sc.lookup, embedding)
+    sc = get_redis_semantic_cache()
+    hit = await sc.lookup(embedding)
     if hit is None:
         return {"cached_from": None}
 
@@ -189,9 +189,8 @@ async def store_cache_node(state: dict) -> dict:
 
     embedding = state.get("query_embedding")
     if embedding:
-        sc = get_semantic_cache()
-        await asyncio.to_thread(
-            sc.store,
+        sc = get_redis_semantic_cache()
+        await sc.store(
             question=state.get("question") or "",
             normalized_query=normalized,
             answer=answer,

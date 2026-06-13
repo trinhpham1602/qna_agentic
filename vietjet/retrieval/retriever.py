@@ -82,7 +82,7 @@ class VietjetRetriever:
             else:
                 print(
                     f"[retriever] WARNING: reranker weights not found at {RERANK_MODEL} — "
-                    f"running without rerank. Run `python -m vietjet.download_models` to enable."
+                    f"running without rerank. Run `python -m vietjet.ingestion.pipeline download` to enable."
                 )
 
     def _bm25_ranking(self, query: str, k: int) -> list[str]:

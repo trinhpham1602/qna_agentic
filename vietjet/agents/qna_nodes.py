@@ -117,6 +117,21 @@ async def parallel_crawl_node(state: dict) -> dict:
     Lazy import để tránh load CrawlCoordinator (heavy: Firecrawl + embedder)
     khi chỉ chạy nhánh request không có web search.
     """
+    web_search_enabled = state.get("web_search_enabled")
+    if web_search_enabled is None:
+        web_search_enabled = True
+    if not web_search_enabled:
+        return {
+            "web_docs": [],
+            "web_chosen_urls": [],
+            "web_candidates": [],
+            "web_skipped_reason": "web_search_disabled",
+            "cache_hit": False,
+            "early_fired": False,
+            "crawl_session_id": None,
+            "background_pages": 0,
+        }
+
     from vietjet.crawlers.ask import _cache_doc_to_document, _result_to_document
     from vietjet.crawlers.coordinator import CrawlCoordinator
 

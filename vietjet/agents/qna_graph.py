@@ -56,6 +56,7 @@ class AgenticState(TypedDict, total=False):
     answer: str
     citations: list[str]
 
+    web_search_enabled: bool
     cache_hit: bool
     early_fired: bool
     crawl_session_id: Optional[str]

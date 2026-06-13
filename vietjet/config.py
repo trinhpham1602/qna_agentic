@@ -55,6 +55,7 @@ PROMPT_VERSION = os.getenv("VIETJET_PROMPT_VERSION", "answer-v1")
 # --- Semantic cache ---
 SEMANTIC_CACHE_ENABLED = True
 SEMANTIC_CACHE_THRESHOLD = 0.93
+SEMANTIC_CACHE_REDIS_THRESHOLD = 0.9
 SEMANTIC_CACHE_SKIP_REALTIME = True
 SEMANTIC_CACHE_TABLE = "semantic_answer_cache"
 SEMANTIC_CACHE_TENANT = os.getenv("VIETJET_TENANT", "vietjet")
@@ -85,6 +86,7 @@ MAX_REWRITES = 2
 GRADE_THRESHOLD = 0.5  # heuristic fraction of "grounded" tokens
 
 # --- Web Search Agent ---
+WEB_SEARCH_ENABLED = False
 WEB_SEARCH_LIMIT = 8
 WEB_SEARCH_TIMEOUT = 12.0
 WEB_SEARCH_INCLUDE_DOMAINS = ["vietjetair.com"]
