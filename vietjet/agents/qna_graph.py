@@ -13,6 +13,7 @@ Flow (PLAN_AGENTIC_RAG_UNIFIED.md §7):
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Optional, TypedDict
 
@@ -70,6 +71,19 @@ class AgenticState(TypedDict, total=False):
     context_hash: Optional[str]
 
 
+def _timed_node(name: str, fn):
+    async def wrapper(state):
+        counter_start = time.perf_counter()
+        try:
+            return await fn(state)
+        finally:
+            duration = time.perf_counter() - counter_start
+            print(f"[node {name}] duration={duration:.3f}s")
+
+    wrapper.__name__ = name
+    return wrapper
+
+
 def _after_semantic_cache(state: dict) -> str:
     if state.get("cached_from") == "semantic":
         return "return_cached"
@@ -85,20 +99,20 @@ def _after_final_cache(state: dict) -> str:
 def build_graph(save_image: bool = True):
     g = StateGraph(AgenticState)
 
-    g.add_node("normalize", normalize_node)
-    g.add_node("get_embedding", get_embedding_node)
-    g.add_node("check_semantic_cache", check_semantic_cache_node)
-    g.add_node("check_final_cache", check_final_cache_node)
-    g.add_node("return_cached", return_cached_node)
+    g.add_node("normalize", _timed_node("normalize", normalize_node))
+    g.add_node("get_embedding", _timed_node("get_embedding", get_embedding_node))
+    g.add_node("check_semantic_cache", _timed_node("check_semantic_cache", check_semantic_cache_node))
+    g.add_node("check_final_cache", _timed_node("check_final_cache", check_final_cache_node))
+    g.add_node("return_cached", _timed_node("return_cached", return_cached_node))
 
-    g.add_node("route", route_node)
-    g.add_node("db_retrieve", db_retrieve_node)
-    g.add_node("parallel_crawl", parallel_crawl_node)
-    g.add_node("merge", merge_node)
-    g.add_node("grade", grade_node)
-    g.add_node("rewrite", rewrite_node)
-    g.add_node("generate", generate_node)
-    g.add_node("store_cache", store_cache_node)
+    g.add_node("route", _timed_node("route", route_node))
+    g.add_node("db_retrieve", _timed_node("db_retrieve", db_retrieve_node))
+    g.add_node("parallel_crawl", _timed_node("parallel_crawl", parallel_crawl_node))
+    g.add_node("merge", _timed_node("merge", merge_node))
+    g.add_node("grade", _timed_node("grade", grade_node))
+    g.add_node("rewrite", _timed_node("rewrite", rewrite_node))
+    g.add_node("generate", _timed_node("generate", generate_node))
+    g.add_node("store_cache", _timed_node("store_cache", store_cache_node))
 
     g.add_edge(START, "normalize")
     g.add_edge("normalize", "get_embedding")
