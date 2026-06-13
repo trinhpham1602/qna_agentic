@@ -35,12 +35,12 @@ from vietjet.config import (
     PARALLEL_MAX_TASK_LIFETIME,
     PARALLEL_SCRAPE_TIMEOUT,
 )
-from vietjet.crawl_parallel.agent import SENTINEL, CrawlAgent
-from vietjet.crawl_parallel.background import BackgroundIngest
-from vietjet.crawl_parallel.cache import CacheChecker
-from vietjet.crawl_parallel.frontier import URLFrontier
-from vietjet.crawl_parallel.judge import JudgeConsumer, JudgeResult
-from vietjet.crawl_parallel.target_urls import filter_target_urls
+from vietjet.crawlers.agent import SENTINEL, CrawlAgent
+from vietjet.crawlers.background import BackgroundIngest
+from vietjet.crawlers.cache_check import CacheChecker
+from vietjet.crawlers.frontier import URLFrontier
+from vietjet.crawlers.judge import JudgeConsumer, JudgeResult
+from vietjet.crawlers.target_urls import filter_target_urls
 
 
 @dataclass

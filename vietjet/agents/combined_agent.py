@@ -35,7 +35,7 @@ POLICY_EMBED_MODEL = os.getenv("EMBEDDING_MODEL", "intfloat/multilingual-e5-larg
 
 
 from vietjet.config import DB_CONNECTION_STRING as POLICY_DB, LLM_MODEL
-from vietjet.qna_nodes import (
+from vietjet.agents.qna_nodes import (
     after_grade,
     db_retrieve_node,
     generate_node,

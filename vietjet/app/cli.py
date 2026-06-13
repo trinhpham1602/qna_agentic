@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from vietjet.agent import ask
+from vietjet.legacy.agent import ask
 
 
 def _print_result(question: str, state: dict) -> None:

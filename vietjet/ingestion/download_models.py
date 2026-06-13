@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from vietjet.config import EMBED_MODEL_ID, RERANK_MODEL_ID
-from vietjet.models import download
+from vietjet.ingestion.models import download
 
 
 def main() -> None:

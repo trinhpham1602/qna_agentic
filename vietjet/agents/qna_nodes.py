@@ -5,7 +5,7 @@ import re
 from langchain_core.documents import Document
 
 from vietjet.config import MAX_REWRITES
-from vietjet.qna_agents import (
+from vietjet.agents.qna_agents import (
     generate_agent,
     grade_agent,
     link_judge_agent,
@@ -13,7 +13,7 @@ from vietjet.qna_agents import (
     web_fetch_agent,
     web_search_agent,
 )
-from vietjet.qna_db import db_retrieve
+from vietjet.retrieval.qna_db import db_retrieve
 
 _KW_TYPE = [
     (re.compile(r"\b(phí|lệ phí|giá|tiền|cost|vnd|usd|hóa đơn|vat)\b", re.I), "pricing"),
@@ -117,8 +117,8 @@ async def parallel_crawl_node(state: dict) -> dict:
     Lazy import để tránh load CrawlCoordinator (heavy: Firecrawl + embedder)
     khi chỉ chạy nhánh request không có web search.
     """
-    from vietjet.crawl_parallel.ask import _cache_doc_to_document, _result_to_document
-    from vietjet.crawl_parallel.coordinator import CrawlCoordinator
+    from vietjet.crawlers.ask import _cache_doc_to_document, _result_to_document
+    from vietjet.crawlers.coordinator import CrawlCoordinator
 
     query = state.get("query") or state.get("question") or ""
     if not query.strip():

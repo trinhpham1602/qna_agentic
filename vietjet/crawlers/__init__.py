@@ -7,7 +7,7 @@ Module này implement plan trong PLAN_PARALLEL_CRAWL_AGENT.md:
 - CacheChecker check trước khi crawl: URL đã crawl <1h + sim đủ thì dùng DB luôn
 """
 
-from vietjet.crawl_parallel.coordinator import CrawlCoordinator, Event
-from vietjet.crawl_parallel.frontier import URLFrontier
+from vietjet.crawlers.coordinator import CrawlCoordinator, Event
+from vietjet.crawlers.frontier import URLFrontier
 
 __all__ = ["CrawlCoordinator", "Event", "URLFrontier"]

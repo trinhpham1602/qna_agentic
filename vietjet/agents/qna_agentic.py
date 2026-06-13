@@ -1,10 +1,10 @@
 """Standalone QnA entry-point (no intent classification, no slot-filling).
 
 Dùng cho:
-  - CLI: `python -m vietjet.qna_agentic "câu hỏi"`
-  - HTTP endpoint `/qna` (sync) hoặc `/qna-stream` (SSE) trong vietjet.server
+  - CLI: `python -m vietjet.agents.qna_agentic "câu hỏi"`
+  - HTTP endpoint `/qna` (sync) hoặc `/qna-stream` (SSE) trong vietjet.app.server
 
-Graph từ vietjet.qna_graph.build_graph() có fan-out:
+Graph từ vietjet.agents.qna_graph.build_graph() có fan-out:
     route → (db_retrieve ‖ parallel_crawl) → merge → grade → rewrite|generate
 """
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from vietjet.qna_graph import AgenticState, build_graph
+from vietjet.agents.qna_graph import AgenticState, build_graph
 
 _GRAPH = None
 

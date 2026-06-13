@@ -27,7 +27,7 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 
 from vietjet.config import LLM_MODEL, MAX_REWRITES, TOP_K
-from vietjet.retriever import get_retriever
+from vietjet.retrieval.retriever import get_retriever
 
 # ------------------------------------------------------------------
 # State

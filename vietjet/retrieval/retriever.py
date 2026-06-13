@@ -27,7 +27,7 @@ from vietjet.config import (
     RRF_K,
     TOP_K,
 )
-from vietjet.ingest import tokenize_vn
+from vietjet.ingestion.ingest import tokenize_vn
 
 
 def _has_reranker_weights(path: str) -> bool:

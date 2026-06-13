@@ -14,9 +14,9 @@ from __future__ import annotations
 
 from langchain_core.documents import Document
 
-from vietjet.crawl_parallel.coordinator import CrawlCoordinator, Event
-from vietjet.qna_agents import generate_agent
-from vietjet.qna_db import db_retrieve
+from vietjet.crawlers.coordinator import CrawlCoordinator, Event
+from vietjet.agents.qna_agents import generate_agent
+from vietjet.retrieval.qna_db import db_retrieve
 
 
 def _result_to_document(r: dict) -> Document:

@@ -5,7 +5,7 @@ import asyncio
 from langchain_core.documents import Document
 
 from vietjet.config import CANDIDATES, TOP_K
-from vietjet.retriever import get_retriever
+from vietjet.retrieval.retriever import get_retriever
 
 
 async def db_retrieve(

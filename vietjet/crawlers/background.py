@@ -21,15 +21,15 @@ from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 
-from vietjet.chunk import pack_paragraphs, split_prose_and_tables, split_sections
+from vietjet.ingestion.chunk import pack_paragraphs, split_prose_and_tables, split_sections
 from vietjet.config import (
     COLLECTION_NAME,
     DB_CONNECTION_STRING,
     EMBED_MODEL,
     PARALLEL_INGEST_BATCH_SIZE,
 )
-from vietjet.crawl_parallel.agent import PageItem
-from vietjet.crawl_parallel.text_clean import clean_ingest_text
+from vietjet.crawlers.agent import PageItem
+from vietjet.crawlers.text_clean import clean_ingest_text
 
 
 _MAX_CHARS = 1800
@@ -111,7 +111,7 @@ class BackgroundIngest:
         return self._store
 
     async def run(self) -> None:
-        from vietjet.crawl_parallel.agent import SENTINEL
+        from vietjet.crawlers.agent import SENTINEL
 
         batch: list[PageItem] = []
         while True:
@@ -171,6 +171,7 @@ class BackgroundIngest:
                         "last_crawled_ts": now_ts,
                         "source_query": self.source_query,
                         "crawl_session_id": self.session_id,
+                        "fetch_method": getattr(page, "method", "static"),
                     },
                 ))
                 ids.append(c["id"])

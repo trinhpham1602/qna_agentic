@@ -19,7 +19,7 @@ from typing import Optional, TypedDict
 from langchain_core.documents import Document
 from langgraph.graph import END, START, StateGraph
 
-from vietjet.cache_nodes import (
+from vietjet.agents.cache_nodes import (
     after_cache_check,
     check_final_cache_node,
     check_semantic_cache_node,
@@ -28,7 +28,7 @@ from vietjet.cache_nodes import (
     return_cached_node,
     store_cache_node,
 )
-from vietjet.qna_nodes import (
+from vietjet.agents.qna_nodes import (
     after_grade,
     db_retrieve_node,
     generate_node,

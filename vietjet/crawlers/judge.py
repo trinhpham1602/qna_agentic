@@ -28,7 +28,7 @@ from vietjet.config import (
     PARALLEL_JUDGE_SIM_MED,
     PARALLEL_SNIPPET_WINDOW,
 )
-from vietjet.crawl_parallel.agent import PageItem
+from vietjet.crawlers.agent import PageItem
 
 
 _PROMPT = """Bạn đánh giá đoạn web có chứa câu trả lời cho câu hỏi không.
@@ -143,7 +143,7 @@ class JudgeConsumer:
         self.early_fired: bool = False
 
     async def run(self) -> None:
-        from vietjet.crawl_parallel.agent import SENTINEL
+        from vietjet.crawlers.agent import SENTINEL
 
         while True:
             item = await self.judge_queue.get()

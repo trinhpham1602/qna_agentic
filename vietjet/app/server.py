@@ -9,15 +9,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from vietjet.combined_agent import (
+from vietjet.agents.combined_agent import (
     REQUIRED_SLOTS,
     CombinedState,
     _is_slot_filled,
     get_graph,
 )
-from vietjet.crawl_parallel import CrawlCoordinator
-from vietjet.qna_agentic import _initial_state as _qna_initial_state
-from vietjet.qna_agentic import get_graph as _get_qna_graph
+from vietjet.crawlers import CrawlCoordinator
+from vietjet.agents.qna_agentic import _initial_state as _qna_initial_state
+from vietjet.agents.qna_agentic import get_graph as _get_qna_graph
 
 _sessions: Dict[str, CombinedState] = {}
 
@@ -407,4 +407,4 @@ async def chat_stream(req: ChatRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run("vietjet.server:app", host="127.0.0.1", port=8002, reload=False)
+    uvicorn.run("vietjet.app.server:app", host="127.0.0.1", port=8002, reload=False)

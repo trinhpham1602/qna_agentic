@@ -68,7 +68,7 @@ EMBED_MODEL_ID = os.getenv("VIETJET_EMBED_MODEL", "bkai-foundation-models/vietna
 RERANK_MODEL_ID = os.getenv("VIETJET_RERANK_MODEL", "BAAI/bge-reranker-v2-m3")
 LLM_MODEL = os.getenv("VIETJET_LLM_MODEL", "qwen2.5")
 
-from vietjet.models import resolve  # noqa: E402  (import after env-defaults)
+from vietjet.ingestion.models import resolve  # noqa: E402  (import after env-defaults)
 
 EMBED_MODEL = resolve(EMBED_MODEL_ID)
 RERANK_MODEL = resolve(RERANK_MODEL_ID)
@@ -107,6 +107,14 @@ PARALLEL_INGEST_BATCH_SIZE = 5
 PARALLEL_SNIPPET_WINDOW = 600           # ký tự snippet cho judge
 PARALLEL_FRONTIER_MAX = 200
 PARALLEL_SCRAPE_TIMEOUT = 30.0          # timeout cho 1 lần scrape
+
+# --- Static fetch agent (deep=0, không render JS, chạy trước Firecrawl) ---
+STATIC_FETCH_TIMEOUT = 8.0
+STATIC_FETCH_MIN_CHARS = 300            # dưới ngưỡng → fallback Firecrawl
+STATIC_FETCH_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36 VietjetRAGBot/1.0"
+)
 
 # --- URLs to crawl ---
 URLS: list[dict[str, str]] = [

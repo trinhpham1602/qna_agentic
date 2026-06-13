@@ -5,28 +5,33 @@ from typing import Any
 
 from firecrawl import AsyncFirecrawlApp
 
-from vietjet.crawl_parallel.frontier import URLFrontier
-
-
-_SCRAPE_OPTIONS = {
-    "formats": ["markdown"],
-    "only_main_content": True,
-    "exclude_tags": ["nav", "footer", "header", "aside", "script", "style", "form"],
-    "remove_base64_images": True,
-}
+from vietjet.crawlers.firecrawl_fetch import firecrawl_fetch
+from vietjet.crawlers.frontier import URLFrontier
+from vietjet.crawlers.static_fetch import static_fetch
 
 
 class PageItem:
-    __slots__ = ("url", "markdown", "title", "agent_id")
+    __slots__ = ("url", "markdown", "title", "agent_id", "method")
 
-    def __init__(self, url: str, markdown: str, title: str = "", agent_id: int = 0) -> None:
+    def __init__(
+        self,
+        url: str,
+        markdown: str,
+        title: str = "",
+        agent_id: int = 0,
+        method: str = "static",
+    ) -> None:
         self.url = url
         self.markdown = markdown
         self.title = title
         self.agent_id = agent_id
+        self.method = method
 
     def __repr__(self) -> str:
-        return f"PageItem(url={self.url!r}, agent_id={self.agent_id}, md_len={len(self.markdown)})"
+        return (
+            f"PageItem(url={self.url!r}, method={self.method}, "
+            f"agent_id={self.agent_id}, md_len={len(self.markdown)})"
+        )
 
 
 SENTINEL: Any = object()
@@ -61,29 +66,28 @@ class CrawlAgent:
             return self.ingest_queue
         return self.judge_queue
 
-    async def _enqueue_page(self, url: str, markdown: str, title: str) -> None:
+    async def _enqueue_page(
+        self, url: str, markdown: str, title: str, method: str
+    ) -> None:
         if not markdown or not markdown.strip():
             return
-        item = PageItem(url=url, markdown=markdown, title=title, agent_id=self.agent_id)
+        item = PageItem(
+            url=url, markdown=markdown, title=title, agent_id=self.agent_id, method=method
+        )
         await self._target_queue().put(item)
         self.emitted += 1
 
-    async def _scrape_one(self, url: str) -> None:
-        try:
-            doc = await asyncio.wait_for(
-                self.app.scrape(url, **_SCRAPE_OPTIONS),
-                timeout=self.scrape_timeout,
-            )
-        except asyncio.TimeoutError:
-            print(f"[crawl-agent {self.agent_id}] scrape timeout url={url}")
+    async def _fetch_one(self, url: str) -> None:
+        result = await static_fetch(url)
+        method = "static"
+        if result is None:
+            result = await firecrawl_fetch(self.app, url, timeout=self.scrape_timeout)
+            method = "firecrawl"
+        if result is None:
             return
-        except Exception as exc:
-            print(f"[crawl-agent {self.agent_id}] scrape failed url={url} err={exc}")
-            return
-
-        md = getattr(doc, "markdown", "") or ""
-        title = self._extract_title(doc)
-        await self._enqueue_page(url, md, title)
+        markdown, title = result
+        print(f"[crawl-agent {self.agent_id}] {method} url={url} md_len={len(markdown)}")
+        await self._enqueue_page(url, markdown, title, method)
 
     async def run(self) -> None:
         try:
@@ -95,17 +99,7 @@ class CrawlAgent:
                         f"(emitted={self.emitted})"
                     )
                     return
-                await self._scrape_one(url)
+                await self._fetch_one(url)
         except asyncio.CancelledError:
             print(f"[crawl-agent {self.agent_id}] cancelled (emitted={self.emitted})")
             raise
-
-    @staticmethod
-    def _extract_title(doc) -> str:
-        md = getattr(doc, "metadata", None)
-        if md is None:
-            return ""
-        title = getattr(md, "title", None) or getattr(md, "og_title", None)
-        if not title and isinstance(md, dict):
-            title = md.get("title") or md.get("og_title")
-        return title or ""
