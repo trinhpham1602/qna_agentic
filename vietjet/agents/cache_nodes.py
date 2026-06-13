@@ -58,9 +58,8 @@ async def normalize_node(state: dict) -> dict:
 
 
 async def get_embedding_node(state: dict) -> dict:
-    from langchain_huggingface import HuggingFaceEmbeddings
-
-    from vietjet.config import EMBED_MODEL, EMBEDDING_MODEL_VERSION
+    from vietjet.config import EMBEDDING_MODEL_VERSION
+    from vietjet.retrieval.embedder import get_embedder
 
     normalized = state.get("normalized_query") or state.get("question") or ""
     if not normalized:
@@ -68,7 +67,7 @@ async def get_embedding_node(state: dict) -> dict:
 
     cache = get_cache_store()
 
-    embedder = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    embedder = get_embedder()
 
     def _embed_sync(text: str) -> list[float]:
         return list(embedder.embed_query(text))

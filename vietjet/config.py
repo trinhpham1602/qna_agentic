@@ -77,9 +77,12 @@ RERANK_MODEL = resolve(RERANK_MODEL_ID)
 # --- Retrieval ---
 RRF_K = 60
 TOP_K = 4
-CANDIDATES = 20
+CANDIDATES = 16
 RERANK_MAX_LENGTH = 512
 RERANK_TEXT_CAP = 2000  # truncate chunk text fed to reranker to dodge MPS OOM
+RERANK_BATCH_SIZE = 16
+RERANK_FP16 = True
+RETRIEVAL_DEVICE = os.getenv("VIETJET_RETRIEVAL_DEVICE", "auto")
 
 # --- Agent ---
 MAX_REWRITES = 2

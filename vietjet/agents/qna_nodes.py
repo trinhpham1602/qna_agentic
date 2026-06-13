@@ -45,11 +45,14 @@ async def route_node(state: dict) -> dict:
 
 
 async def db_retrieve_node(state: dict) -> dict:
-    doc_type = state.get("doc_type") if state.get("attempts", 0) == 0 else None
+    first_pass = state.get("attempts", 0) == 0
+    doc_type = state.get("doc_type") if first_pass else None
+    query_embedding = state.get("query_embedding") if first_pass else None
     docs = await db_retrieve(
         state["query"],
         doc_type=doc_type,
         boost_tables=state.get("boost_tables", False),
+        query_embedding=query_embedding,
     )
     return {"docs": docs}
 

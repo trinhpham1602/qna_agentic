@@ -11,7 +11,6 @@ from functools import lru_cache
 from typing import Iterable
 
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from sentence_transformers import CrossEncoder
 
@@ -20,7 +19,8 @@ from vietjet.config import (
     CANDIDATES,
     COLLECTION_NAME,
     DB_CONNECTION_STRING,
-    EMBED_MODEL,
+    RERANK_BATCH_SIZE,
+    RERANK_FP16,
     RERANK_MAX_LENGTH,
     RERANK_MODEL,
     RERANK_TEXT_CAP,
@@ -28,6 +28,7 @@ from vietjet.config import (
     TOP_K,
 )
 from vietjet.ingestion.ingest import tokenize_vn
+from vietjet.retrieval.embedder import get_embedder, pick_device
 
 
 def _has_reranker_weights(path: str) -> bool:
@@ -64,7 +65,7 @@ class VietjetRetriever:
             self.chunks = []
             self._chunk_by_id = {}
 
-        self.embedder = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+        self.embedder = get_embedder()
         self.store = PGVector(
             embeddings=self.embedder,
             connection=DB_CONNECTION_STRING,
@@ -75,7 +76,18 @@ class VietjetRetriever:
         if use_rerank:
             if _has_reranker_weights(RERANK_MODEL):
                 try:
-                    self.reranker = CrossEncoder(RERANK_MODEL, max_length=RERANK_MAX_LENGTH)
+                    device = pick_device()
+                    model_kwargs = {}
+                    if RERANK_FP16 and device in ("mps", "cuda"):
+                        import torch
+
+                        model_kwargs["torch_dtype"] = torch.float16
+                    self.reranker = CrossEncoder(
+                        RERANK_MODEL,
+                        max_length=RERANK_MAX_LENGTH,
+                        device=device,
+                        model_kwargs=model_kwargs,
+                    )
                 except Exception as exc:
                     print(f"[retriever] WARNING: reranker init failed ({exc}) — running without rerank.")
                     self.reranker = None
@@ -91,12 +103,20 @@ class VietjetRetriever:
         return [self.chunks[i]["id"] for i in order]
 
     def _vector_ranking(
-        self, query: str, k: int, doc_type: str | None
+        self,
+        query: str,
+        k: int,
+        doc_type: str | None,
+        query_embedding: list[float] | None = None,
     ) -> list[tuple[Document, float]]:
         if doc_type:
             filter_dict = {"doc_type": {"$in": [doc_type, "web_live"]}}
         else:
             filter_dict = None
+        if query_embedding is not None:
+            return self.store.similarity_search_with_score_by_vector(
+                query_embedding, k=k, filter=filter_dict
+            )
         return self.store.similarity_search_with_score(query, k=k, filter=filter_dict)
 
     def search(
@@ -106,9 +126,10 @@ class VietjetRetriever:
         candidates: int = CANDIDATES,
         doc_type: str | None = None,
         boost_tables: bool = False,
+        query_embedding: list[float] | None = None,
     ) -> list[Document]:
         # Vector ranking with optional metadata filter — always available
-        vec_ranked = self._vector_ranking(query, candidates, doc_type)
+        vec_ranked = self._vector_ranking(query, candidates, doc_type, query_embedding)
         # Cache Document by id để build kết quả cuối ở vector-only mode
         vec_doc_by_id = {doc.metadata["id"]: doc for doc, _ in vec_ranked}
         vec_ids = [doc.metadata["id"] for doc, _ in vec_ranked]
@@ -145,7 +166,9 @@ class VietjetRetriever:
             picked = cand_ids[:top_k]
         else:
             pairs = [(query, _text_of(cid)) for cid in cand_ids]
-            scores = self.reranker.predict(pairs, batch_size=4, show_progress_bar=False)
+            scores = self.reranker.predict(
+                pairs, batch_size=RERANK_BATCH_SIZE, show_progress_bar=False
+            )
             order = sorted(range(len(cand_ids)), key=lambda i: -scores[i])[:top_k]
             picked = [cand_ids[i] for i in order]
 

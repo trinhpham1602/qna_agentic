@@ -14,6 +14,7 @@ async def db_retrieve(
     boost_tables: bool = False,
     top_k: int = TOP_K,
     candidates: int = CANDIDATES,
+    query_embedding: list[float] | None = None,
 ) -> list[Document]:
     try:
         retriever = get_retriever(use_rerank=True)
@@ -28,6 +29,7 @@ async def db_retrieve(
             candidates,
             doc_type,
             boost_tables,
+            query_embedding,
         )
     except Exception as exc:
         print(f"[db_retrieve] search failed: {exc} — returning empty.")
